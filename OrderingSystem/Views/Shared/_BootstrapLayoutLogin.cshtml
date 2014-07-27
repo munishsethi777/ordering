@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html>
+<html id="" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Ordering System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    @Styles.Render("~/Content/themes/base/css")
+    <!-- Le styles -->
+    <link rel="stylesheet" href="../../Content/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../Content/custom-theme/jquery-ui-1.10.2.custom.css">
+    <link rel="stylesheet" href="../../Content/css/font-awesome.min.css">
+    <!-- jQuery + jqGrid -->
+    <link rel="stylesheet" href="../../Content/ui.jqgrid.css" />
+    <link rel="stylesheet" href="../../Content/jqGrid.overrides.css">
+    <!-- bootstrap select -->
+    <link href="../../Content/css/bootstrap-select.css" rel="stylesheet" type="text/css" />
+    <!-- progress bar -->
+    <link href="../../Content/css/progressBar2.css" rel="stylesheet" type="text/css" />
+    <!--[if IE 7]>
+    <link rel="stylesheet" href="assets/css/font-awesome-ie7.min.css">
+    <![endif]-->
+    <!--[if lt IE 9]>
+            <link rel="stylesheet" href="css/custom-theme/jquery.ui.1.10.2.ie.css">
+            <![endif]-->
+    <link rel="stylesheet" href="../../Content/css/docs.css" type="text/css">
+    <link href="../../Content/css/mvcef.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="../../Content/css/prettify.css" type="text/css" />
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+            <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+            <![endif]-->
+    <!-- Le fav and touch icons -->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../Content/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../../Content/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../../Content/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../../Content/ico/apple-touch-icon-57-precomposed.png">
+    <link rel="shortcut icon" href="../../Content/ico/favicon.png">
+</head>
+<body class="bodybackgroundcolor">
+    <div class="navbar navbar-fixed-top">
+        <div style="display:none;" class="navbar-inner">
+            <div class="row-fluid bodybackgroundcolor">
+                <div class="span6">
+                    <img src="../../Images/ps-logo1.png" />
+                </div>
+                <div class="span6">
+                    @if (Session != null && Session["CustomerId"] != null && Session["CustomerId"].ToString() != "1")
+                    {
+                        var imgCustomer = "../../Images/" + Session["CustomerId"].ToString() + ".png";
+                        <div style="float: right;">
+                            <img alt="Customer" src="@imgCustomer" />
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="row-fluid hor_menu_backgroun-color">
+                @if (Session != null && Session["CustomerId"] != null)
+                {
+                    @Html.Partial("_LoginPartial")
+                    <div class="btn-group pull-right" style="padding-right: 5px">
+                        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-th-list">
+                        </i>&nbsp;Links&nbsp;<span class="caret"></span> </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="http://www.google.com/" target="_blank"><span class="icon-globe"></span>
+                            About us</a> </li>
+                            <li><a href="http://www.google.com/" target="_blank">
+                            <span class="icon-info-sign"></span>Help</a> </li>
+                        </ul>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="container container-fluid-loginpage">
+        @RenderBody()
+    </div>
+    <!-- Alert Message -->
+    <div id="dialog-message" title="Alert" style="display: none;">
+        <p class="confirmmsg">
+            <span class="ui-icon ui-icon-circle-check" style="float: left; margin: 0 7px 50px 0;">
+            </span>
+        </p>
+    </div>
+    <!--for all pages-->
+    <div id="dialog-add" style="display: none">
+    </div>
+    <!-- Footer ================================================== -->
+    <footer id="footerWithProgressBar" class="footer navbar-fixed-bottom bodybackgroundcolor">
+        <div class="container">
+        <div class="row">
+            <div class="span5"></div>
+            <div class="span5">
+                <span> &copy  Copyright 2014. All Rights Reserved</span>
+            </div>
+            <div class="span5">
+            </div>
+          </div>
+        </div>
+    </footer>
+    <!-- Le javascript ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    @*@Scripts.Render("~/bundles/jquery")*@ @*@Scripts.Render("~/bundles/jqueryui")*@
+    <script src="../../Scripts/jquery-1.9.1.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery-migrate-1.2.1.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.validate.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.validate.unobtrusive.js" type="text/javascript"></script>
+    <script src="../../Scripts/bootstrap.min.js" type="text/javascript"></script>
+    <!--JSON-->
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.xml2json.js" type="text/javascript"></script>
+    <!-- jQuery + jqGrid -->
+    <script src="../../Scripts/grid.locale-en.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.jqGrid.js" type="text/javascript"></script>
+    <script src="../../Scripts/holder.js" type="text/javascript"></script>
+    @*<script src="../../Scripts/jquery-ui-1.10.2.custom.min.js" type="text/javascript"></script>*@
+    <script src="../../Scripts/jquery-ui-1.10.2.js" type="text/javascript"></script>
+    @*<script src="../../Scripts/jquery-1.9.1-vsdoc.js" type="text/javascript"></script>*@
+    <script src="../../Scripts/prettify.js" type="text/javascript"></script>
+    <!-- jQuery + jqGrid -->
+    <script src="../../Scripts/jquery.maskedinput-1.2.2.js" type="text/javascript"></script>
+
+    <!-- time picker addon-->
+    <script src="../../Scripts/jQueryTimepickerAddon.js" type="text/javascript"></script>
+
+    <!-- bootstrap select -->
+    <script src="../../Scripts/bootstrap-select.js" type="text/javascript"></script>
+    <!-- progress bar -->
+    <script src="../../Scripts/progressBar2.js" type="text/javascript"></script>
+    <!--timer functionality scripts-->
+    <script src="../../Scripts/jquery.timer.js" type="text/javascript"></script>
+    <!--Session timeout scripts-->
+    @*   <script src="../../Scripts/jquery.idletimer.js" type="text/javascript"></script>
+    <script src="../../Scripts/session.js" type="text/javascript"></script>*@
+    <!-- Lookup control -->
+    <script src="../../../../Scripts/lookup.js" type="text/javascript"></script>
+    <script src="../../../../Scripts/jquery.mcautocomplete.js" type="text/javascript"></script>
+    <!-- jQuery general framework components-->
+    <script src="../../Scripts/mvc-ef.js" type="text/javascript"></script>
+    
+    @*@Scripts.Render("~/bundles/jqueryval")*@
+    @RenderSection("scripts", required: false)
+</body>
+</html>

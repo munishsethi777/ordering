@@ -1,0 +1,201 @@
+﻿@Html.Partial("_Dialog")
+<style>
+.ui-jqgrid tr.jqgrow td
+{
+	overflow:visible;
+}
+.open >.dropdown-menu
+{
+	display:table;
+}
+</style>
+<script type="text/javascript" language="javascript">
+    var model = '';
+
+    //for miles
+    var tankMile = 0;
+
+    //for map
+    var GlbMarker = [];
+    var map;
+    var sTankIDs = "";
+    var tankid = "";
+    
+
+    function buttonize(cellvalue, options, rowobject) {
+        return "<ul style='list-style:none;' class=''>" +
+                        "<li title='Delete' onclick=\"DeleteTankReorder(" + cellvalue + ");\"><i class='icon-remove'></i></li>" +
+
+        //drop down -- icons
+                        "<li class='dropdown'><a class='dropdown-toggle' data-toggle='dropdown' href='#'><b class='icon-th-list'></b></a>" +
+                            "<ul class='dropdown-menu'> " +
+                                    "<li class='dropdown-submenu'><a href='#'>Delivery Companion</a>" +
+                                    "<ul class='dropdown-menu'>" +
+                                        "<li class='dropdown-submenu'><a tabindex='-1' href='#'>Distance</a>" +
+                                            "<ul class='dropdown-menu'>" +
+                                                "<li><a onclick='LoadReorderByMile(" + cellvalue + ", 50);' tabindex='-1' href='#'>1-5 miles</a></li>" +
+                                                "<li><a onclick='LoadReorderByMile(" + cellvalue + ", 10);' tabindex='-1' href='#'>1-10 miles</a></li>" +
+                                                "<li><a onclick='LoadReorderByMile(" + cellvalue + ", 15);' tabindex='-1' href='#'>1-15 miles</a></li>" +
+                                                "<li><a onclick='LoadReorderByMile(" + cellvalue + ", 20);' tabindex='-1' href='#'>1-20 miles</a></li>" +
+                                            "</ul>" +
+                                        "</li>" +
+                                        "<li class='dropdown-submenu'><a tabindex='-1' href='#'>ETR</a>" +
+                                            "<ul class='dropdown-menu'>" +
+                                                "<li><a onclick='SelectConsumptionType(1, " + cellvalue + ", 0, 3);' tabindex='-1' href='#'>0-3 days</a></li>" +
+                                                "<li><a onclick='SelectConsumptionType(1, " + cellvalue + ", 4, 6);' tabindex='-1' href='#'>4-6 days</a></li>" +
+                                                "<li><a onclick='SelectConsumptionType(1, " + cellvalue + ", 7, 10);' tabindex='-1' href='#'>7-10 days</a></li>" +
+                                            "</ul>" +
+                                        "</li>" +
+                                        "<li class='dropdown-submenu'><a tabindex='-1' href='#'>ETE</a>" +
+                                            "<ul class='dropdown-menu'>" +
+                                                "<li><a onclick='SelectConsumptionType(2, " + cellvalue + ", 0, 3);' tabindex='-1' href='#'>0-3 days</a></li>" +
+                                                "<li><a onclick='SelectConsumptionType(2, " + cellvalue + ", 4, 6);' tabindex='-1' href='#'>4-6 days</a></li>" +
+                                                "<li><a onclick='SelectConsumptionType(2, " + cellvalue + ", 7, 10);' tabindex='-1' href='#'>7-10 days</a></li>" +
+                                            "</ul>" +
+                                        "</li>" +
+                                    "</ul>" +
+                                "</li>" +
+                            "</ul>" +
+                        "</li>"+
+                    "</ul>";
+
+
+    }
+    function DeleteTankReorder(tankid) {
+        Confirmation('Are you sure to delete?', tankid);
+    }
+    function CallbackConfirmation(status, tankid) {
+
+        if (status) // true - click yes, false - click no
+        {
+            $.post('/Report/Report/DeleteTankDeliveryCollection', { iTankId: tankid }, function (data) {
+                if (data.result == "fail") {
+                    AlertDialogError(data.message);
+                    return;
+                }
+
+                //refress the grid again
+                ReloadGrid('tblGridDelCol');
+                AlertDialogSuccess(data.message);
+            });
+        }
+    }
+
+    $(document).ready(function () {
+
+        var deliveryCollection =
+        {
+            TankList: []
+        }
+
+        //draw main map
+        map = InitialMapLoad(document.getElementById("tankmap"));
+
+       
+        //save delivery collection
+        $('#btnSaveDelCol').bind('click', function () {
+
+            deliveryCollection =
+                {
+                    TankList: []
+                }
+            //get selected rows
+            var selMulti = $.map($('#tblGridDelCol').jqGrid('getGridParam', 'selarrrow'), function (el, i) {
+                deliveryCollection.TankList.push({
+                    "TankId": parseInt(el),
+                    "TankDipQty": parseFloat($('#tblGridDelCol').jqGrid('getRowData', el)["currentqty"])
+                });
+                return el;
+            });
+
+            //save the collection
+            $.ajax({
+                url: "/DMS/DMS/SaveDeliveryCollection",
+                async: false,
+                type: "POST",
+                data: JSON.stringify(deliveryCollection),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                error: function (jqXHR, textStatus, errorThrown) {
+                },
+                success: function (data, textStatus, jqXHR) {
+                    if (data.result == "fail") {
+                        AlertDialogError(data.message);
+                        return;
+                    }
+
+                    //refress the grid again
+                    ReloadGrid('tblGridDelCol');
+                    AlertMsg(data.message);
+                }
+            });
+
+        });
+    });
+
+   
+
+</script>
+<form id="frmDelCol">
+<table id="tblGridDelCol">
+</table>
+<div id="pagerDelCol">
+</div>
+<br />
+<button type="button" id="btnSaveDelCol" class="btn btn-primary">
+    <span class="ui-button-text">Save Delivery Collection</span></button>
+@*<button type="button" id="btnCancel" class="btn">
+    <span class="ui-button-text">Clear</span></button>*@
+@Html.Partial("_Alert")
+<!--to draw map-->
+<div id="tankmap" style="width: 100%; height: 500px; display: none;">
+</div>
+<!--tank reorder by mile-->
+<input type="hidden" id="hdnTankList" value="" />
+<div id="tankReorderByMile" style="display: none">
+</div>
+<!-- tank reorder by ETR -->
+<div id="tankReorderByETR" style="display: none">
+</div>
+
+<!-- consumption type dialog -->
+<div id="consumptionType" style="display: none">
+    @Html.Partial("_ConsumptionType")
+</div>
+
+</form>
+@(Html.Grid("tblGridDelCol")
+    //.SetCaption("Delivery Collection Tank")
+    .AddColumn(new Column("Action").SetCustomFormatter("buttonize").SetWidth(75).SetSearch(false).SetTitle(false))
+        .AddColumn(new Column("volumerequired").SetLabel("Volume Required").SetAlign(Align.Right))
+    .AddColumn(new Column("tankname").SetLabel("Tank Name").SetWidth(250))
+    .AddColumn(new Column("Product"))
+            .AddColumn(new Column("Capacity").SetAlign(Align.Right).SetAlign(Align.Right))
+    .AddColumn(new Column("currentqty").SetLabel("Current Qty"))
+        .AddColumn(new Column("Reorder").SetAlign(Align.Right))
+        .AddColumn(new Column("avgusage").SetLabel("Avg Usage").SetAlign(Align.Right))
+        .AddColumn(new Column("maxusage").SetLabel("Max Usage").SetAlign(Align.Right))
+    .SetUrl(Url.Action("GridDataTankDeliveryCollection", "Report"))
+    .SetAutoWidth(true)
+    .SetRowNum(10)
+    //.SetDataType()
+    .SetAltClass("ui_jqgrid_tr_jqgrow_td")
+    .SetResizeClass("ui_jqgrid_tr_jqgrow_td")
+    .SetRowList(new[] { 10, 15, 20, 50 })
+    .SetViewRecords(true)
+    .SetPager("pagerDelCol")
+    .SetHeight(300)
+    .SetWidth(200)
+    .SetSearchToolbar(true)
+    .SetSearchOnEnter(true)
+    .SetSearchClearButton(true)
+    .SetSearchToggleButton(true)
+    .SetMultiSelect(true)
+    .SetMultiBoxOnly(false)
+    .SetMultiSelectWidth(40)
+    .SetToolbar(false)
+    .SetToolbarPosition(ToolbarPosition.Top)
+    .SetHoverRows(true)
+    .SetAltRows(true)
+    .SetShrinkToFit(false)
+    )

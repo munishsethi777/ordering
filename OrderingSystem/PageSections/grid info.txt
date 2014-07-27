@@ -1,0 +1,22 @@
+﻿jqGrid
+------
+
+grid - grid also one of the control (e.x - view custom reports)
+
+
+
+common feature and functionality
+--------------------------------
+1. load fields from table and its attributes ( length, type, etc)
+2. show the grid once select the item
+	- show fuel card grid when select customer vehicle id
+	- PIN Search
+3. grid edit option
+	e.x - vehicle eidt odo
+4. grid with view/edit permission based on roles
+		- e.x - Invoice Approval 
+		- grid binding with row and column level edit/view functionality
+5. verical menu- click directly open new page 
+	e.x - bulk fuel invoices
+
+	

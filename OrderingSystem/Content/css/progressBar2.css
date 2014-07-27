@@ -1,0 +1,8 @@
+/* Ajax Loader styles */
+.ajax_loader 
+{
+	background: url("../img/spinner_squares_circle.gif") no-repeat right center transparent;
+	width:50%;
+	height:80%;
+}
+.blue-loader .ajax_loader {background: url("../img/spinner_squares_circle.gif") no-repeat right center transparent;}

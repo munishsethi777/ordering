@@ -1,0 +1,333 @@
+﻿@model MVCDataModel.spTankMasterManagement_Result
+@Html.Partial("_Dialog")
+<script type="text/javascript">
+    var model = null;
+    $(document).ready(function () {
+        model = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+
+        $('#btnSave').bind('click', function () {
+            try {
+                // Force validation to reevaluate next time
+                var inputs = $('#frmTankMaster').find(":input");
+                inputs.removeData("previousValue");
+                $('#frmTankMaster').valid();
+
+                resultValation = $('#frmTankMaster').validate();
+
+                timerValidation = $.timer(function () {
+
+                    if (resultValation.pendingRequest == 0) {
+                        timerValidation.stop();
+                        if ($('#frmTankMaster').valid())
+                            CreateEditTankMaster('Add');
+                    }
+                }, 1000, true);
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+
+        });
+
+        $('#btnUpdate').bind('click', function () {
+            try {
+
+                // Force validation to reevaluate next time
+                var inputs = $('#frmTankMaster').find(":input");
+                inputs.removeData("previousValue");
+                $('#frmTankMaster').valid();
+
+                resultValation = $('#frmTankMaster').validate();
+
+                timerValidation = $.timer(function () {
+
+                    if (resultValation.pendingRequest == 0) {
+
+                        timerValidation.stop();
+                        if ($('#frmTankMaster').valid())
+                            CreateEditTankMaster('Update');
+                    }
+
+                }, 1000, true);
+
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+
+        });
+
+        $("#btnCancel").bind("click", function (e) {
+            ClearTankMasterForm();
+        });
+
+
+    });
+    
+</script>
+<form id="frmTankMaster" class="form-horizontal">
+<input type="hidden" id="hdnTankId" value="0" />
+<div class="row-fluid">
+    <div class="span5">
+        <div class="control-group">
+            <label class="control-label" for="ddlAccount">
+                Account <sup style="color: Red">*</sup> :
+            </label>
+            <div class="controls">
+                <select id="ddlAccount" name="ddlAccount" onchange="ChangeAccount();" data-val="true"
+                    data-val-required="The field is required.">
+                    <option value="">Select Account</option>
+                    @Html.BindAccount()
+                </select>
+                <label class="field-validation-valid" data-valmsg-for="ddlAccount" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ddlSite">
+                Site <sup style="color: Red">*</sup> :
+            </label>
+            <div class="controls">
+                <select id="ddlSite" name="ddlSite" data-val="true" data-val-required="The field is required.">
+                    <option value="">Select Site</option>
+                </select>
+                <label class="field-validation-valid" data-valmsg-for="ddlSite" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtTankName">
+                Tank Name <sup style="color: Red">*</sup> :
+            </label>
+            <div class="controls">
+                <input type="text" id="txtTankName" name="txtTankName" data-val="true" data-val-required="The field is required." />
+                <label class="field-validation-valid" data-valmsg-for="txtTankName" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtIU">
+                IU <sup style="color: Red">*</sup> :
+            </label>
+            <div class="controls">
+                <input type="text" id="txtIU" name="txtIU" data-val="true" data-val-required="The field is required." />
+                <label class="field-validation-valid" data-valmsg-for="txtIU" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtCapacity">
+                Capacity <sup style="color: Red">*</sup> :
+            </label>
+            <div class="controls">
+                <input type="text" id="txtCapacity" name="txtCapacity" class="digits" data-val="true" data-val-required="The field is required." />
+                <label class="field-validation-valid" data-valmsg-for="txtCapacity" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtCurrentQuantity">
+                Current Quantity <sup style="color: Red">*</sup> :
+            </label>
+            <div class="controls">
+                <input type="text" id="txtCurrentQuantity" name="txtCurrentQuantity" class="number" data-val="true"
+                    data-val-required="The field is required." />
+                <label class="field-validation-valid" data-valmsg-for="txtCurrentQuantity" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtReorderLevel">
+                Reorder Level <sup style="color: Red">*</sup> :
+            </label>
+            <div class="controls">
+                <input type="text" id="txtReorderLevel" name="txtReorderLevel" class="number" data-val="true" data-val-required="The field is required." />
+                <label class="field-validation-valid" data-valmsg-for="txtReorderLevel" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtOrderPercentage">
+                Order Percentage <sup style="color: Red">*</sup> :
+            </label>
+            <div class="controls">
+                <input type="text" id="txtOrderPercentage" name="txtOrderPercentage" class="number" data-val="true"
+                    data-val-required="The field is required." />
+                %
+                <label class="field-validation-valid" data-valmsg-for="txtOrderPercentage" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtTankTop">
+                Tank Top <sup style="color: Red">*</sup> :
+            </label>
+            <div class="controls">
+                <input type="text" id="txtTankTop" name="txtTankTop" class="number" data-val="true" data-val-required="The field is required." />
+                %
+                <label class="field-validation-valid" data-valmsg-for="txtTankTop" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtTankBottom">
+                Tank Bottom <sup style="color: Red">*</sup> :
+            </label>
+            <div class="controls">
+                <input type="text" id="txtTankBottom" name="txtTankBottom" class="number" data-val="true" data-val-required="The field is required." />
+                %
+                <label class="field-validation-valid" data-valmsg-for="txtTankBottom" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ddlProduct">
+                Product <sup style="color: Red">*</sup> :
+            </label>
+            <div class="controls">
+                <select id="ddlProduct" name="ddlProduct" data-val="true" data-val-required="The field is required.">
+                    <option value="">Select Product</option>
+                    @Html.BindProduct()
+                </select>
+                <label class="field-validation-valid" data-valmsg-for="ddlProduct" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="span5">
+        <div class="control-group">
+            <label class="control-label" for="ddlOEProduct">
+                OE Product :
+            </label>
+            <div class="controls">
+                <select id="ddlOEProduct" name="ddlOEProduct">
+                    <option value="">Select OE Product</option>
+                    @Html.BindOEProduct()
+                </select>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ddlBeepAlarm">
+                User for Beep Alarm <sup style="color: Red">*</sup> :
+            </label>
+            <div class="controls">
+                <select id="ddlBeepAlarm" name="ddlBeepAlarm" data-val="true" data-val-required="The field is required.">
+                    <option value="">Select</option>
+                    @Html.BindBeepForUser()
+                </select>
+                <label class="field-validation-valid" data-valmsg-for="ddlBeepAlarm" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtCustomerSite">
+                Customer Site :
+            </label>
+            <div class="controls">
+                <input id="txtCustomerSite" name="txtCustomerSite" type="text">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtHeight">
+                Height :
+            </label>
+            <div class="controls">
+                <input id="txtHeight" name="txtHeight" type="text" class="number" >
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtDiameter">
+                Diameter :
+            </label>
+            <div class="controls">
+                <input id="txtDiameter" name="txtDiameter" type="text" class="number" >
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtMonitoringEquipment:">
+                Monitoring Equipment :
+            </label>
+            <div class="controls">
+                <input id="txtMonitoringEquipment" name="txtMonitoringEquipment" type="text">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ddlGroup:">
+                Group :
+            </label>
+            <div class="controls">
+                <select id="ddlGroup" name="ddlGroup" onchange="ChangeGroup();">
+                    <option value="0">Select Group</option>
+                    @Html.BindTankGroup()
+                </select>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ddlSubGroup:">
+                Sub Group :
+            </label>
+            <div class="controls">
+                <select id="ddlSubGroup" name="ddlSubGroup">
+                    <option value="0">Select Sub Group</option>
+                </select>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="lblAlarmLevels">
+            </label>
+            <div class="controls">
+                <b>Alarm Levels</b>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtTankLow" >
+                Tank Low :
+            </label>
+            <div class="controls">
+                <input id="txtTankLow" name="txtTankLow" type="text" class="digits"/>
+                %
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtTankHigh">
+                Tank High :
+            </label>
+            <div class="controls">
+                <input id="txtTankHigh" name="txtTankHigh" type="text" class="digits"/>
+                %
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtEmailForAlaram">
+                Email For Alaram :
+            </label>
+            <div class="controls">
+                <input id="txtEmailForAlaram" name="txtEmailForAlaram" type="text">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row-fluid">
+    <div class="control-group">
+        <div class="controls">
+            @if (ViewBag.IsUpdate == true)
+            {
+
+            }
+            else
+            { 
+                <button type="button" id="btnSave" name="Command" data-loading-text="Loading..."
+                    value="Save" class="btnAddEdit btn btn-primary">
+                    <span class="ui-button-text">Save</span></button>
+            
+                <button type="button" id="btnCancel" class="btn">
+                    <span class="ui-button-text">Clear</span></button>
+                
+            }
+            <button type="button" id="btnClosePopUp" class="btn btn-info">
+                <span class="ui-button-text">Close</span></button>
+        </div>
+    </div>
+</div>
+</form>
+@Html.Partial("_Alert")

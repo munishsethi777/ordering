@@ -1,0 +1,63 @@
+﻿@model bool
+
+@if (Model)
+{
+<div class="control-group">
+    <label class="control-label" for="ddlQuestion">
+        Security Questions
+    </label>
+    <div class="controls">
+        <select id="ddlQuestion" name="ddlQuestion" class="selectpicker" data-val="true"
+            data-val-required="The Question field is required.">
+            <option value="">Select Questions</option>
+            <option value="What is the first name of your favorite uncle?">What is the first name of your favorite uncle?</option>
+            <option value="Where did you meet your spouse?">Where did you meet your spouse?</option>
+            <option value="What is the first name of your favorite aunt?">What is the first name of your favorite aunt?</option>
+            <option value="What is your primary frequent flyer number?">What is your primary frequent flyer number?</option>
+            <option value="What is your library card number?">What is your library card number?</option>
+            <option value="What was your first phone number?">What was your first phone number?</option>
+        </select>
+        <label class="field-validation-valid" data-valmsg-for="ddlQuestion" data-valmsg-replace="true">
+        </label>
+    </div>
+</div>
+<div class="control-group">
+    <label class="control-label" for="txtAnswer">
+        Answer
+    </label>
+    <div class="controls">
+        <input data-val="true" data-val-required="The Answer field is required." id="txtAnswer"
+            name="txtAnswer" type="text" />
+        <label class="field-validation-valid" data-valmsg-for="txtAnswer" data-valmsg-replace="true">
+        </label>
+    </div>
+</div>
+}
+else
+{
+    
+<div class="control-group">
+    <label class="control-label" for="ddlQuestion">
+        Security Questions
+    </label>
+    <div class="controls">
+        <select id="ddlQuestion" name="ddlQuestion" class="selectpicker">
+            <option value="">Select Questions</option>
+            <option value="What is the first name of your favorite uncle?">What is the first name of your favorite uncle?</option>
+            <option value="Where did you meet your spouse?">Where did you meet your spouse?</option>
+            <option value="What is the first name of your favorite aunt?">What is the first name of your favorite aunt?</option>
+            <option value="What is your primary frequent flyer number?">What is your primary frequent flyer number?</option>
+            <option value="What is your library card number?">What is your library card number?</option>
+            <option value="What was your first phone number?">What was your first phone number?</option>
+        </select>
+    </div>
+</div>
+<div class="control-group">
+    <label class="control-label" for="txtAnswer">
+        Answer
+    </label>
+    <div class="controls">
+        <input id="txtAnswer" name="txtAnswer" type="text" />
+    </div>
+</div>
+}

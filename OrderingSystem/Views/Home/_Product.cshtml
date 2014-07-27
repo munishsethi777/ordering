@@ -1,0 +1,118 @@
+﻿@model MVCDataModel.spProductManagement_Result
+@Html.Partial("_Dialog")
+<script type="text/javascript">
+    var model = null;
+    $(document).ready(function () {
+        model = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+
+        $('#btnSave').bind('click', function () {
+            try {
+                // Force validation to reevaluate next time
+                var inputs = $('#frmTankProduct').find(":input");
+                inputs.removeData("previousValue");
+                $('#frmTankProduct').valid();
+
+                resultValation = $('#frmTankProduct').validate();
+
+                timerValidation = $.timer(function () {
+
+                    if (resultValation.pendingRequest == 0) {
+                        timerValidation.stop();
+                        if ($('#frmTankProduct').valid())
+                            CreateEditProduct('Add');
+                    }
+                }, 1000, true);
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+
+        });
+
+        $('#btnUpdate').bind('click', function () {
+            try {
+
+                // Force validation to reevaluate next time
+                var inputs = $('#frmTankProduct').find(":input");
+                inputs.removeData("previousValue");
+                $('#frmTankProduct').valid();
+
+                resultValation = $('#frmTankProduct').validate();
+
+                timerValidation = $.timer(function () {
+
+                    if (resultValation.pendingRequest == 0) {
+
+                        timerValidation.stop();
+                        if ($('#frmTankProduct').valid())
+                            CreateEditProduct('Update');
+                    }
+
+                }, 1000, true);
+
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+
+        });
+
+        $("#btnCancel").bind("click", function (e) {
+            ClearClliForm();
+        });
+
+
+    });
+    
+</script>
+<form id="frmTankProduct" class="form-horizontal">
+<input type="hidden" id="hdnId" value="0" />
+<div class="row-fluid">
+    <div class="control-group">
+        <label class="control-label" for="txtSKUID">
+            SKU ID<sup style="color: Red">*</sup>:
+        </label>
+        <div class="controls">
+            <input data-val="true" data-val-remote="SKU ID is already exists." data-val-remote-url="/Validation/IsExistsWithCutomer"
+                data-val-required="The field is required." data-val-remote-additionalfields="primaryfield,primaryvalue, tablename,columnname,columnvalue,customerid"
+                data-val-remote-columnname="skuid" data-val-remote-tablename="tblproduct" data-val-remote-columnvalue="txtSKUID"
+                data-val-remote-customerid="hdnCustomerId" data-val-remote-primaryfield="productid"
+                data-val-remote-primaryvalue="hdnId" id="txtSKUID" name="txtSKUID" type="text" style="width:300px;"/>
+            <label class="field-validation-valid" data-valmsg-for="txtSKUID" data-valmsg-replace="true">
+            </label>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="txtProduct">
+            Product Name<sup style="color: Red">*</sup>:
+        </label>
+        <div class="controls">
+            <input data-val="true" data-val-remote="Product Name is already exists." data-val-remote-url="/Validation/IsExistsWithCutomer"
+                data-val-required="The field is required." data-val-remote-additionalfields="primaryfield,primaryvalue, tablename,columnname,columnvalue,customerid"
+                data-val-remote-columnname="productname" data-val-remote-tablename="tblproduct"
+                data-val-remote-columnvalue="txtProduct" data-val-remote-customerid="hdnCustomerId"
+                data-val-remote-primaryfield="productid" data-val-remote-primaryvalue="hdnId"
+                id="txtProduct" name="txtProduct" type="text"  style="width:300px;"/>
+            <label class="field-validation-valid" data-valmsg-for="txtProduct" data-valmsg-replace="true">
+            </label>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="txtPrice">
+            Price<sup style="color: Red">*</sup>:
+        </label>
+        <div class="controls">
+            <input type="text" id="txtPrice" name="txtPrice" class="number" data-val="true" data-val-required="The field is required." />
+            <label class="field-validation-valid" data-valmsg-for="txtPrice" data-valmsg-replace="true">
+            </label>
+        </div>
+    </div>
+    @Html.Partial("_Status")
+    <div>
+        <div class="controls">
+            @Html.Partial("_SubmitClear")
+        </div>
+    </div>
+</div>
+</form>
+@Html.Partial("_Alert")

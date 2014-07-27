@@ -1,0 +1,122 @@
+﻿@Html.Partial("_Dialog")
+<script type="text/javascript" language="javascript">
+    function buttonize(cellvalue, options, rowobject) {
+        return "<ul class='the-icons'>" +
+                        "<li title='Delete' onclick=\"DeleteTankReorder(" + cellvalue + ");\"><i class='icon-remove'></i></li>" +
+                    "</ul>"
+    }
+    function DeleteTankReorder(tankid) {
+        Confirmation('Are you sure to delete?', tankid);
+    }
+    function CallbackConfirmation(status, tankid) {
+
+        if (status) // true - click yes, false - click no
+        {
+            //$('#' + tankid).remove();
+            $.post('/DMS/DMS/DeleteTankReorderByETRandETE', { iTankId: tankid }, function (data) {
+                if (data.result == "fail") {
+                    AlertDialogError(data.message);
+                    return;
+                }
+
+                //refress the grid again
+                ReloadGrid('tblGridETR');
+                AlertDialogSuccess(data.message);
+            });
+        }
+    }
+
+    $(document).ready(function () {
+        var deliveryCollection =
+        {
+            TankList: []
+        }
+        //save delivery collection
+        $('#btnSave').bind('click', function () {
+
+            deliveryCollection =
+            {
+                TankList: []
+            }
+            //get selected rows
+            var selMulti = $.map($('#tblGridETR').jqGrid('getGridParam', 'selarrrow'), function (el, i) {
+                deliveryCollection.TankList.push({
+                    "TankId": parseInt(el),
+                    "TankDipQty": parseFloat($('#tblGridETR').jqGrid('getRowData', el)["currentqty"])
+                });
+                return el;
+            });
+
+            //save the collection
+            $.ajax({
+                url: "/DMS/DMS/SaveDeliveryCollection",
+                async: false,
+                type: "POST",
+                data: JSON.stringify(deliveryCollection),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                error: function (jqXHR, textStatus, errorThrown) {
+                },
+                success: function (data, textStatus, jqXHR) {
+                    if (data.result == "fail") {
+                        AlertDialogError(data.message);
+                        return;
+                    }
+
+                    //refress the grid again
+                    ReloadGrid('tblGridETR');
+                    AlertMsg(data.message);
+                }
+            });
+
+        });
+    });
+
+   
+
+</script>
+<form id="frmETR">
+<table id="tblGridETR">
+</table>
+<div id="pagerETR">
+</div>
+<br />
+<button type="button" id="btnSave" class="btn btn-primary">
+    <span class="ui-button-text">Save Delivery Collection</span></button>
+@*<button type="button" id="btnCancel" class="btn">
+    <span class="ui-button-text">Clear</span></button>*@
+@Html.Partial("_Alert")
+</form>
+@(Html.Grid("tblGridETR")
+    //.SetCaption("Delivery Collection Tank")
+    .AddColumn(new Column("Action").SetCustomFormatter("buttonize").SetWidth(75).SetSearch(false))
+        .AddColumn(new Column("volumerequired").SetLabel("Volume Required").SetAlign(Align.Right))
+    .AddColumn(new Column("tankname").SetLabel("Tank Name").SetWidth(250))
+    .AddColumn(new Column("Product"))
+        .AddColumn(new Column("Capacity").SetAlign(Align.Right))
+        .AddColumn(new Column("currentqty").SetLabel("Current Qty").SetAlign(Align.Right))
+        .AddColumn(new Column("Reorder").SetAlign(Align.Right))
+        .AddColumn(new Column("avgusage").SetLabel("Avg Usage").SetAlign(Align.Right))
+        .AddColumn(new Column("maxusage").SetLabel("Max Usage").SetAlign(Align.Right))
+    .SetUrl(Url.Action("GridDataTankReorderByETR", "DMS"))
+    .SetAutoWidth(true)
+    .SetRowNum(10)
+    .SetDataType(DataType.Local)
+    .SetRowList(new[] { 10, 15, 20, 50 })
+    .SetViewRecords(true)
+    .SetPager("pagerETR")
+    .SetHeight(300)
+    .SetWidth(200)
+    .SetSearchToolbar(true)
+    .SetSearchOnEnter(true)
+    .SetSearchClearButton(true)
+    .SetSearchToggleButton(true)
+    .SetMultiSelect(true)
+    .SetMultiBoxOnly(false)
+    .SetMultiSelectWidth(40)
+    .SetToolbar(false)
+    .SetToolbarPosition(ToolbarPosition.Top)
+    .SetHoverRows(true)
+    .SetAltRows(true)
+        .SetShrinkToFit(false)
+    )

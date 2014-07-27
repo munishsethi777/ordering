@@ -1,0 +1,36 @@
+﻿@model System.Web.Mvc.HandleErrorInfo
+@{
+    //Layout = "~/Views/Shared/_BootstrapLayout.cshtml";
+}
+    <div class="alert alert-block alert-error fade in">
+        <button type="button" class="close" data-dismiss="alert">
+            &times;</button>
+        <h4 class="alert-heading">
+            Please Contact the Administrator</h4>
+        <p>
+            Sorry, an error occurred while processing your request.
+        </p>
+        <p>
+            <a id="btnSkip" class="btn btn-danger" href="#">Skip the Error</a> <a id="btnRelogin"
+                class="btn" href="#">Re-Login</a>
+        </p>
+    </div>
+    
+@section scripts
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            //home page
+            $('#btnSkip').bind('click', function () {
+                window.location.pathname = '/Home/Dashboard';
+            });
+
+            //relogin again
+            $('#btnRelogin').bind('click', function () {
+                window.location.pathname = '/Account/Login';
+            });
+
+        });
+    </script>
+}

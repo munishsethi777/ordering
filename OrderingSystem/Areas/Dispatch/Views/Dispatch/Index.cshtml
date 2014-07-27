@@ -1,0 +1,595 @@
+﻿@{
+    Layout = "~/Views/Shared/_BootstrapLayout.cshtml";
+}
+<script src="../../../../Scripts/knockout-2.3.0.js" type="text/javascript"></script>
+<script src="../../../../Scripts/knockout-2.3.0.debug.js" type="text/javascript"></script>
+<script src="../../../../Scripts/knockout.mapping-latest.debug.js" type="text/javascript"></script>
+<form id="formOrderEntry" runat="server">
+<h4>Dispatch</h4>
+<div id="dispatch" class="well">
+    <div id="editEntries" class="modal hide fade" tabindex="-1" role="dialog" data-bind="showHide: canEdit()"
+        class="formgrid">
+        <div class="modal-header">
+            <a class="close" data-dismiss="modal">×</a>
+            <h3>
+                Edit Order entry</h3>
+        </div>
+        <div class="modal-body">
+            <table data-bind="with: EditOEData()">
+                <tr>
+                    <td>
+                        <label>
+                            Product:</label>
+                    </td>
+                    <td>
+                        <select id="ddlProduct" name="ddlProduct" data-bind="value:ProductID">
+                            <option value="0">--select--</option>
+                            @Html.BindAscendOEProduct()
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>
+                            Supplier:</label>
+                    </td>
+                    <td>
+                        <select id="ddlSupplier" name="ddlSupplier" data-bind="value:SupplierId">
+                            <option value="0">--select--</option>
+                            @Html.BindSupplier()
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>
+                            Terminal:</label>
+                    </td>
+                    <td>
+                        <select id="ddlTerminal" name="ddlTerminal" data-bind="value:SupplyPtID">
+                            <option value="0">--select--</option>
+                            @Html.BindTerminal()
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>
+                            Carrier:</label>
+                    </td>
+                    <td>
+                        <select id="ddlCarrier" name="ddlCarrier" data-bind="value:CarrierID">
+                            <option value="0">--select--</option>
+                            @Html.BindCarrier()
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>
+                            Destination:</label>
+                    </td>
+                    <td>
+                        <select id="ddlDest" name="ddlDest" data-bind="value:ShipToId">
+                            <option value="0">--select--</option>
+                            @Html.BindAscendDestination()
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>
+                            PONumber:</label>
+                    </td>
+                    <td>
+                        <input type="text" id="txtPONumber" data-bind="value:PONumber" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>
+                            Quantity:</label>
+                    </td>
+                    <td>
+                        <input type="text" id="txtQuantiy" data-bind="value:OrderQuantity" />
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">
+                        <input class="btn btn-primary btn-sm" type="button" value="Save" data-bind="click:function(){ $parent.SaveOrder($data)}" />
+                    </td>
+                    <td>
+                        <input type="button" class="btn btn-primary btn-sm" value="Cancel" data-bind="click:function(){ $parent.Cancel()}" />
+                    </td>
+                </tr>
+            </table>
+            <br />
+            <br />
+        </div>
+    </div>
+    <br />
+    <div class="datagrid">
+        <table width="100%">
+            <tr>
+                <th>
+                    Destination:
+                </th>
+                <th align="left">
+                    <div id="divDest">
+                    </div>
+                </th>
+                <th>
+                    Product:
+                </th>
+                <th align="left">
+                    <div id="divproduct">
+                    </div>
+                </th>
+            </tr>
+        </table>
+    </div>
+    <br />
+    <div class="ui-jqgrid-view">
+        <div class="ui-state-default ui-jqgrid-hdiv" style="overflow: scroll; height: 250px;
+            overflow-y: hidden;">
+            <table id="tabledispatch" cellpadding="0" cellspacing="0" class="ui-jqgrid-btable"
+                style="width: 100%">
+                <thead>
+                    <tr class="ui-jqgrid-labels" style="height: 25px">
+                        <th class="ui-state-default ui-th-column ui-th-ltr">
+                            &nbsp;&nbsp;Dispatch&nbsp;&nbsp;
+                        </th>
+                        <th class="ui-state-default ui-th-column ui-th-ltr">
+                            &nbsp;
+                        </th>
+                        <th class="ui-state-default ui-th-column ui-th-ltr">
+                            &nbsp;
+                        </th>
+                        <th style="display:none;" class="ui-state-default ui-th-column ui-th-ltr">
+                            &nbsp;&nbsp;Customer&nbsp;&nbsp;
+                        </th>
+                        <th class="ui-state-default ui-th-column ui-th-ltr">
+                            &nbsp;&nbsp;Account&nbsp;&nbsp;
+                        </th>
+                        <th class="ui-state-default ui-th-column ui-th-ltr">
+                            Product
+                        </th>
+                        <th class="ui-state-default ui-th-column ui-th-ltr">
+                            Supplier
+                        </th>
+                        <th class="ui-state-default ui-th-column ui-th-ltr">
+                            Terminal
+                        </th>
+                        <th class="ui-state-default ui-th-column ui-th-ltr">
+                            Carrier
+                        </th>
+                        <th class="ui-state-default ui-th-column ui-th-ltr">
+                            Destination
+                        </th>
+                        <th class="ui-state-default ui-th-column ui-th-ltr">
+                            &nbsp;&nbsp;PONumber&nbsp;&nbsp;
+                        </th>
+                        <th class="ui-state-default ui-th-column ui-th-ltr">
+                            &nbsp;&nbsp;Order Date&nbsp;&nbsp;
+                        </th>
+                        <th class="ui-state-default ui-th-column ui-th-ltr">
+                            &nbsp;&nbsp;Quantity&nbsp;&nbsp;
+                        </th>
+                        <th class="ui-state-default ui-th-column ui-th-ltr">
+                            &nbsp;&nbsp;Tank Capacity&nbsp;&nbsp;
+                        </th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: pager.currentPageRecords ">
+                    <tr class="ui-widget-content jqgrow ui-row-ltr jqgfirstrow" style="height: 25px">
+                        <td>
+                            <input type="checkbox" data-bind="checked: Approved" />
+                        </td>
+                        <td>
+                            <input type="image" src="../../../../images/delete.gif" data-bind="click:function(){ $parent.DeleteOrder($data); }" />
+                        </td>
+                        <td>
+                            <a href="#editEntries" class="linkButton" data-toggle="modal" data-bind="click: function() {  $parent.EditOrder($data); }">
+                                <input type="image" src="../../../../images/edit.gif" />
+                            </a>
+                        </td>
+                        <td style="display:none;" data-bind="text: CustomerID">
+                        </td>
+                        <td data-bind="text: AccountID">
+                        </td>
+                        <td data-bind="text: Product">
+                        </td>
+                        <td data-bind="text: Supplier">
+                        </td>
+                        <td data-bind="text: Terminal">
+                        </td>
+                        <td data-bind="text: Carrier">
+                        </td>
+                        <td data-bind="text: Destination">
+                        </td>
+                        <td data-bind="text: PONumber">
+                        </td>
+                        <td data-bind="date: OrderRequestedDate" align="right">
+                        </td>
+                        <td style="text-align: right" data-bind="text: OrderQuantity">
+                        </td>
+                        <td style="text-align: right" data-bind="text: TankCapacity">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="Pager">
+    </div>
+    <div class="NoRecords">
+    </div>
+    <div>
+        <table>
+            <tr>
+                <td align="right">
+                    <input class="btn btn-primary btn-sm" type="button" value="Save" data-bind="click:function(){ SaveApprovedItems(); }" />
+                </td>
+                <td>
+                    <input class="btn btn-primary btn-sm" type="button" value="Upload " data-bind="click:function(){ UploadOrderItems(); }" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="alert alert-info" id="message" style="display: none;">
+    </div>
+</div>
+</form>
+@section scripts
+    {
+    <script language="javascript" type="text/javascript">
+
+
+        $(document).ready(function () {
+
+            $.ajaxSetup({ cache: false });
+
+            ko.bindingHandlers.date = {
+                init: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+                    var jsonDate = valueAccessor();
+                    var value = new Date(parseInt(ko.utils.unwrapObservable(jsonDate).substr(6)));
+                    var ret = value.getMonth() + 1 + "/" + value.getDate() + "/" + value.getFullYear();
+                    element.innerHTML = ret;
+                },
+                update: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+                }
+            };
+
+            ko.bindingHandlers.showHide = {
+                init: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+                    var val = ko.utils.unwrapObservable(valueAccessor());
+                    if (val) {
+                        $(element).show("fast");
+                    } else {
+                        $(element).hide("fast");
+                    }
+                },
+                update: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+
+                    var val = ko.utils.unwrapObservable(valueAccessor());
+
+                    if (val) { $(element).show("fast"); }
+                    else { $(element).hide("fast"); }
+                }
+            };
+
+
+
+
+        });
+
+
+        function ApprovedEntries(ID, TankId) {
+            this.ID = ko.observable(ID);
+            this.TankId = ko.observable(TankId);
+        }
+
+        function OrderEntries(TankId, CustomerID, AccountID, ProductID, Product, SupplierId, Supplier, SupplyPtID, Terminal, CarrierID, Carrier,
+                        ShipToId, Destination, OrderRequestedDate, OrderQuantity, OrderRequiredDate, TankCapacity, ID, PONumber) {
+            this.Approved = ko.observable(false);
+            this.TankId = ko.observable(TankId),
+    this.CustomerID = ko.observable(CustomerID),
+    this.AccountID = ko.observable(AccountID),
+    this.ProductID = ko.observable(ProductID),
+    this.Product = ko.observable(Product),
+    this.SupplierId = ko.observable(SupplierId),
+    this.Supplier = ko.observable(Supplier),
+    this.SupplyPtID = ko.observable(SupplyPtID),
+    this.Terminal = ko.observable(Terminal),
+    this.CarrierID = ko.observable(CarrierID),
+    this.Carrier = ko.observable(Carrier),
+    this.ShipToId = ko.observable(ShipToId),
+    this.Destination = ko.observable(Destination),
+    this.OrderRequestedDate = ko.observable(OrderRequestedDate),
+    this.OrderQuantity = ko.observable(OrderQuantity),
+    this.OrderRequiredDate = ko.observable(OrderRequiredDate),
+    this.TankCapacity = ko.observable(TankCapacity),
+    this.ID = ko.observable(ID),
+    this.PONumber = ko.observable(PONumber)
+        }
+
+
+        function ViewModel() {
+
+            var vm = this;
+            this.data = ko.observableArray();
+            this.mode = ko.observable("hidden");
+            this.errorMsg = ko.observable("");
+            this.EditOEData = ko.observable(new OrderEntries());
+            this.canEdit = ko.observable(false);
+            this.approveddata = [];
+
+            /*Search fields*/
+            this.SearchDest = ko.observable();
+            this.SearchProduct = ko.observable();
+            this.SearchCustomer = ko.observable();
+
+
+            this.refreshData = function () {
+
+                $.getJSON('/Dispatch/Dispatch/GetOrderEntries', { CustomerID: '', Destination: '', Product: '', Capacity: '0' },
+                    function (returnData) {
+                        vm.data.remove(function (item) { return true; });
+
+                        $.each(returnData, function (key, val) {
+                            var nitem = new OrderEntries(val.TankId, val.CustomerID, val.AccountID, val.ProductID, val.Product, val.SupplierId, val.Supplier, val.SupplyPtID, val.Terminal, val.CarrierID,
+                                                    val.Carrier, val.ShipToId, val.Destination,
+                                                    val.OrderRequestedDate, val.OrderQuantity, val.OrderRequiredDate, val.TankCapacity, val.ID, val.PONumber);
+                            vm.data.push(nitem);
+                        });
+
+                    }
+                );
+            };
+
+
+            this.EditOrder = function (data) {
+                this.EditOEData(data);
+                this.canEdit(true);
+            }
+
+
+            this.DeleteOrder = function (data) {
+                data.vm = vm;
+                //var res = window.confirm("Are you sure want to delete order?");
+                Confirmation('Are you sure want to delete order?', data);
+
+
+
+            }
+
+            this.SaveOrder = function (data) {
+
+                if (data.OrderQuantity() > data.TankCapacity()) {
+                    AlertMsg("Entered Quantity is more than the tank capacity");
+                    return false;
+                }
+
+                $.ajax({ type: 'POST',
+                    url: '/Dispatch/Dispatch/SaveOrderEntries',
+                    data: { TankID: data.TankId(), ProductID: data.ProductID(), SupplyPtID: data.SupplyPtID(), SupplierID: data.SupplierId(), CarrierID: data.CarrierID(), ShipToID: data.ShipToId(), OrderQuantity: data.OrderQuantity(), PONumber: data.PONumber() },
+                    success: function (result) {
+                        vm.refreshData();
+                    }
+                });
+
+                this.EditOEData(null);
+                this.canEdit(false);
+                $('#editEntries').modal('hide')
+
+            }
+
+            this.Cancel = function () {
+                $('#editEntries').modal('hide')
+                this.EditOEData(null);
+                this.canEdit(false);
+            }
+
+
+            this.SaveApprovedItems = function () {
+
+
+                vm.approveddata = [];
+                var id = new Array();
+                ko.utils.arrayFilter(vm.data(), function (item) {
+                    if (item.Approved() == true)
+                        id.push({ "ID": item.ID(), "TankId": item.TankId() });
+                });
+
+
+
+                $.ajax({ type: 'POST',
+                    datatype: "json",
+                    url: '/Dispatch/Dispatch/SaveApproved',
+                    data: { ApprovedItems: JSON.stringify(id) },
+                    success: function () {
+                        vm.refreshData();
+                    }
+                });
+
+            }
+
+
+            this.UploadOrderItems = function () {
+
+                $.ajax({ type: 'POST',
+                    url: '/Dispatch/Dispatch/UploadDispatch',
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    success: function (response) {
+
+                        $('#message').show();
+                        $('#message').html("<a class=\"close\" data-dismiss=\"alert\">×</a><span>" +
+                    response.message + "</span>");
+
+                        vm.refreshData();
+                    }
+                });
+
+            }
+
+
+            this.filteredRecords = ko.computed(function () {
+
+                return ko.utils.arrayFilter(vm.data(), function (r) {
+
+
+
+                    return ((vm.SearchDest() == 0 || r.ShipToId() == vm.SearchDest())
+                            && (vm.SearchProduct() == 0 || r.ProductID() == vm.SearchProduct())
+                            )
+
+                });
+
+
+            });
+
+            this.pager = new PagerModel(this.filteredRecords);
+
+        }
+
+
+
+
+        function CallbackConfirmation(status, data) {
+
+            if (status) // true - click yes, false - click no
+            {
+                $.ajax({ type: 'POST',
+                    url: '/Dispatch/Dispatch/DeleteItem',
+                    data: { ID: data.ID(), TankID: data.TankId() },
+                    success: function () {
+                        data.vm.refreshData();
+                    }
+                });
+            }
+        }
+
+        function PagerModel(records) {
+            var self = this;
+            self.pageSizeOptions = ko.observableArray([1, 5, 10, 25, 50, 100, 250, 500]);
+
+            self.records = GetObservableArray(records);
+            self.currentPageIndex = ko.observable(self.records().length > 0 ? 0 : -1);
+            self.currentPageSize = ko.observable(10);
+            self.recordCount = ko.computed(function () {
+                return self.records().length;
+            });
+            self.maxPageIndex = ko.computed(function () {
+                return Math.ceil(self.records().length / self.currentPageSize()) - 1;
+            });
+            self.currentPageRecords = ko.computed(function () {
+                var newPageIndex = -1;
+                var pageIndex = self.currentPageIndex();
+                var maxPageIndex = self.maxPageIndex();
+                if (pageIndex > maxPageIndex) {
+                    newPageIndex = maxPageIndex;
+                }
+                else if (pageIndex == -1) {
+                    if (maxPageIndex > -1) {
+                        newPageIndex = 0;
+                    }
+                    else {
+                        newPageIndex = -2;
+                    }
+                }
+                else {
+                    newPageIndex = pageIndex;
+                }
+
+                if (newPageIndex != pageIndex) {
+                    if (newPageIndex >= -1) {
+                        self.currentPageIndex(newPageIndex);
+                    }
+
+                    return [];
+                }
+
+                var pageSize = self.currentPageSize();
+                var startIndex = pageIndex * pageSize;
+                var endIndex = startIndex + pageSize;
+                return self.records().slice(startIndex, endIndex);
+            }).extend({ throttle: 5 });
+            self.moveFirst = function () {
+                self.changePageIndex(0);
+            };
+            self.movePrevious = function () {
+                self.changePageIndex(self.currentPageIndex() - 1);
+            };
+            self.moveNext = function () {
+                self.changePageIndex(self.currentPageIndex() + 1);
+            };
+            self.moveLast = function () {
+                self.changePageIndex(self.maxPageIndex());
+            };
+            self.changePageIndex = function (newIndex) {
+                if (newIndex < 0
+			|| newIndex == self.currentPageIndex()
+			|| newIndex > self.maxPageIndex()) {
+                    return;
+                }
+
+                self.currentPageIndex(newIndex);
+            };
+            self.onPageSizeChange = function () {
+                self.currentPageIndex(0);
+            };
+            self.renderPagers = function () {
+                var pager = "<div><a href=\"#\" data-bind=\"click: pager.moveFirst, enable: pager.currentPageIndex() > 0\">&lt;&lt;&nbsp;</a><a href=\"#\" data-bind=\"click: pager.movePrevious, enable: pager.currentPageIndex() > 0\">&lt;&nbsp;</a>Page <span data-bind=\"text: pager.currentPageIndex() + 1\"></span> of <span data-bind=\"text: pager.maxPageIndex() + 1\"></span> [<span data-bind=\"text: pager.recordCount\"></span> Record(s)]<select data-bind=\"options: pager.pageSizeOptions, value: pager.currentPageSize, event: { change: pager.onPageSizeChange }\"></select><a href=\"#\" data-bind=\"click: pager.moveNext, enable: pager.currentPageIndex() < pager.maxPageIndex()\">&gt;&nbsp;</a><a href=\"#\" data-bind=\"click: pager.moveLast, enable: pager.currentPageIndex() < pager.maxPageIndex()\">&gt;&gt;</a></div>";
+                $("div.Pager").html(pager);
+            };
+            self.renderNoRecords = function () {
+                var message = "<span data-bind=\"visible: pager.recordCount() == 0\">No records found.</span>";
+                $("div.NoRecords").html(message);
+            };
+
+            self.renderPagers();
+            self.renderNoRecords();
+        }
+
+
+        function GetObservableArray(array) {
+            if (typeof (array) == 'function') {
+                return array;
+            }
+
+            return ko.observableArray(array);
+        }
+
+
+        $(document).ready(function () {
+
+            $.ajaxSetup({ cache: false });
+
+            var product = $('#ddlProduct');
+            product.clone().attr('id', 'ddlproductsrc').removeAttr('data-bind').attr('data-bind', 'value:SearchProduct').insertAfter($('#divproduct'))
+
+            var dest = $('#ddlDest');
+            dest.clone().attr('id', 'ddlDestsrc').removeAttr('data-bind').attr('data-bind', 'value:SearchDest').insertAfter($('#divDest'))
+
+            $('#ddlDestsrc option[value=0]').text('--All--');
+            $('#ddlproductsrc option[value=0]').text('--All--');
+
+//            $.ajaxSetup({
+//                cache: false,
+//                beforeSend: function () {
+//                    $("#loading").show();
+//                },
+//                complete: function () {
+//                    $("#loading").hide();
+//                }
+//            });
+
+            var vm1 = new ViewModel();
+            vm1.refreshData();
+            ko.applyBindings(vm1, $("#dispatch")[0]);
+
+        });
+		
+    </script>
+}

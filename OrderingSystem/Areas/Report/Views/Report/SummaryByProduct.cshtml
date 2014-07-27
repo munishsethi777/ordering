@@ -1,0 +1,152 @@
+﻿@{
+    ViewBag.Title = "SummaryByProduct";
+    Layout = "~/Views/Shared/_BootstrapLayout.cshtml";
+}
+<form id="frmReport" class="form-horizontal">
+<div class="wellNew">
+    <legend>Summary By Product</legend>
+    <div class="row-fluid">
+        <div class="control-group">
+            <label class="control-label" for="txtProduct">
+                Product <sup style='color: Red'>*</sup> :
+            </label>
+            <div class="controls">
+                @Html.Partial("_Lookup", new string[] { "txtProduct", "Select Product", "lkpClassForReport", "true" })
+                <span class="field-validation-valid" data-valmsg-for="txtProduct" data-valmsg-replace="true">
+                </span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="dtFromDate">
+                From Date <sup style='color: Red'>*</sup> :
+            </label>
+            <div class="controls">
+                <input type="text" id="dtFromDate" name="dtFromDate" class="RptPreviousMonth DateDiffMin" data-val="true" data-val-required="This field is required" />
+                <span class="field-validation-valid" data-valmsg-for="dtFromDate" data-valmsg-replace="true">
+                </span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="dtToDate">
+                To Date <sup style='color: Red'>*</sup> :
+            </label>
+            <div class="controls">
+                <input type="text" id="dtToDate" name="dtToDate" class="RptCurrentMonth DateDiffMax" data-val="true" data-val-required="This field is required" />
+                <span class="field-validation-valid" data-valmsg-for="dtToDate" data-valmsg-replace="true">
+                </span>
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button type="button" id="btnViewResults" class="btn btn-primary">
+                    <span class="ui-button-text">View Report</span></button>
+                <button type="button" id="btnClear" class="btn">
+                <span class="ui-button-text">Clear</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+@section scripts
+{
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            $('#btnClear').click(function () {
+
+                //clear hidden ctrl = 0
+//                $('#frmReport input[type=hidden]').each(function () {
+//                    $(this).val('0');
+//                });
+
+                //clear text ctrl = ''
+                $('#frmReport input[type=text]').each(function () {
+                    $(this).val('');
+                });
+
+                //drop down controls
+//                $('#frmReport select').each(function () {
+//                    $(this)[0].selectedIndex = 0;
+//                });
+
+                //to clear lookup
+                $('#frmReport input[islookup=true]').each(function () {
+                    $(this).attr({ text: "", value: "", selectedrow: "" });
+                });
+
+            });
+
+            $('#btnViewResults').click(function () {
+
+                if (!$('form').valid())
+                    return;
+
+                //                var reportUrl = 'https://www.psenergy.com/Reports1.6.2/XSLTReport.aspx?';
+                //                var reportId = '313';
+                //                reportUrl = reportUrl + 'ReportID=' + reportId + QueryString();
+                //                window.open(reportUrl);
+
+
+                //open summary by product report
+                reportParamModel =
+                {
+                    ReportID: '30',
+                    CustomerID: $('#hdnCustomerId').val(),
+                    UserID: $('#hdnUserId').val(),
+                    ReportParams: []
+                };
+
+                reportParamModel.ReportParams.push(
+                    {
+                        "ParamName": "CustomerID",
+                        "ParamValue": $('#hdnCustomerId').val(),
+                        "ParamText": $('#hdnCustomerName').val()
+                    },
+                    {
+                        "ParamName": "Product",
+                        "ParamValue": $('#txtProduct').attr('text'),
+                        "ParamText": $('#txtProduct').attr('text')
+                    },
+                    {
+                        "ParamName": "Startdate",
+                        "ParamValue": $('#dtFromDate').val(),
+                        "ParamText": $('#dtFromDate').val()
+                    },
+                    {
+                        "ParamName": "enddate",
+                        "ParamValue": $('#dtToDate').val(),
+                        "ParamText": $('#dtToDate').val()
+                    });
+
+
+                //open report window/tab
+                OpenReport(reportParamModel);
+
+            });
+        });
+
+        //select from lookup
+        function CallbackLookup(lookupName) {
+
+        }
+        function QueryString() {
+            var queryString = '';
+
+            queryString = '&CID=33'; //+ $('#hdnCustomerId').val();
+            queryString += '&UID=1';
+            queryString += '&Customer=' + $('#hdnCustomerName').val();
+            queryString += '&IsBulk=1';
+            queryString += '&SName=ALL';
+            queryString += '&Product=' + $('#txtProduct').val();
+
+            queryString += '&startdate=' + $('#dtFromDate').val();
+            queryString += '&enddate=' + $('#dtToDate').val();
+            queryString += '&SD=' + $('#dtFromDate').val();
+            queryString += '&ED=' + $('#dtToDate').val();
+
+            return queryString;
+
+        }
+    </script>
+}

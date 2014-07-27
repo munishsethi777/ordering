@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Templates>
+  <Template Name="tmpStatus" CustomerId="0">
+    <Items>
+      <Item Text="Active" Value="0"></Item>
+      <Item Text="In-Active" Value="1"></Item>
+      <Item Text="Terminated" Value="2"></Item>
+    </Items>
+  </Template>
+  <Template Name="tmpStatus2" CustomerId="1">
+    <Items>
+      <Item Text="Active" Value="0"></Item>
+      <Item Text="InActive" Value="1"></Item>
+      <Item Text="Terminated" Value="2"></Item>
+    </Items>
+  </Template>
+</Templates>

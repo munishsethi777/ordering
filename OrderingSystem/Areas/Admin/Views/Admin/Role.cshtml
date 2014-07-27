@@ -1,0 +1,363 @@
+﻿@{
+    Layout = "~/Views/Shared/_BootstrapLayout.cshtml";
+}
+<table id="tblGrid">
+</table>
+<div id="pager">
+</div>
+@section scripts {
+    @(Html.Grid("tblGrid")
+    .SetCaption("Role Master")
+    .AddColumn(new Column("Action").SetCustomFormatter("buttonize").SetWidth(75).SetSearch(false))
+    .AddColumn(new Column("customerid").SetHidden(true).AddClass("Hide"))
+    .AddColumn(new Column("customername").SetLabel("Customer Name").SetSearchType(Searchtype.Select))
+    .AddColumn(new Column("rolename").SetLabel("Role Name"))
+    .AddColumn(new Column("roledesc").SetLabel("Description"))
+    .AddColumn(new Column("Status").SetSearchType(Searchtype.Select).SetSearchTerms(new string[] { "true:true", "false:false" }))
+    .AddColumn(new Column("lastchangeduser").SetLabel("Last Changed User").SetWidth(200))
+    .AddColumn(new Column("createddate").SetLabel("Created Date").SetWidth(200).SetSearchType(Searchtype.Datepicker).SetSearchDateFormat("mm/dd/yy"))
+    .AddColumn(new Column("lastchangeddate").SetLabel("Last Changed Date").SetWidth(200).SetSearchType(Searchtype.Datepicker).SetSearchDateFormat("mm/dd/yy"))
+    .SetUrl(Url.Action("GridDataRole", "Admin"))
+    .SetPager("pager")
+    .SetHeight(290)
+    .SetWidth(400)
+    .SetSortName("customername")
+    )
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var tool = "<ul class='nav nav-pills'>" +
+                            "<li><a onclick=\"AddRole();\" title='Add New' href='#'>Add New</a></li>" +
+                            "<li><a onclick=\"DeleteSelectedItem();\" title='Delete Multiple Item' href='#'>Delete</a></li>" +
+                            "<li class='dropdown'><a title='Export' class='dropdown-toggle' data-toggle='dropdown' href='#'>Export <b class='caret'></b></a>" +
+                                "<ul class='dropdown-menu'>" +
+                                    "<li><a onclick=\"ExportRoles('PDF');\" title='PDF' href='#'>PDF</a></li>" +
+                                        "<li><a onclick=\"ExportRoles('CSV');\" title='CSV' href='#'>CSV</a></li>" +
+                                        "<li><a onclick=\"ExportRoles('Excel');\" title='Excel' href='#'>Excel</a></li>" +
+                                         "<li><a onclick=\"ExportRoles('Word');\" title='Word' href='#'>Word</a></li>" +
+                                         "<li><a onclick=\"PrintRoles();\" title='Print' href='#'>Print</a></li>" +
+                                "</ul>" +
+                            "</li>" +
+                        "</ul>";
+
+            // create tool bar in grid
+            $('#t_tblGrid').append(tool);
+
+            //frozen or lock the columns
+            $("#tblGrid").jqGrid('setColProp', 'Action', { frozen: true });
+            jQuery("#tblGrid").jqGrid('setFrozenColumns');
+
+            //bind customers list to search
+            var customer = '@Html.BindCustomers()';
+            $("#gs_customername").html('<option value="">All</option>' + customer);
+
+            //load complete event hanlder
+            LoadComplete('tblGrid');
+
+            //customer change event 
+            $("#gs_customername").bind('change', function () {
+                //selected customer id
+                $('#hdnSelectedCustomerId').val($("#gs_customername").val());
+            });
+
+
+            //jqGrid hide column dynamically
+            var CustomerId = $('#hdnCustomerId').val();
+            if (CustomerId != '1')
+                HideGridColumn('tblGrid', ['customername'])
+                //$("#tblGrid").jqGrid('hideCol', ["customername"]);
+
+            //hide and show column option - runtime
+            GridColumnChooser('tblGrid');
+
+            //refresh grid
+            ReloadGrid('tblGrid');
+        });
+
+        function buttonize(cellvalue, options, rowobject) {
+            return "<ul class='the-icons'>" +
+                        "<li title='Delete' onclick=\"DeleteRole(" + cellvalue + ");\"><i class='icon-remove'></i></li>" +
+                        "<li title='Edit' onclick=\"EditRole(" + cellvalue + ");\"><i class='icon-edit'></i></li>" +
+                    "</ul>"
+        }
+        function ExportRoles(exportType) {
+
+            GenerateExportParam('tblGrid');
+            exportGrid.ExportType = exportType;
+
+            var form = $('<form></form>');
+            $('body').append(form);
+            form.attr('action', '/Admin/Admin/ExportRoles' + '?model=' + JSON.stringify(exportGrid));
+            form.attr('method', 'POST');
+            form.submit();
+        }
+
+        function PrintRoles() {
+
+            //build the param 
+            GenerateExportParam('tblGrid')
+
+            $.post("PrintRoles",
+                                {
+                                    model: JSON.stringify(exportGrid)
+                                },
+                                function (data) {
+                                    try {
+                                        if (data == "") {
+                                            AlertError('Could not able to Print, please try again');
+                                            return;
+                                        }
+
+                                        var printWin = window.open('', '', 'left=0" ,top=0,width=1000,height=600,status=0');
+                                        printWin.document.write(data);
+
+                                        printWin.document.close();
+                                        printWin.focus();
+                                        printWin.print();
+                                        printWin.close();
+
+                                    }
+                                    catch (e) {
+                                        ScriptDialogError(e);
+                                    }
+
+                                }
+                            );
+
+        }
+
+        // Dialog Modal - Add New Entry
+        function AddRole() {
+            try {
+                // clear edit and add view
+                ClearDialog();
+
+
+                // Dialogs window for add
+                $("#dialog-add").dialog({
+                    title: 'Add New',
+                    autoOpen: false,
+                    resizable: true,
+                    width: 600,
+                    height: 500,
+                    position: 'center',
+                    modal: true,
+                    draggable: true,
+                    open: function (event, ui) {
+                        $.post("CreateRole",
+                            {},
+                            function (data) {
+                                try {
+                                    if (data == "") {
+                                        CloseDialog();
+                                        AlertError('Page could not load, please try again');
+                                        return;
+                                    }
+
+                                    $('#dialog-add').html(data.view);
+                                    var CustomerId = $('#hdnSelectedCustomerId').val();
+                                    $('#ddlCustomer').val(CustomerId).change();
+
+                                }
+                                catch (e) {
+                                    ScriptDialogError(e);
+                                }
+                            }
+                        );
+                    },
+                    close: function (event, ui) {
+                        CloseDialog();
+                    }
+                });
+
+                //open dialog
+                OpenDialog();
+                return false;
+            }
+            catch (e) {
+                ScriptError(e);
+            }
+        }
+
+        // Dialog - Edit Entry
+        function EditRole(roleId) {
+            try {
+                // clear edit and add view
+                ClearDialog();
+
+                // dialgo window for edit
+                $("#dialog-add").dialog({
+                    title: 'Edit',
+                    autoOpen: false,
+                    resizable: true,
+                    width: 600,
+                    height: 500,
+                    position: 'center',
+                    //show: { effect: 'drop', direction: "up" },
+                    modal: true,
+                    draggable: true,
+                    open: function (event, ui) {
+
+                        $.post("EditRoleId",
+                            {
+                                iRoleId: roleId
+                            },
+                            function (data) {
+
+                                try {
+                                    if (data == "") {
+                                        CloseDialog();
+                                        AlertError('Page could not load, please try again');
+                                        return;
+                                    }
+
+                                    $('#dialog-add').html(data.view);
+
+                                    //Do something with the data returned.
+                                    $('#hdnRoleId').val(data.model.RoleID);
+                                    $('#ddlCustomer').val(data.model.CustomerId).change();
+                                    $('#txtRoleName').val(data.model.RoleName);
+                                    $('#txtDesc').val(data.model.RoleDescp);
+                                    if (data.model.Status == true)
+                                        $('#rbStatusActive').attr('checked', 'checked');
+                                    else if (data.model.Status == false)
+                                        $('#rbStatusInActive').attr('checked', 'checked');
+
+                                }
+                                catch (e) {
+                                    ScriptDialogError(e);
+                                }
+                            }
+                        );
+                    },
+                    close: function (event, ui) {
+                        CloseDialog();
+                    }
+                });
+
+                //open dialog
+                OpenDialog();
+                return false;
+
+            }
+            catch (e) {
+                ScriptError(e);
+            }
+        }
+
+        // add and edit item
+        function CreateEditRole(command) {
+            try {
+                role.RoleID = $('#hdnRoleId').val();
+                role.CustomerId = $('#ddlCustomer').val();
+                role.RoleName = $('#txtRoleName').val();
+                role.RoleDescp = $('#txtDesc').val();
+                if ($('input[name=rbStatus]:checked').val() == "1")
+                    role.IsActive = true;
+                else
+                    role.IsActive = false;
+
+
+                //Pass it to a controller method
+                $.post("CreateEditRole",
+                {
+                    viewModel: JSON.stringify(role),
+                    sCommand: command
+                },
+                function (data) {
+
+                    if (data.result == "fail") {
+                        CloseDialog();
+                        AlertError(data.message);
+                        return;
+                    }
+
+                    //refress the grid again
+                    ReloadGrid('tblGrid');
+
+
+                    if (command == 'Add') {
+                        ClearRoleForm();
+                        AlertDialogSuccess(data.message);
+                    }
+                    else {
+                        CloseDialog();
+                        AlertMsg(data.message);
+                    }
+
+                });  // post
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+        }
+
+        //clear the form fields
+        function ClearRoleForm() {
+
+            try {
+
+               
+                //clear hidden ctrl = 0
+                $('#roleForm input[type=hidden]').each(function () {
+                    $(this).val('0');
+                });
+
+                //clear text ctrl = 0
+                $('#roleForm input[type=text]').each(function () {
+                    $(this).val('');
+                });
+
+                //drop down controls
+                $("#roleForm select[name != 'ddlCustomer']").each(function () {
+                    $(this)[0].selectedIndex = 0;
+                    $(this).change();
+                });
+
+                //reset to - selected customer
+                $('#ddlCustomer').val($('#hdnSelectedCustomerId').val()).change();
+
+                $('#rbStatusActive').attr('checked', 'checked');
+
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+        }
+
+        // Dialog - Delete Entry
+        function DeleteRole(roleId) {
+            Confirmation('Are you sure to delete?', roleId);
+        }
+
+        //Delete selected item
+        function DeleteSelectedItem() {
+            //get selected rows
+            var selMulti = $.map($('#tblGrid').jqGrid('getGridParam', 'selarrrow'), function (el, i) {
+                return el;
+            });
+            if (selMulti.length > 0)
+                DeleteRole(selMulti.toString());
+            else
+                AlertMsg('Please select the Item');
+        }
+        function CallbackConfirmation(status, item) {
+
+            if (status) // true - click yes, false - click no
+            {
+                $.post('DeleteRole', { iRoleId: item }, function (data) {
+
+                    if (data.result == "fail") {
+                        AlertError(data.message);
+                        return;
+                    }
+
+                    //refress the grid again
+                    ReloadGrid('tblGrid');
+                    AlertMsg(data.message);
+
+                });
+            }
+        }
+
+    </script>
+}

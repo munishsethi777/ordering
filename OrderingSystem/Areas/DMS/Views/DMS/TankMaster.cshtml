@@ -1,0 +1,457 @@
+﻿@{
+    ViewBag.Title = "TankMaster";
+    Layout = "~/Views/Shared/_BootstrapLayout.cshtml";
+}
+<table id="tblGrid">
+</table>
+<div id="pager">
+</div>
+@section scripts {
+    @(Html.Grid("tblGrid")
+    .SetCaption("Tank Master")
+    .AddColumn(new Column("Action").SetCustomFormatter("buttonize").SetWidth(75).SetSearch(false))
+    .AddColumn(new Column("groupname").SetLabel("Region").SetSearchType(Searchtype.Select))
+    .AddColumn(new Column("tankname").SetLabel("Tank Name"))
+    .AddColumn(new Column("accountid").SetLabel("Account").SetAlign(Align.Right))
+    .AddColumn(new Column("customersiteid").SetLabel("Customer Site Id"))
+    .AddColumn(new Column("sitelocation").SetLabel("Site Location"))
+    .AddColumn(new Column("iu").SetLabel("IU").SetAlign(Align.Right))
+    .AddColumn(new Column("tankcapacity").SetLabel("Tank Capacity").SetAlign(Align.Right))
+    .AddColumn(new Column("tankdipqty").SetLabel("Inventory Level").SetAlign(Align.Right))
+    .AddColumn(new Column("reorderlevel").SetLabel("Reorder Level").SetAlign(Align.Right))
+    .AddColumn(new Column("orderpercentage").SetLabel("Order Percentage").SetAlign(Align.Right))
+    .AddColumn(new Column("tanktop").SetLabel("Tank Top").SetAlign(Align.Right))
+    .AddColumn(new Column("tankbottom").SetLabel("Tank Bottom").SetAlign(Align.Right))
+    .AddColumn(new Column("descrip").SetLabel("Tank Product"))
+    .AddColumn(new Column("beepforuser").SetLabel("Beep for User").SetAlign(Align.Right))
+    .AddColumn(new Column("tankheight").SetLabel("Tank Height").SetAlign(Align.Right))
+    .AddColumn(new Column("tankdiameter").SetLabel("Tank Diameter").SetAlign(Align.Right))
+
+    .AddColumn(new Column("minimumlevel").SetLabel("Minimum Level").SetAlign(Align.Right))
+    .AddColumn(new Column("maximumlevel").SetLabel("Maximum Level").SetAlign(Align.Right))
+    .AddColumn(new Column("email").SetLabel("Alarm Mail"))
+    .SetUrl(Url.Action("GridDataTankMaster", "DMS"))
+    .SetAutoWidth(true)
+    .SetRowNum(10)
+    .SetRowList(new[] { 10, 15, 20, 50 })
+    .SetViewRecords(true)
+    .SetPager("pager")
+    .SetHeight(290)
+    .SetWidth(360)
+    .SetSearchToolbar(true)
+    .SetSearchOnEnter(false)
+    .SetSearchClearButton(true)
+    .SetSearchToggleButton(true)
+    .SetMultiSelect(true)
+    .SetMultiBoxOnly(false)
+    .SetMultiSelectWidth(40)
+    .SetToolbar(true)
+    .SetToolbarPosition(ToolbarPosition.Top)
+    .SetHoverRows(true)
+    .SetAltRows(true)
+            .SetShrinkToFit(false))
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            try {
+                var tool = "<ul class='nav nav-pills'>" +
+                                "<li><a onclick=\"AddItem();\" title='Add New' href='#'>Add New</a></li>" +
+                               "<li><a onclick=\"DeleteSelectedItem();\" title='Delete Multiple Item' href='#'>Delete</a></li>" +
+                                "<li class='dropdown'><a title='Export' class='dropdown-toggle' data-toggle='dropdown' href='#'>Export <b class='caret'></b></a>" +
+                                    "<ul class='dropdown-menu'>" +
+                                        "<li><a onclick=\"ExportTankMaster('PDF');\" title='PDF' href='#'>PDF</a></li>" +
+                                        "<li><a onclick=\"ExportTankMaster('CSV');\" title='CSV' href='#'>CSV</a></li>" +
+                                        "<li><a onclick=\"ExportTankMaster('Excel');\" title='Excel' href='#'>Excel</a></li>" +
+                                         "<li><a onclick=\"ExportTankMaster('Word');\" title='Word' href='#'>Word</a></li>" +
+                                         "<li><a onclick=\"PrintTankMaster();\" title='Print' href='#'>Print</a></li>" +
+                                    "</ul>" +
+                                "</li>" +
+                            "</ul>";
+
+                // enable tool bar in grid
+                $('#t_tblGrid').append(tool);
+
+                //frozen or lock the columns
+                $("#tblGrid").jqGrid('setColProp', 'Action', { frozen: true });
+                jQuery("#tblGrid").jqGrid('setFrozenColumns');
+
+                //load complete event hanlder - no record found-search
+                LoadComplete('tblGrid');
+
+                //bind region list to search
+                var region = '@Html.BindTankGroupText()';
+                $("#gs_groupname").html('<option value="">All</option>' + region);
+
+                //hide and show column option - runtime
+                GridColumnChooser('tblGrid');
+
+                ReloadGrid('tblGrid');
+            }
+            catch (e) {
+                ScriptError(e);
+            }
+
+        });
+
+        function buttonize(cellvalue, options, rowobject) {
+            return "<ul class='the-icons'>" +
+                        "<li title='Delete' onclick=\"DeleteItem(" + cellvalue + ");\"><i class='icon-remove'></i></li>" +
+                        "<li title='Edit' onclick=\"EditItem(" + cellvalue + ");\"><i class='icon-edit'></i></li>" +
+                    "</ul>"
+        }
+
+        function ExportTankMaster(exportType) {
+
+            GenerateExportParam('tblGrid');
+            exportGrid.ExportType = exportType;
+
+            var form = $('<form></form>');
+            $('body').append(form);
+            form.attr('action', '/DMS/DMS/ExportTankMaster' + '?model=' + JSON.stringify(exportGrid));
+            form.attr('method', 'POST');
+            form.submit();
+        }
+
+        function PrintTankMaster() {
+
+            //build the param 
+            GenerateExportParam('tblGrid')
+
+            $.post("PrintTankMaster",
+                                {
+                                    model: JSON.stringify(exportGrid)
+                                },
+                                function (data) {
+                                    try {
+                                        if (data == "") {
+                                            AlertError('Could not able to Print, please try again');
+                                            return;
+                                        }
+
+                                        var printWin = window.open('', '', 'left=0" ,top=0,width=1000,height=600,status=0');
+                                        printWin.document.write(data);
+
+                                        printWin.document.close();
+                                        printWin.focus();
+                                        printWin.print();
+                                        printWin.close();
+
+                                    }
+                                    catch (e) {
+                                        ScriptDialogError(e);
+                                    }
+
+                                }
+                            );
+
+        }
+
+        // Dialog Modal - Add New Entry
+        function AddItem() {
+            try {
+                // clear edit and add view
+                ClearDialog();
+
+                // Dialogs window for add
+                $("#dialog-add").dialog({
+                    title: 'Tank Master',
+                    autoOpen: false,
+                    resizable: true,
+                    width: 1100,
+                    height: 750,
+                    position: 'center',
+                    modal: true,
+                    draggable: true,
+                    open: function (event, ui) {
+                        $.post("CreateTankMaster", {},
+                                function (data) {
+                                    try {
+                                        if (data == "") {
+                                            CloseDialog();
+                                            AlertError('Page could not load, please try again');
+                                            return;
+                                        }
+
+                                        //render the pop-up window
+                                        $('#dialog-add').html(data.view);
+                                    }
+                                    catch (e) {
+                                        ScriptDialogError(e);
+                                    }
+                                }
+                            );
+                    },
+                    close: function (event, ui) {
+                        CloseDialog();
+                    }
+                });
+
+                //open dialog
+                OpenDialog();
+                return false;
+
+            }
+            catch (e) {
+                ScriptError(e);
+            }
+        }
+
+        // Dialog - Edit Entry
+        function EditItem(prmId) {
+            try {
+                // clear edit and add view
+                ClearDialog();
+
+                // dialgo window for edit
+                $("#dialog-add").dialog({
+                    title: 'Tank Master',
+                    autoOpen: false,
+                    resizable: true,
+                    width: 1100,
+                    height: 750,
+                    position: 'center',
+                    modal: true,
+                    draggable: true,
+                    open: function (event, ui) {
+
+                        $.post("EditTankMasterId",
+                                {
+                                    iTankId: prmId
+                                },
+                                function (data) {
+                                    try {
+                                        if (data == "") {
+                                            CloseDialog();
+                                            AlertError('Page could not load, please try again');
+                                            return;
+                                        }
+
+                                        $('#dialog-add').html(data.view);
+
+                                        data.model = JSON.parse(data.model)[0];
+                                        //Do something with the data returned.
+                                        $('#hdnTankId').val(data.model.tankusergroupid);
+
+                                        $('#ddlAccount').val(data.model.accountid).change();
+                                        $('#ddlSite').val(data.model.siteid).change();
+                                        $('#txtTankName').val(data.model.tankname);
+                                        $('#txtIU').val(data.model.iu);
+                                        $('#txtCapacity').val(data.model.tankcapacity);
+                                        $('#txtCurrentQuantity').val(data.model.tankdipqty);
+                                        $('#txtReorderLevel').val(data.model.reorderlevel);
+                                        $('#txtOrderPercentage').val(data.model.orderpercentage);
+                                        $('#txtTankTop').val(data.model.tanktop);
+                                        $('#txtTankBottom').val(data.model.tankbottom);
+                                        $('#ddlProduct').val(data.model.productid).change();
+                                        $('#ddlOEProduct').val(data.model.oeproduct).change();
+                                        $('#ddlBeepAlarm').val(data.model.beepforuser).change();
+                                        $('#txtCustomerSite').val(data.model.customersite);
+                                        $('#txtHeight').val(data.model.tankheight);
+                                        $('#txtDiameter').val(data.model.tankdiameter);
+                                        $('#txtMonitoringEquipment').val(data.model.equipment);
+                                        $('#ddlGroup').val(data.model.groupid).change();
+                                        $('#ddlSubGroup').val(data.model.subgroupid).change();
+                                        $('#txtTankLow').val(data.model.minimumlevel);
+                                        $('#txtTankHigh').val(data.model.maximumlevel);
+                                        $('#txtEmailForAlaram').val(data.model.email);
+                                    }
+                                    catch (e) {
+                                        ScriptDialogError(e);
+                                    }
+
+                                }
+                            );
+                    },
+                    close: function (event, ui) {
+                        CloseDialog();
+                    }
+                });
+
+                //open dialog
+                OpenDialog();
+                return false;
+
+            }
+            catch (e) {
+                ScriptError(e);
+            }
+        }
+
+        // add and edit item
+        function CreateEditTankMaster(command) {
+            try {
+
+                //Do something with the data returned.
+                model.tankid = $('#hdnTankId').val();
+                model.customerid = $('#hdnCustomerId').val();
+                model.siteid = $('#ddlSite').val();
+                model.tankname = $('#txtTankName').val();
+                model.iu = $('#txtIU').val();
+                model.tankcapacity = $('#txtCapacity').val();
+                model.tankdipqty = $('#txtCurrentQuantity').ival();
+                model.reorderlevel = $('#txtReorderLevel').val();
+                model.orderpercentage = $('#txtOrderPercentage').val();
+                model.tanktop = $('#txtTankTop').val();
+                model.tankbottom = $('#txtTankBottom').val();
+                model.productid = $('#ddlProduct').val();
+                model.oeproduct = $('#ddlOEProduct').val();
+                model.beepforuser = $('#ddlBeepAlarm').val();
+                model.accountid = $('#ddlAccount').val();
+                model.customersite = $('#txtCustomerSite').val();
+                model.tankheight = $('#txtHeight').ival();
+                model.tankdiameter = $('#txtDiameter').ival();
+                model.equipment = $('#txtMonitoringEquipment').val();
+                model.groupid = $('#ddlGroup').val();
+                model.subgroupid = $('#ddlSubGroup').val();
+                model.minimumlevel = $('#txtTankLow').ival();
+                model.maximumlevel = $('#txtTankHigh').ival();
+                model.email = $('#txtEmailForAlaram').val();
+
+
+                //Pass it to a controller method
+                $.post("CreateEditTankMaster",
+                {
+                    viewModel: JSON.stringify(model),
+                    sCommand: command
+                },
+                function (data) {
+
+                    if (data.result == "fail") {
+                        CloseDialog();
+                        AlertError(data.message);
+                        return;
+                    }
+
+
+                    //refress the grid again
+                    ReloadGrid('tblGrid');
+
+                    if (command == 'Add') {
+                        ClearTankMasterForm();
+                        AlertDialogSuccess(data.message);
+                    }
+                    else {
+                        CloseDialog();
+                        AlertMsg(data.message);
+                    }
+
+                });
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+        }
+
+        //clear the form fields
+        function ClearTankMasterForm() {
+            try {
+
+                //clear hidden ctrl = 0
+                $('#frmTankMaster input[type=hidden]').each(function () {
+                    $(this).val('0');
+                });
+
+                //clear text ctrl = 0
+                $('#frmTankMaster input[type=text]').each(function () {
+                    $(this).val('');
+                });
+
+                //drop down controls
+                $('#frmTankMaster select').each(function () {
+                    $(this)[0].selectedIndex = 0;
+                    $(this).change();
+                });
+
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+        }
+
+        // Dialog - Delete Entry
+        function DeleteItem(prmId) {
+            Confirmation('Are you sure to delete?', prmId);
+        }
+
+        //delete selected item
+        function DeleteSelectedItem() {
+            //get selected rows
+            var selMulti = $.map($('#tblGrid').jqGrid('getGridParam', 'selarrrow'), function (el, i) {
+                return el;
+            });
+            if (selMulti.length > 0)
+                DeleteItem(selMulti.toString());
+            else
+                AlertMsg('Please select the Item');
+        }
+        // status - true - click yes, false - click no
+        function CallbackConfirmation(status, prmId) {
+            if (status) {
+                $.post('DeleteTankMaster', { iTankId: prmId }, function (data) {
+
+                    if (data.result == "fail") {
+                        AlertError(data.message);
+                        return;
+                    }
+
+                    //refress the grid again
+                    ReloadGrid('tblGrid');
+                    AlertMsg(data.message);
+
+                });
+
+
+            }
+        }
+
+        function ChangeAccount() {
+
+            var customerid = $('#hdnCustomerId').val(); 
+            var accountid = $('#ddlAccount').val();
+            var siteorder = $('input[name=rbSiteOrder]:checked').val();
+
+
+            //append site 
+            $.ajax({
+                type: 'POST',
+                url: '/DMS/DMS/BindSite',
+                data: { sAccount: accountid, sOrderBy: siteorder },
+                async: false,
+                success: function (data) {
+                    try {
+                        $('#ddlSite').html(data);
+                        //$('#ddlSite').selectpicker("refresh");
+
+                    }
+                    catch (e) {
+                        ScriptDialogError(e);
+                    }
+                }
+            });
+        }
+
+
+        function ChangeGroup() {
+            var groupid = $('#ddlGroup').val();
+            //append sub group 
+            $.ajax({
+                type: 'POST',
+                url: '/DMS/DMS/BindSubGroup',
+                data: { iGroupId: groupid },
+                async: false,
+                success: function (data) {
+                    try {
+                        $('#ddlSubGroup').html(data);
+                        //$('#ddlSubGroup').selectpicker("refresh");
+                    }
+                    catch (e) {
+                        ScriptDialogError(e);
+                    }
+                }
+            });
+        }
+
+
+    </script>
+}

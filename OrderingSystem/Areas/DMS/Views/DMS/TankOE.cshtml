@@ -1,0 +1,129 @@
+﻿@model MVCDataModel.spGetTankOEDetailByTankID_Result
+@Html.Partial("_Dialog")
+<script type="text/javascript">
+
+    var model = null;
+
+    $(document).ready(function () {
+
+        model = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+
+        $('#btnOEUpdate').bind('click', function () {
+            try {
+                if (!$('#frmTankOE').valid())
+                    return;
+
+                model.SupplierID = $('#ddlSupplier').val();
+                model.SupplyPtID = $('#ddlTerminal').val();
+                model.CarrierID = $('#ddlCarrier').val();
+                model.ProductID = $('#ddlProduct').val();
+                model.ShipToID = $('#ddlDestinaion').val();
+
+                //Pass it to a controller method
+                $.post("SaveTankOE",
+                {
+                    viewModel: JSON.stringify(model)
+                },
+                function (data) {
+
+                    if (data.result == "fail") {
+                        AlertDialogError(data.message);
+                        return;
+                    }
+                    AlertDialogSuccess(data.message);
+
+                });
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+
+        });
+
+        $("#btnOECancel").bind("click", function (e) {
+            ClearForm();
+        });
+
+    });
+</script>
+@if (Model != null)
+{
+    <form id="frmTankOE" class="form-horizontal">
+    <div class="">
+        <div class="row-fluid">
+            <div class="control-group">
+                <label class="control-label" for="ddlSupplier">
+                    Supplier <sup style='color: Red'>*</sup> :</label>
+                <div class="controls">
+                    <select id="ddlSupplier" name="ddlSupplier" data-val="true"
+                        data-val-required="The field is required.">
+                        <option value="">Select Supplier</option>
+                        @Html.EditSupplier(Model.SupplierID)
+                    </select>
+                    <span data-valmsg-for="ddlSupplier" data-valmsg-replace="true"></span>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="ddlTerminal">
+                    Terminal <sup style='color: Red'>*</sup> :
+                </label>
+                <div class="controls">
+                    <select id="ddlTerminal" name="ddlTerminal"  data-val="true"
+                        data-val-required="The field is required.">
+                        <option value="">Select Terminal</option>
+                        @Html.EditTerminal(Model.SupplyPtID)
+                    </select>
+                    <span data-valmsg-for="ddlTerminal" data-valmsg-replace="true"></span>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="ddlProduct">
+                    Product <sup style='color: Red'>*</sup> :
+                </label>
+                <div class="controls">
+                    <select id="ddlProduct" name="ddlProduct" data-val="true" data-val-required="The field is required.">
+                        <option value="">Select Product</option>
+                        @Html.EditAscendOEProduct(Model.ProductID)
+                    </select>
+                    <span data-valmsg-for="ddlProduct" data-valmsg-replace="true"></span>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="ddlCarrier">
+                    Carrier <sup style='color: Red'>*</sup> :
+                </label>
+                <div class="controls">
+                    <select id="ddlCarrier" name="ddlCarrier" data-val="true" data-val-required="The field is required.">
+                        <option value="">Select Carrier</option>
+                        @Html.EditCarrier(Model.CarrierID)
+                    </select>
+                    <span data-valmsg-for="ddlCarrier" data-valmsg-replace="true"></span>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="ddlDestinaion">
+                    Destination <sup style='color: Red'>*</sup> :</label>
+                <div class="controls">
+                    <select id="ddlDestinaion" name="ddlDestinaion" data-val="true"
+                        data-val-required="The field is required.">
+                        <option value="">Select Destinaion</option>
+                        @Html.EditAscendDestination(Model.ShipToID)
+                    </select>
+                    <span data-valmsg-for="ddlDestinaion" data-valmsg-replace="true"></span>
+                </div>
+            </div>
+            <br />
+            <br />
+            <div class="control-group">
+                <div class="controls">
+                    <button type="button" id="btnOEUpdate" name="Command" data-loading-text="Loading..."
+                        value="Update" class="btnAddEdit btn btn-primary">
+                        <span class="ui-button-text">Update</span></button>
+                    <button type="button" id="btnOECancel" class="btn btn-info">
+                        <span class="ui-button-text">Clear</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </form>
+}

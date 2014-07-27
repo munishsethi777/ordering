@@ -1,0 +1,300 @@
+﻿@{
+    Layout = "~/Views/Shared/_BootstrapLayout.cshtml";
+}
+<form id="permissionForm" class="form-horizontal">
+<h4>Permission</h4>
+<div class="well">
+    <div class="row-fluid">
+        <input type="hidden" id="hdnPermissionId" value="0" />
+
+        @if((Session["CustomerId"].ToString() == "1")){
+             @:<div class="control-group" style="display:block;">
+          } 
+          else {
+             @:<div class="control-group" style="display:none;">
+          } 
+                <label class="control-label" for="ddlCustomer">
+                    Customer
+                </label>
+                <div class="controls">
+                    <select id="ddlCustomer" name="ddlCustomer" class="selectpicker" onchange="ChangeCustomer();"
+                        data-val="true" data-val-required="The field is required.">
+                        <option value="">Select Customer</option>
+                        @Html.BindCustomers()
+                    </select>
+                    <label class="field-validation-valid" data-valmsg-for="ddlCustomer" data-valmsg-replace="true">
+                    </label>
+                </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="ddlRole">
+                Role <sup style='color:Red' >*</sup>
+            </label>
+            <div class="controls">
+                <select id="ddlRole" name="ddlRole" class="selectpicker" onchange="ChangeRole();"
+                    data-val="true" data-val-required="The field is required.">
+                    <option value="">Select Role</option>
+                </select>
+                <label class="field-validation-valid" data-valmsg-for="ddlRole" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ddlMenu">
+                Menu <sup style='color:Red' >*</sup>
+            </label>
+            <div class="controls">
+                <select id="ddlMenu" name="ddlMenu" class="selectpicker" multiple="multiple" title="Select Menu"
+                    onchange="ChangeMenu();" data-val="true" data-val-required="The field is required.">
+                    <option value="">Select Menu</option>
+                </select>
+                <label class="field-validation-valid" data-valmsg-for="ddlMenu" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <table id="tblGrid">
+        </table>
+        <div id="pager">
+        </div>
+        <br />
+        <div class="control-group">
+            <div class="controls">
+                <button type="button" id="btnSave" name="Command" value="Save" class="btnAddEdit btn btn-primary">
+                    <span class="ui-button-text">Save</span></button>
+                <button type="button" id="btnCancel" class="btn">
+                    <span class="ui-button-text">Cancel</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+@section scripts{
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            jQuery('#tblGrid').jqGrid({
+                altRows: true,
+                rowNum : -1, // for infinite row
+                autowidth: true,
+                datatype: 'local',
+                mtype: 'POST',
+                height: 300,
+                hoverrows: true,
+                viewsortcols: [false, 'vertical', false],                shrinkToFit: true,
+                multiboxonly: false,
+                multiselect: true,
+                multiselectWidth: 20,
+                url: '/Admin/Admin/GridDataMenuPagePermission',
+                postData: [{ iCustomerId: -1, iRoleId: -1, sMenuId: ''}],
+                viewrecords: true,
+                emptyrecords: "No Record Found.",
+                width: '400',
+                colModel: [
+                    {
+                        name: 'checked',
+                        hidden: true,
+                        index: 'checked'
+                    },
+                     {
+                         name: 'menutitle',
+                         label: 'Menu Title',
+                         index: 'menutitle'
+                     }, {
+                         name: 'grouptitle',
+                         hidden: true,
+                         label: 'Group Title',
+                         index: 'grouptitle'
+                     }, {
+                         name: 'pagename',
+                         label: 'Page Name',
+                         hidden: true,
+                         index: 'pagename'
+                     }, {
+                         name: 'pagetitle',
+                         label: 'Page Title',
+                         index: 'pagetitle'
+                     }, {
+                         name: 'Description',
+                         label: 'Tool Tip',
+                         index: 'Description'
+                     }
+                    ],
+                afterInsertRow: function (id, data, ele) {
+                    //to enable checkbox
+                    if (data.checked != '0') {
+                        var cbCell = '#jqg_tblGrid_' + id;
+                        $(cbCell).attr('checked', 'checked');
+
+                        //make selection
+                        jQuery("#tblGrid").setSelection(id, true);
+                    }
+
+                }
+            });
+        });
+    </script>
+    <script type="text/javascript">
+        var winWidth = 0;
+        var winHeight = 0;
+        var menuId = '0';
+        var roleId = '0';
+
+        $(document).ready(function () {
+
+            $('#btnSave').bind('click', function () {
+                if (!$('#permissionForm').valid())
+                    return;
+                SaveMenuPagePermission();
+            });
+
+            $("#btnCancel").bind("click", function (e) {
+                $('#ddlCustomer').val($('#hdnSelectedCustomerId').val()).change();
+            });
+
+            //default selection
+            $('#ddlCustomer').val($('#hdnSelectedCustomerId').val()).change();
+        });
+
+
+        function ReloadGrid() {
+            $("#tblGrid").jqGrid('setGridParam', { datatype: 'json' });
+            $("#tblGrid").trigger("reloadGrid");
+        }
+
+        function SaveMenuPagePermission() {
+
+            //var pageId = $('#tblGrid').jqGrid('getGridParam', 'selarrrow');
+
+            //get selected rows
+            var selMulti = $.map($('#tblGrid').jqGrid('getGridParam', 'selarrrow'), function (el, i) {
+                return el;
+            });
+            var pageId = selMulti.join(", ");
+
+
+            $.post('/Admin/Admin/UpdateMenuPagePermission', {
+                iCustomerId: $('#ddlCustomer').val(),
+                iRoleId: $('#ddlRole').val(),
+                sMenuId: menuId,
+                sPageId: pageId
+            },
+                function (data) {
+                    $('#ddlCustomer').val('').change();
+                    AlertMsg('Permission Updated Successfully.');
+
+                }
+                );
+        }
+
+        function ChangeCustomer() {
+
+            var customerid = ($('#ddlCustomer').val() == '') ? 0 : $('#ddlCustomer').val();
+
+            //if (customerid != '0') {
+            $('#ddlRole').html('');
+            $('#ddlMenu').html('');
+
+            //append the role 
+            $.ajax({
+                type: 'POST',
+                url: '/Home/BindRole',
+                data: { iCustomerId: customerid },
+                async: false,
+                success: function (roles) {
+                    try {
+                        $('#ddlRole').html('<option value="">Select Role</option>' + roles).change();
+                    }
+                    catch (e) {
+                        ScriptDialogError(e);
+                    }
+                }
+            });
+
+
+            //append the menu 
+            $.ajax({
+                type: 'POST',
+                url: '/Home/BindMenu',
+                data: { iCustomerId: customerid },
+                async: false,
+                success: function (menus) {
+                    try {
+                        $('#ddlMenu').html(menus).change();
+                    }
+                    catch (e) {
+                        ScriptDialogError(e);
+                    }
+                }
+            });
+            //}
+        }
+
+        function ChangeMenu() {
+
+            menuId = '0';
+            var roleId = ($('#ddlRole').val() == '') ? 0 : $('#ddlRole').val();
+            var customerid = ($('#ddlCustomer').val() == '') ? 0 : $('#ddlCustomer').val();
+
+            var selMulti = $.map($("#ddlMenu option:selected"), function (el, i) {
+                return $(el).val();
+            });
+            //convert to comma separated value
+            if (selMulti != '')
+                menuId = selMulti.join(", ");
+
+            if (menuId == '')
+                menuId = '0';
+
+
+            //if (menuId != '' && roleId != '') {
+            //set manual parameters
+            $("#tblGrid").setGridParam({ postData: { iCustomerId: customerid, iRoleId: roleId, sMenuId: menuId} });
+
+            //load the grid again
+            ReloadGrid();
+
+            //}
+        }
+        function ChangeRole() {
+            var customerid = ($('#ddlCustomer').val() == '') ? 0 : $('#ddlCustomer').val();
+            var roleId = ($('#ddlRole').val() == '') ? 0 : $('#ddlRole').val();
+
+            //if (roleId != '0') {
+
+            $('#ddlMenu').selectpicker('deselectAll');
+            $('#ddlMenu').selectpicker('refresh');
+            //$('#ddlMenu').change();
+
+            $.ajax({
+                type: 'POST',
+                url: '/Admin/Admin/GetMenuPagePermission',
+                data: {
+                    iCustomerId: customerid,
+                    iRoleId: roleId
+                },
+                async: false,
+                success: function (data) {
+                    try {
+                        var menus = '';
+                        if (data != '')
+                            menus = data.MenuId.split(',');
+
+                        $.each(menus, function (index, item) {
+                            $('#ddlMenu [value=' + item + ']')[0].selected = true;
+                        });
+
+                        //manually fire the change event
+                        $('#ddlMenu').selectpicker('refresh');
+                        $('#ddlMenu').change();
+                    }
+                    catch (e) {
+                        ScriptDialogError(e);
+                    }
+                }
+            });
+
+            // }
+        }
+
+    </script>
+}

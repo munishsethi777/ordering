@@ -1,0 +1,115 @@
+﻿@model MVCDataModel.tblrole
+@Html.Partial("_Dialog")
+<script type="text/javascript">
+    var role = null;
+    $(document).ready(function () {
+
+        role = @Html.Raw(Json.Encode(Model));
+        $('#btnSave').bind('click', function () {
+            try {
+                // Force validation to reevaluate next time
+                var inputs = $('form').find(":input");
+                inputs.removeData("previousValue");
+                $('form').valid();
+
+                resultValation = $('form').validate();
+
+                timerValidation = $.timer(function () {
+
+                    if (resultValation.pendingRequest == 0) {
+                        timerValidation.stop();
+                        if ($('form').valid())
+                            CreateEditRole('Add');
+                    }
+                }, 1000, true);
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+        });
+
+        $('#btnUpdate').bind('click', function () {
+            try {
+                // Force validation to reevaluate next time
+                var inputs = $('form').find(":input");
+                inputs.removeData("previousValue");
+                $('form').valid();
+
+                resultValation = $('form').validate();
+
+                timerValidation = $.timer(function () {
+
+                    if (resultValation.pendingRequest == 0) {
+
+                        timerValidation.stop();
+                        if ($('form').valid())
+                            CreateEditRole('Update');
+                    }
+
+                }, 1000, true);
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+        });
+
+        $("#btnCancel").bind("click", function (e) {
+            ClearRoleForm();
+        });
+
+    }); 
+    
+</script>
+<form id="roleForm" class="form-horizontal">
+<div class="">
+    <div class="row-fluid">
+        <input type="hidden" id="hdnRoleId" value="0" />
+       @if((Session["CustomerId"].ToString() == "1")){
+             @:<div class="control-group" style="display:block;">
+          } 
+          else {
+             @:<div class="control-group" style="display:none;">
+          } 
+                <label class="control-label" for="ddlCustomer">
+                    Customer
+                </label>
+                <div class="controls">
+                    <select id="ddlCustomer" name="ddlCustomer" class="selectpicker" data-val="true" data-val-required="The field is required." >
+                        <option value="">Select Customer</option>
+                        @Html.BindCustomers()
+                    </select>
+                    <label class="field-validation-valid" data-valmsg-for="ddlCustomer" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+        
+        <div class="control-group">
+            <label class="control-label" for="txtRoleName">
+                Role Name <sup style='color:Red' >*</sup></label>
+            <div class="controls">
+                <input data-val="true" data-val-remote="Role is already exists." 
+                        data-val-remote-url="/Validation/IsExistsWithCutomer" data-val-required="The Page Title field is required." 
+                        data-val-remote-additionalfields="primaryfield,primaryvalue, tablename,columnname,columnvalue,customerid"
+                        data-val-remote-columnname="rolename" 
+                        data-val-remote-tablename="tblroles"
+                        data-val-remote-columnvalue="txtRoleName" 
+                        data-val-remote-customerid="ddlCustomer" 
+                        data-val-remote-primaryfield="roleid" 
+                        data-val-remote-primaryvalue="hdnRoleId" id="txtRoleName" name="txtRoleName" type="text" />
+                <label class="field-validation-valid" data-valmsg-for="txtRoleName" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtDesc">
+                Description</label>
+            <div class="controls">
+                <input type="text" id="txtDesc" name="txtDesc" />
+            </div>
+        </div>
+        @Html.Partial("_Status")
+        @Html.Partial("_SubmitClear")
+    </div>
+</div>
+</form>
+@Html.Partial("_Alert")

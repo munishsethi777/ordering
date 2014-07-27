@@ -1,0 +1,119 @@
+﻿@Html.Partial("_Dialog")
+<input type="hidden" id="hdnTankId" value="0" />
+<ul id="myTab" class="nav nav-tabs">
+    <li class="active"><a href="#tankStatus" data-toggle="tab">Tank Status</a></li>
+    <li><a href="#tankAlarm" data-toggle="tab">Tank Alarm</a></li>
+    <li><a href="#tankLocation" data-toggle="tab">Tank Location</a></li>
+    <li><a href="#tankData" data-toggle="tab">Tank Data</a></li>
+    <li><a href="#tankEvent" data-toggle="tab">Tank Event</a></li>
+    <li><a href="#tankContact" data-toggle="tab">Tank Contact</a></li>
+    <li><a href="#showMap" data-toggle="tab">Show Map</a></li>
+    <li><a href="#tankOE" data-toggle="tab">OE Default</a></li>
+    <li><a href="#tankManualReading" data-toggle="tab">Manual Reading</a></li>
+    <li><a href="#tankComment" data-toggle="tab">Tank Comments</a></li>
+</ul>
+<div class="tab-content">
+    @Html.Partial("_Alert")
+    <div class="tab-pane active" id="tankStatus">
+    </div>
+    <div class="tab-pane" id="tankAlarm">
+    </div>
+    <div class="tab-pane" id="tankLocation">
+    </div>
+    <div class="tab-pane" id="tankData">
+    </div>
+    <div class="tab-pane" id="tankEvent">
+    </div>
+    <div class="tab-pane" id="tankContact">
+    </div>
+    <div class="tab-pane" id="showMap">
+    </div>
+    <div class="tab-pane" id="tankOE">
+    </div>
+    <div class="tab-pane" id="tankManualReading">
+    </div>
+    <div class="tab-pane" id="tankComment">
+    </div>
+</div>
+<script type="text/javascript" language="javascript">
+    $('#myTab a').click(function (e) {
+        e.preventDefault();
+
+        var tabId = $(this)[0].hash;
+        var tabMethod = '';
+
+        $('#tankStatus').html('');
+        $('#tankAlarm').html('');
+        $('#tankLocation').html('');
+
+        $('#tankData').html('');
+        $('#tankEvent').html('');
+        $('#tankContact').html('');
+
+        $('#showMap').html('');
+        $('#tankOE').html('');
+
+        $('#tankManualReading').html('');
+        $('#tankComment').html('');
+
+        if (tabId == "#tankStatus")
+            tabMethod = 'TankStatusTab';
+
+        else if (tabId == "#tankAlarm")
+            tabMethod = 'TankAlarmTab';
+
+        else if (tabId == "#tankLocation")
+            tabMethod = 'TankLocationTab';
+
+        else if (tabId == "#tankData")
+            tabMethod = 'TankDataTab';
+
+        else if (tabId == "#tankEvent")
+            tabMethod = 'TankEventTab';
+
+        else if (tabId == "#tankContact")
+            tabMethod = 'TankContactTab';
+
+        else if (tabId == "#showMap")
+            tabMethod = 'GetTankMapTab';
+
+        else if (tabId == "#tankOE")
+            tabMethod = 'TankOETab';
+
+        else if (tabId == "#tankManualReading")
+            tabMethod = 'TankManualReadingTab';
+
+        else if (tabId == "#tankComment")
+            tabMethod = 'TankCommentTab';
+
+
+
+        $.post(tabMethod,
+                            {},
+                            function (data) {
+                                try {
+                                    if (data == "") {
+                                        AlertDialogError('Page could not load, please try again');
+                                        return;
+                                    }
+
+                                    //render the page
+                                    $(tabId).html(data.view);
+
+                                    if (tabId == "#tankData") {
+                                        LoadTankData();
+                                    }
+                                    else if (tabId == "#tankEvent") {
+                                        LoadTankEvent();
+                                    }
+                                }
+                                catch (e) {
+                                    ScriptDialogError(e);
+                                }
+
+                            });
+
+        $(this).tab('show');
+    })
+
+</script>

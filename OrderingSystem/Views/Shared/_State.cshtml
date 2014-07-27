@@ -1,0 +1,32 @@
+﻿@model bool
+
+@if (Model)
+{
+<div class="control-group">
+    <label class="control-label" for="ddlState">
+        State <sup style='color:Red' >*</sup>
+    </label>
+    <div class="controls">
+        <select id="ddlState" name="ddlState" class="selectpicker" data-val="true" data-val-required="The field is required.">
+            <option value="">Select State</option>
+            @Html.BindState();
+        </select>
+        <label class="field-validation-valid" data-valmsg-for="ddlState" data-valmsg-replace="true">
+        </label>
+    </div>
+</div>
+}
+else
+{
+    <div class="control-group">
+    <label class="control-label" for="ddlState">
+        State
+    </label>
+    <div class="controls">
+        <select id="ddlState" name="ddlState" class="selectpicker">
+            <option value="0">Select State</option>
+            @Html.BindState();
+        </select>
+    </div>
+</div>
+}

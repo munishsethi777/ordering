@@ -1,0 +1,382 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Schema Namespace="MVCEFModel" Alias="Self" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+  <EntityContainer Name="MVCEFEntities" annotation:LazyLoadingEnabled="false">
+    <FunctionImport Name="spIsExists" ReturnType="Collection(Int32)">
+      <Parameter Name="prmField" Mode="In" Type="String" />
+      <Parameter Name="prmValue" Mode="In" Type="Int32" />
+      <Parameter Name="Column" Mode="In" Type="String" />
+      <Parameter Name="Value" Mode="In" Type="String" />
+      <Parameter Name="TableName" Mode="In" Type="String" />
+      <Parameter Name="CustomerId" Mode="In" Type="Int32" />
+    </FunctionImport>
+    <FunctionImport Name="spGetMenuList" ReturnType="Collection(MVCEFModel.spGetMenuList_Result)">
+      <Parameter Name="RoleId" Mode="In" Type="Int32" />
+      <Parameter Name="CustomerId" Mode="In" Type="Int32" />
+    </FunctionImport>
+    <FunctionImport Name="spGetPageList" ReturnType="Collection(MVCEFModel.spGetPageList_Result)">
+      <Parameter Name="RoleId" Mode="In" Type="Int32" />
+      <Parameter Name="MenuId" Mode="In" Type="Int32" />
+      <Parameter Name="CustomerId" Mode="In" Type="Int32" />
+    </FunctionImport>
+    <EntitySet Name="tblCustomers" EntityType="MVCEFModel.tblCustomer" />
+    <EntitySet Name="tblCustomerUserMaps" EntityType="MVCEFModel.tblCustomerUserMap" />
+    <EntitySet Name="tblOrders" EntityType="MVCEFModel.tblOrder" />
+    <EntitySet Name="tblOrderDetails" EntityType="MVCEFModel.tblOrderDetail" />
+    <EntitySet Name="tblProducts" EntityType="MVCEFModel.tblProduct" />
+    <EntitySet Name="tblProductCustomerMaps" EntityType="MVCEFModel.tblProductCustomerMap" />
+    <EntitySet Name="tblStores" EntityType="MVCEFModel.tblStore" />
+    <EntitySet Name="ELMAH_Error" EntityType="MVCEFModel.ELMAH_Error" />
+    <EntitySet Name="tblAuthorizedPages" EntityType="MVCEFModel.tblAuthorizedPage" />
+    <EntitySet Name="tblLoginAudits" EntityType="MVCEFModel.tblLoginAudit" />
+    <EntitySet Name="tblMenus" EntityType="MVCEFModel.tblMenu" />
+    <EntitySet Name="tblMenuPages" EntityType="MVCEFModel.tblMenuPage" />
+    <EntitySet Name="tblMenuPagePermissions" EntityType="MVCEFModel.tblMenuPagePermission" />
+    <EntitySet Name="tblPages" EntityType="MVCEFModel.tblPage" />
+    <EntitySet Name="tblroles" EntityType="MVCEFModel.tblrole" />
+    <EntitySet Name="tblDefaultMenuPages" EntityType="MVCEFModel.tblDefaultMenuPage" />
+    <EntitySet Name="tblUserPasswords" EntityType="MVCEFModel.tblUserPassword" />
+    <EntitySet Name="tblUserPasswordHistories" EntityType="MVCEFModel.tblUserPasswordHistory" />
+    <EntitySet Name="tblGroups" EntityType="MVCEFModel.tblGroup" />
+    <FunctionImport Name="spGetMenuPagePermission" ReturnType="Collection(MVCEFModel.spGetMenuPagePermission_Result)">
+      <Parameter Name="CustomerId" Mode="In" Type="Int32" />
+      <Parameter Name="RoleId" Mode="In" Type="Int32" />
+      <Parameter Name="MenuId" Mode="In" Type="String" />
+    </FunctionImport>
+    <FunctionImport Name="spGetUserByEmailId" ReturnType="Collection(MVCEFModel.spGetUserByEmailId_Result)">
+      <Parameter Name="EmailId" Mode="In" Type="String" />
+    </FunctionImport>
+    <FunctionImport Name="spGetUserCredentials" ReturnType="Collection(MVCEFModel.spGetUserCredentials_Result)">
+      <Parameter Name="EmailAddress" Mode="In" Type="String" />
+      <Parameter Name="Password" Mode="In" Type="String" />
+    </FunctionImport>
+    <EntitySet Name="tblUsers" EntityType="MVCEFModel.tblUser" />
+  </EntityContainer>
+  <ComplexType Name="spGetMenuPagePermission_Result">
+    <Property Type="Int32" Name="menuid" Nullable="false" />
+    <Property Type="Int32" Name="menupageid" Nullable="false" />
+    <Property Type="String" Name="checked" Nullable="false" MaxLength="8000" />
+    <Property Type="String" Name="menutitle" Nullable="true" MaxLength="50" />
+    <Property Type="String" Name="grouptitle" Nullable="false" MaxLength="50" />
+    <Property Type="String" Name="pagename" Nullable="true" MaxLength="50" />
+    <Property Type="String" Name="pagetitle" Nullable="true" MaxLength="50" />
+    <Property Type="String" Name="description" Nullable="true" MaxLength="50" />
+  </ComplexType>
+  <ComplexType Name="spGetMenuList_Result">
+    <Property Type="Int32" Name="MenuId" Nullable="false" />
+    <Property Type="Int32" Name="CustomerId" Nullable="false" />
+    <Property Type="String" Name="MenuTitle" Nullable="true" MaxLength="50" />
+    <Property Type="String" Name="Description" Nullable="true" MaxLength="50" />
+    <Property Type="String" Name="MenuUrl" Nullable="true" MaxLength="50" />
+    <Property Type="String" Name="Status" Nullable="false" MaxLength="1" />
+    <Property Type="Int32" Name="UserId" Nullable="false" />
+    <Property Type="DateTime" Name="CreatedDate" Nullable="false" Precision="23" />
+    <Property Type="DateTime" Name="LastChangeDate" Nullable="false" Precision="23" />
+    <Property Type="Int32" Name="OrderMenu" Nullable="true" />
+    <Property Type="Boolean" Name="IsDefault" Nullable="true" />
+  </ComplexType>
+  <ComplexType Name="spGetPageList_Result">
+    <Property Type="Int32" Name="MenuPageId" Nullable="false" />
+    <Property Type="String" Name="GroupTitle" Nullable="false" MaxLength="50" />
+    <Property Type="String" Name="PageTitle" Nullable="true" MaxLength="50" />
+    <Property Type="String" Name="Description" Nullable="true" MaxLength="50" />
+    <Property Type="String" Name="Area" Nullable="true" MaxLength="25" />
+    <Property Type="String" Name="Controller" Nullable="true" MaxLength="50" />
+    <Property Type="String" Name="Action" Nullable="false" MaxLength="50" />
+  </ComplexType>
+  <EntityType Name="tblCustomer">
+    <Key>
+      <PropertyRef Name="CustomerId" />
+    </Key>
+    <Property Type="Int32" Name="CustomerId" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Type="String" Name="CustomerName" Nullable="false" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Type="String" Name="CutoffTime" MaxLength="10" FixedLength="false" Unicode="true" />
+    <Property Type="Boolean" Name="IsActive" />
+    <Property Type="Int32" Name="LastChangedUser" />
+    <Property Type="DateTime" Name="CreatedDate" />
+    <Property Type="DateTime" Name="LastChangedDate" />
+  </EntityType>
+  <EntityType Name="tblCustomerUserMap">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Type="Int32" Name="Id" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Type="Int32" Name="Customer" Nullable="false" />
+    <Property Type="Int32" Name="User" Nullable="false" />
+  </EntityType>
+  <EntityType Name="tblOrder">
+    <Key>
+      <PropertyRef Name="OrderId" />
+    </Key>
+    <Property Type="Int32" Name="OrderId" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Type="Int32" Name="UserId" Nullable="false" />
+    <Property Type="Int32" Name="CustomerId" Nullable="false" />
+    <Property Type="DateTime" Name="OrderedDate" />
+    <Property Type="String" Name="CutoffTime" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Type="Decimal" Name="TotalAmount" Precision="8" Scale="2" />
+    <Property Type="DateTime" Name="DeliveryDate" />
+    <Property Type="String" Name="Remarks" MaxLength="250" FixedLength="false" Unicode="false" />
+    <Property Type="Int32" Name="LastChangedUser" />
+    <Property Type="DateTime" Name="CreatedDate" />
+    <Property Type="DateTime" Name="LastChangedDate" />
+  </EntityType>
+  <EntityType Name="tblOrderDetail">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Type="Int32" Name="Id" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Type="Int32" Name="OrderId" Nullable="false" />
+    <Property Type="Int32" Name="StoreId" Nullable="false" />
+    <Property Type="Int32" Name="ProductId" Nullable="false" />
+    <Property Type="Decimal" Name="Quantity" Nullable="false" Precision="10" Scale="2" />
+    <Property Type="Decimal" Name="Amount" Precision="8" Scale="2" />
+    <Property Type="String" Name="Remarks" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Type="String" Name="Remarks2" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Type="Int32" Name="LastChangedUser" />
+    <Property Type="DateTime" Name="CreatedDate" />
+    <Property Type="DateTime" Name="LastChangedDate" />
+  </EntityType>
+  <EntityType Name="tblProduct">
+    <Key>
+      <PropertyRef Name="ProductId" />
+    </Key>
+    <Property Type="Int32" Name="ProductId" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Type="Int32" Name="CustomerId" />
+    <Property Type="String" Name="SKUId" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+    <Property Type="String" Name="ProductName" Nullable="false" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Type="Decimal" Name="Price" Precision="10" Scale="2" />
+    <Property Type="Decimal" Name="Units" Nullable="false" Precision="10" Scale="2" />
+    <Property Type="Boolean" Name="IsActive" />
+    <Property Type="Int32" Name="LastChangedUser" />
+    <Property Type="DateTime" Name="CreatedDate" />
+    <Property Type="DateTime" Name="LastChangedDate" />
+  </EntityType>
+  <EntityType Name="tblProductCustomerMap">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Type="Int32" Name="Id" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Type="Int32" Name="CustomerId" Nullable="false" />
+    <Property Type="Int32" Name="ProductId" Nullable="false" />
+  </EntityType>
+  <EntityType Name="tblStore">
+    <Key>
+      <PropertyRef Name="StoreId" />
+    </Key>
+    <Property Type="Int32" Name="StoreId" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Type="Int32" Name="CustomerId" Nullable="false" />
+    <Property Type="String" Name="StoreCode" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Type="String" Name="StoreName" Nullable="false" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Type="Boolean" Name="IsActive" />
+    <Property Type="Int32" Name="LastChangedUser" />
+    <Property Type="DateTime" Name="CreatedDate" />
+    <Property Type="DateTime" Name="LastChangedDate" />
+  </EntityType>
+  <EntityType Name="ELMAH_Error">
+    <Key>
+      <PropertyRef Name="ErrorId" />
+    </Key>
+    <Property Type="Guid" Name="ErrorId" Nullable="false" />
+    <Property Type="String" Name="Application" Nullable="false" MaxLength="60" FixedLength="false" Unicode="true" />
+    <Property Type="String" Name="Host" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Type="String" Name="Type" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+    <Property Type="String" Name="Source" Nullable="false" MaxLength="60" FixedLength="false" Unicode="true" />
+    <Property Type="String" Name="Message" Nullable="false" MaxLength="500" FixedLength="false" Unicode="true" />
+    <Property Type="String" Name="User" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Type="Int32" Name="StatusCode" Nullable="false" />
+    <Property Type="DateTime" Name="TimeUtc" Nullable="false" />
+    <Property Type="Int32" Name="Sequence" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Type="String" Name="AllXml" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
+  </EntityType>
+  <EntityType Name="tblAuthorizedPage">
+    <Key>
+      <PropertyRef Name="MenuPageId" />
+    </Key>
+    <Property Type="Int32" Name="MenuPageId" Nullable="false" />
+    <Property Type="String" Name="GroupTitle" MaxLength="25" FixedLength="false" Unicode="false" />
+    <Property Type="String" Name="PageTitle" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Type="String" Name="Description" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Type="String" Name="Area" MaxLength="25" FixedLength="false" Unicode="false" />
+    <Property Type="String" Name="Controller" MaxLength="25" FixedLength="false" Unicode="false" />
+    <Property Type="String" Name="Action" MaxLength="50" FixedLength="false" Unicode="false" />
+  </EntityType>
+  <EntityType Name="tblLoginAudit">
+    <Key>
+      <PropertyRef Name="AuditId" />
+    </Key>
+    <Property Type="Int32" Name="AuditId" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Type="Int32" Name="UserId" Nullable="false" />
+    <Property Type="String" Name="IpAdd" MaxLength="25" FixedLength="false" Unicode="false" />
+    <Property Type="DateTime" Name="LoginTime" />
+    <Property Type="DateTime" Name="LogoutTime" />
+  </EntityType>
+  <EntityType Name="tblMenu">
+    <Key>
+      <PropertyRef Name="MenuId" />
+    </Key>
+    <Property Type="Int32" Name="MenuId" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Type="Int32" Name="CustomerId" Nullable="false" />
+    <Property Type="String" Name="MenuTitle" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Type="String" Name="Description" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Type="String" Name="MenuUrl" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Type="String" Name="Status" Nullable="false" MaxLength="1" FixedLength="true" Unicode="false" />
+    <Property Type="Int32" Name="UserId" Nullable="false" />
+    <Property Type="DateTime" Name="CreatedDate" Nullable="false" />
+    <Property Type="DateTime" Name="LastChangeDate" Nullable="false" />
+    <Property Type="Int32" Name="OrderMenu" />
+    <Property Type="Boolean" Name="IsDefault" Nullable="false" />
+  </EntityType>
+  <EntityType Name="tblMenuPage">
+    <Key>
+      <PropertyRef Name="MenuPageId" />
+    </Key>
+    <Property Type="Int32" Name="MenuPageId" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Type="Int32" Name="CustomerId" Nullable="false" />
+    <Property Type="Int32" Name="MenuId" Nullable="false" />
+    <Property Type="Int32" Name="GroupId" Nullable="false" />
+    <Property Type="Int32" Name="PageId" Nullable="false" />
+    <Property Type="String" Name="PageTitle" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Type="String" Name="Description" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Type="String" Name="Status" Nullable="false" MaxLength="1" FixedLength="true" Unicode="false" />
+    <Property Type="Int32" Name="UserId" Nullable="false" />
+    <Property Type="DateTime" Name="CreatedDate" Nullable="false" />
+    <Property Type="DateTime" Name="LastChangeDate" Nullable="false" />
+    <Property Type="Int32" Name="OrderPage" />
+  </EntityType>
+  <EntityType Name="tblMenuPagePermission">
+    <Key>
+      <PropertyRef Name="MenuPagePermissionId" />
+    </Key>
+    <Property Type="Int32" Name="MenuPagePermissionId" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Type="Int32" Name="CustomerId" Nullable="false" />
+    <Property Type="Int32" Name="RoleId" Nullable="false" />
+    <Property Type="String" Name="MenuId" MaxLength="255" FixedLength="false" Unicode="false" />
+    <Property Type="String" Name="MenuPageId" MaxLength="Max" FixedLength="false" Unicode="false" />
+    <Property Type="String" Name="IsActive" Nullable="false" MaxLength="1" FixedLength="true" Unicode="false" />
+    <Property Type="Int32" Name="UserId" Nullable="false" />
+    <Property Type="DateTime" Name="CreatedDate" Nullable="false" />
+    <Property Type="DateTime" Name="LastChangeDate" Nullable="false" />
+  </EntityType>
+  <EntityType Name="tblPage">
+    <Key>
+      <PropertyRef Name="PageId" />
+    </Key>
+    <Property Type="Int32" Name="PageId" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Type="String" Name="PageTitle" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Type="String" Name="Description" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Type="String" Name="Area" MaxLength="25" FixedLength="false" Unicode="false" />
+    <Property Type="String" Name="Controller" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Type="String" Name="Action" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Type="String" Name="Status" Nullable="false" MaxLength="1" FixedLength="true" Unicode="false" />
+    <Property Type="Int32" Name="UserId" Nullable="false" />
+    <Property Type="DateTime" Name="CreatedDate" Nullable="false" />
+    <Property Type="DateTime" Name="LastChangeDate" Nullable="false" />
+  </EntityType>
+  <EntityType Name="tblrole">
+    <Key>
+      <PropertyRef Name="RoleID" />
+    </Key>
+    <Property Type="Int32" Name="RoleID" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Type="String" Name="RoleName" Nullable="false" MaxLength="25" FixedLength="false" Unicode="false" />
+    <Property Type="Boolean" Name="IsActive" />
+    <Property Type="Int32" Name="CreatedBy" />
+    <Property Type="Int32" Name="ModifiedBy" />
+    <Property Type="DateTime" Name="CreatedDate" />
+    <Property Type="DateTime" Name="ModifiedDate" />
+    <Property Type="String" Name="RoleDescp" MaxLength="40" FixedLength="false" Unicode="false" />
+    <Property Type="Int32" Name="CustomerId" />
+  </EntityType>
+  <EntityType Name="tblDefaultMenuPage">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Type="Int32" Name="Id" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Type="Int32" Name="CustomerId" Nullable="false" />
+    <Property Type="Int32" Name="RoleId" />
+    <Property Type="Int32" Name="MenuId" />
+    <Property Type="Int32" Name="MenuPageId" />
+  </EntityType>
+  <EntityType Name="tblUserPassword">
+    <Key>
+      <PropertyRef Name="UserCustomerID" />
+    </Key>
+    <Property Type="Int32" Name="UserCustomerID" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Type="Int32" Name="UserID" />
+    <Property Type="Int32" Name="CustomerID" />
+    <Property Type="DateTime" Name="CreatedDate" />
+    <Property Type="DateTime" Name="ExpiryDate" />
+    <Property Type="String" Name="Password" MaxLength="100" FixedLength="false" Unicode="false" />
+  </EntityType>
+  <EntityType Name="tblUserPasswordHistory">
+    <Key>
+      <PropertyRef Name="PasswordHistoryID" />
+    </Key>
+    <Property Type="Int32" Name="PasswordHistoryID" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Type="Int32" Name="UserID" />
+    <Property Type="String" Name="Password" MaxLength="100" FixedLength="false" Unicode="false" />
+    <Property Type="DateTime" Name="CreatedDate" />
+  </EntityType>
+  <EntityType Name="tblGroup">
+    <Key>
+      <PropertyRef Name="GroupId" />
+    </Key>
+    <Property Type="Int32" Name="GroupId" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Type="Int32" Name="CustomerId" Nullable="false" />
+    <Property Type="String" Name="GroupTitle" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Type="String" Name="Description" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Type="Int32" Name="OrderGroup" />
+    <Property Type="String" Name="Status" MaxLength="1" FixedLength="true" Unicode="false" />
+    <Property Type="Int32" Name="UserId" Nullable="false" />
+    <Property Type="DateTime" Name="CreatedDate" Nullable="false" />
+    <Property Type="DateTime" Name="LastChangeDate" Nullable="false" />
+  </EntityType>
+  <ComplexType Name="spGetUserByEmailId_Result">
+    <Property Type="Int32" Name="customerid" Nullable="false" />
+    <Property Type="String" Name="customername" Nullable="false" MaxLength="255" />
+    <Property Type="Int32" Name="roleid" Nullable="false" />
+    <Property Type="String" Name="rolename" Nullable="false" MaxLength="25" />
+    <Property Type="Int32" Name="userid" Nullable="false" />
+    <Property Type="String" Name="username" Nullable="false" MaxLength="201" />
+    <Property Type="String" Name="firstname" Nullable="false" MaxLength="100" />
+    <Property Type="String" Name="lastname" Nullable="false" MaxLength="100" />
+    <Property Type="String" Name="emailaddress" Nullable="false" MaxLength="100" />
+    <Property Type="String" Name="password" Nullable="false" MaxLength="255" />
+    <Property Type="Boolean" Name="isactive" Nullable="false" />
+    <Property Type="String" Name="isnewuser" Nullable="false" MaxLength="1" />
+    <Property Type="String" Name="secquestion" Nullable="true" MaxLength="150" />
+  </ComplexType>
+  <ComplexType Name="spGetUserCredentials_Result">
+    <Property Type="Int32" Name="WebUserID" Nullable="false" />
+    <Property Type="Int32" Name="RoleId" Nullable="false" />
+    <Property Type="Int32" Name="CustomerID" Nullable="false" />
+  </ComplexType>
+  <EntityType Name="tblUser">
+    <Key>
+      <PropertyRef Name="userid" />
+    </Key>
+    <Property Type="Int32" Name="userid" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Type="Int32" Name="customerid" Nullable="false" />
+    <Property Type="Int32" Name="roleid" Nullable="false" />
+    <Property Type="String" Name="username" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+    <Property Type="String" Name="password" Nullable="false" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Type="Boolean" Name="ispasswordencrypted" Nullable="false" />
+    <Property Type="String" Name="firstname" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+    <Property Type="String" Name="lastname" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+    <Property Type="String" Name="email" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+    <Property Type="DateTime" Name="birthdate" />
+    <Property Type="String" Name="phone1" MaxLength="20" FixedLength="false" Unicode="true" />
+    <Property Type="String" Name="phone2" MaxLength="20" FixedLength="false" Unicode="true" />
+    <Property Type="String" Name="address" Nullable="false" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Type="String" Name="address2" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Type="String" Name="city" Nullable="false" MaxLength="120" FixedLength="false" Unicode="true" />
+    <Property Type="String" Name="state" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+    <Property Type="String" Name="country" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+    <Property Type="String" Name="zipcode" Nullable="false" MaxLength="10" FixedLength="false" Unicode="true" />
+    <Property Type="Boolean" Name="isactive" />
+    <Property Type="String" Name="isnewuser" MaxLength="1" FixedLength="true" Unicode="false" />
+    <Property Type="String" Name="secquestion" MaxLength="150" FixedLength="false" Unicode="false" />
+    <Property Type="String" Name="answer" MaxLength="150" FixedLength="false" Unicode="false" />
+    <Property Type="Int32" Name="lastchangeuser" />
+    <Property Type="DateTime" Name="createddate" />
+    <Property Type="DateTime" Name="lastchangedate" />
+  </EntityType>
+</Schema>

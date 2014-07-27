@@ -1,0 +1,75 @@
+﻿@Html.Partial("_Dialog")
+<script type="text/javascript">
+    function LoadTankEvent() {
+
+        if (!$('#tankEventForm').valid())
+            return;
+
+        //set manual parameters
+        $("#tblGridEvent").setGridParam({ postData: {
+            sFromDate: $('#frmEventDate').val(),
+            sToDate: $('#toEventDate').val()
+        }
+        });
+
+        //load the grid again
+        ReloadGrid('tblGridEvent');
+
+    }
+</script>
+<form id="tankEventForm" class="form-horizontal">
+<div class="">
+    <div class="row-fluid">
+        <input type="hidden" id="hdnTankId" value="0" />
+        <div class="span4">
+            <div class="control-group">
+                <label class="control-label" for="frmEventDate">
+                    From <sup style='color: Red'>*</sup>
+                </label>
+                <div class="controls">
+                    <input type="text" id="frmEventDate" name="frmEventDate" onchange="LoadTankEvent();"
+                        class="RptPreviousMonth DateDiffMin" data-val="true" data-val-required="The field is required." />
+                    <label class="field-validation-valid" data-valmsg-for="frmEventDate" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="span4">
+            <div class="control-group">
+                <label class="control-label" for="toEventDate">
+                    To <sup style='color: Red'>*</sup></label>
+                <div class="controls">
+                    <input type="text" id="toEventDate" name="toEventDate" onchange="LoadTankEvent();"
+                        class="RptCurrentMonth DateDiffMax" data-val="true" data-val-required="The field is required." />
+                    <label class="field-validation-valid" data-valmsg-for="toEventDate" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+<table id="tblGridEvent">
+</table>
+<div id="pager">
+</div>
+@(Html.Grid("tblGridEvent")
+    .AddColumn(new Column("Status"))
+        .AddColumn(new Column("eventtime").SetLabel("Event Time").SetSearchType(Searchtype.Datepicker).SetSearchDateFormat("mm/dd/yy"))
+    .AddColumn(new Column("Event"))
+    .SetUrl(Url.Action("GridDataTankEvent", "DMS"))
+    .SetAutoWidth(true)
+    .SetRowNum(10)
+    .SetRowList(new[] { 10, 15, 20, 50 })
+    .SetViewRecords(true)
+    .SetPager("pager")
+    .SetHeight(250)
+    .SetWidth(250)
+    .SetHoverRows(true)
+    .SetMultiSelect(false)
+    .SetToolbar(false)
+    .SetAltRows(true)
+    .SetShrinkToFit(true)
+    .SetDataType(DataType.Local)
+    .SetEmptyRecords("No Records Found")
+    )

@@ -1,0 +1,45 @@
+﻿@model List<MVCDataModel.spGetPageList_Result>
+@using System.Linq;
+@{
+    Layout = null;
+}
+<br />
+<div class="span3 bs-docs-sidebar" style="width: 100%;">
+    <ul id="verticalMenu" class="nav nav-list bs-docs-sidenav vMenubackgrouncolor">
+        @{ 
+            if (@Model != null)
+            {
+
+
+                var groupname = "";
+                foreach (var item in @Model)
+                {
+                    if (@groupname == @item.GroupTitle)
+                    {
+                        //    continue;
+                    }
+                    else if (@item.GroupTitle != "Page")
+                    {
+                        groupname = item.GroupTitle;
+            <li><a title="@item.Description" style="color: White; text-shadow: none" href="#">@item.GroupTitle</a></li>
+                        foreach (var submenu in Model.ToList())
+                        {
+                            if (submenu.GroupTitle == @item.GroupTitle)
+                            {
+                            
+            <li><a title="@submenu.Description" style="color:White; text-shadow:none" href="@Url.Action(@submenu.Action, @submenu.Controller, new { area = @submenu.Area }, null)" >
+                <span style="margin-left: 25px;">@submenu.PageTitle</span></a></li>
+                            }
+                        }
+                    }
+                    else if (@item.GroupTitle == "Page")
+                    {
+            <li class="@(item.MenuPageId.ToString() == Session["PageId"].ToString() ? "ActiveMenu" : "")">
+                <a title="@item.Description" style="color:White; text-shadow:none" onclick="SelectVerticalMenu(this, @item.MenuPageId);" href="@Url.Action(@item.Action, @item.Controller, new { area = @item.Area }, null)">
+                    @item.PageTitle</a></li>
+                    }
+                }
+            }
+        }
+    </ul>
+</div>

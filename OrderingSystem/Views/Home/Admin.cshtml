@@ -1,0 +1,30 @@
+﻿@{
+    ViewBag.Title = "Admin";
+    Layout = "~/Views/Shared/_BootstrapLayout.cshtml";
+}
+
+@section scripts
+{
+    <script type="text/javascript" language="javascript">
+        //load initial menu - get from tblDefaultMenuPage table
+        $.ajax({
+            type: 'POST',
+            url: '/Home/GetDefaultMenuAndPage',
+            data: {},
+            async: false,
+            success: function (data) {
+                try {
+                    if (data != '')
+
+                        LoadVerticalMenu(null, data.MenuId);
+
+                }
+                catch (e) {
+                    ScriptError(e);
+                }
+            }
+        });
+        
+    </script>
+}
+

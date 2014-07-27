@@ -1,0 +1,133 @@
+﻿@model MVCDataModel.tblGroup
+@Html.Partial("_Dialog")
+<script type="text/javascript">
+    var group = null;
+    $(document).ready(function () {
+
+        group = @Html.Raw(Json.Encode(Model));
+
+        $('#btnSave').bind('click', function () {
+            try {
+
+                // Force validation to reevaluate next time
+                var inputs = $('form').find(":input");
+                inputs.removeData("previousValue");
+                $('form').valid();
+
+                resultValation = $('form').validate();
+
+                timerValidation = $.timer(function () {
+
+                    if (resultValation.pendingRequest == 0) {
+                        timerValidation.stop();
+                        if ($('form').valid())
+                            CreateEditGroup('Add');
+                    }
+                }, 1000, true);
+
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+
+        });
+
+        $('#btnUpdate').bind('click', function () {
+            try {
+                // Force validation to reevaluate next time
+                var inputs = $('form').find(":input");
+                inputs.removeData("previousValue");
+                $('form').valid();
+
+                resultValation = $('form').validate();
+
+                timerValidation = $.timer(function () {
+
+                    if (resultValation.pendingRequest == 0) {
+
+                        timerValidation.stop();
+                        if ($('form').valid())
+                            CreateEditGroup('Update');
+                    }
+
+                }, 1000, true);
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+
+        });
+
+        $("#btnCancel").bind("click", function (e) {
+            //if($("#dialog-add" ).closest('.ui-dialog').is(':visible'))  
+            //    $('#dialog-add').dialog('close');
+            ClearGroupForm();
+        });
+
+    }); 
+    
+</script>
+<form id="groupForm" class="form-horizontal">
+<div class="">
+    <div class="row-fluid">
+        <input type="hidden" id="hdnGroupId" value="0" />
+         @if((Session["CustomerId"].ToString() == "1")){
+             @:<div class="control-group" style="display:block;">
+          } 
+          else {
+             @:<div class="control-group" style="display:none;">
+          } 
+                <label class="control-label" for="ddlCustomer">
+                    Customer
+                </label>
+                <div class="controls">
+                    <select id="ddlCustomer" name="ddlCustomer" class="selectpicker" onchange="ChangeCustomer();" data-val="true" data-val-required="The Customer field is required.">
+                        <option value="">Select Customer</option>
+                        @Html.BindCustomers()
+                    </select>
+                   <label class="field-validation-valid" data-valmsg-for="ddlCustomer" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+        <div class="control-group">
+            <label class="control-label" for="txtGroupTitle">
+                Group Title</label>
+            <div class="controls">
+                <input data-val="true" data-val-remote="Group is already exists." 
+                data-val-remote-url="/Validation/IsExistsWithCutomer" data-val-required="The field is required." 
+                data-val-remote-additionalfields="primaryfield,primaryvalue, tablename,columnname,columnvalue,customerid"
+                data-val-remote-columnname="grouptitle" 
+                data-val-remote-tablename="tblgroup"
+                data-val-remote-columnvalue="txtGroupTitle" 
+                data-val-remote-customerid="ddlCustomer" 
+                data-val-remote-primaryfield="groupid" 
+                data-val-remote-primaryvalue="hdnGroupId"
+                id="txtGroupTitle" name="txtGroupTitle" type="text">
+                <label class="field-validation-valid" data-valmsg-for="txtGroupTitle" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtGroupDesc">
+                Description</label>
+            <div class="controls">
+                <input type="text" id="txtGroupDesc" name="txtGroupDesc"  />
+            </div>
+        </div>
+        @Html.Partial("_Status")
+        
+        <div class="control-group">
+            <label class="control-label" for="ddlOrderGroup">
+                Order Group
+            </label>
+            <div class="controls">
+                <select id="ddlOrderGroup" name="ddlOrderGroup" class="selectpicker">
+                    <option value=1>1</option>
+                </select>
+            </div>
+        </div>
+        @Html.Partial("_SubmitClear")
+    </div>
+</div>
+</form>
+@Html.Partial("_Alert")

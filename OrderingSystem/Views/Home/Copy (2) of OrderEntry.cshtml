@@ -1,0 +1,620 @@
+﻿@model DateTime
+@{
+    ViewBag.Title = "Order Entry";
+    Layout = "~/Views/Shared/_BootstrapFullLayout.cshtml";
+}
+<style>
+    .handsontable .currentRow
+    {
+        background-color: #E7E8EF;
+    }
+    .handsontable .currentCol
+    {
+        background-color: #F9F9FB;
+    }
+</style>
+<form id="orderEntry" class="form-horizontal">
+<div class="container-fluid">
+    <div class="row-fluid">
+        <h4>
+            <span style="">Order Lists</span><span> : </span><span id="lblCustomer">@Session["CustomerName"]</span>
+        </h4>
+        <div style="margin-left:0px;" class="span10">
+            <span><b>Order Date</b></span><span> : </span><span>
+                <input style="width:150px;" class="input" id="disabledInput" type="text" value="@Model" disabled="disabled" />
+            </span>
+            <span style=""><b>Order By</b></span><span> : </span><span>
+                <input style="width:150px;" class="input" id="txtOrderBy" type="text" value="@Session["OrderBy"]" disabled="disabled" />
+            </span>
+            <span style=""><b>Phone</b></span><span> : </span><span>
+                <input style="width:150px;" class="input" id="txtPhone" type="text" value="@Session["Phone1"]"/>
+            </span>
+            <span style=""><b>Remarks</b></span><span> : </span><span>
+                <input style="width:150px;" class="input" id="txtRemarks" type="text" value="@Session["Remarks"]"/>
+            </span>
+        </div>
+        <div class="span2">
+            <button type="button" id="btnSave" name="Command" value="Save" class="btnAddEdit btn btn-primary">
+                <span class="ui-button-text">Save</span></button>
+            <button title="Back to Dashboard" type="button" id="btnCancel" class="btn">
+                <span class="ui-button-text">Back</span></button>
+            @*<button type="button" id="btnClosePopUp" class="btn btn-info">
+                    <span class="ui-button-text">Close</span></button>*@
+        </div>
+    </div>
+    <div class="row-fluid">
+        <div style="height: 540px; overflow: scroll">
+            <div id="example">
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+@section scripts
+{
+    <script type="text/javascript" language="javascript">
+
+        $(document).ready(function () {
+
+            Handsontable.renderers.registerRenderer('negativeValueRenderer', negativeValueRenderer); //maps function to lookup string
+
+
+            var saveOrdersList = [];
+            var dataOrderEntry = [];
+            //["2012", 2, 2422, 5399, 776, 4151]
+
+            var container = $("#example");
+
+            var colHeaderList = new Array();
+            colHeaderList.push("SL#");
+            colHeaderList.push("PRODUCTS");
+            colHeaderList.push("Cost Price");
+
+            var columnWidth = new Array();
+            columnWidth.push(50);
+            columnWidth.push(150);
+
+            var prodlist = null;
+
+            var colSource = Array()
+            colSource.push({
+                //"data": "sku",
+                type: "autocomplete",
+                source: function (query, process) {
+                    $.ajax({
+                        url: '/Home/BindProductCode',
+                        data: {
+                            query: query
+                        },
+                        success: function (response) {
+                            try {
+                                prodlist = eval("[" + response + "]")[0].Table;
+                                var array = $.map(eval("[" + response + "]")[0].Table, function (el) {
+                                    return [el.skuid];
+                                });
+                                process(array);
+                            }
+                            catch (ex) {
+                                prodlist = null;
+                                process("");
+                            }
+                        }
+                    });
+                },
+                //strict: true,
+                allowInvalid: false,
+                renderer: function (instance, td, row, col, prop, value) {
+                    if (row == instance.countRows() - 2) {
+                        td.style.fontWeight = 'bold';
+                        td.style.textAlign = 'center';
+                        td.style.background = '#EEE';
+                        td.innerText = 'Total';
+                        return;
+                    }
+                    if (row == instance.countRows() - 1) {
+                        td.style.fontWeight = 'bold';
+                        td.style.textAlign = 'center';
+                        td.style.background = '#EEE';
+                        td.innerText = 'Grand Total';
+                        return;
+                    }
+                    else {
+                        Handsontable.AutocompleteRenderer.apply(this, arguments);
+                    }
+                }
+            });
+            colSource.push({
+                //"data": "productname",
+                type: "autocomplete",
+                source: function (query, process) {
+                    $.ajax({
+                        //type: "POST",   
+                        url: '/Home/BindProduct',
+                        //contentType: "application/json; charset=utf-8",
+                        //dataType: "json",
+                        //async: true,
+                        data: {
+                            query: query
+                        },
+                        success: function (response) {
+                            //console.log("response", response);
+                            //process(eval("[" + response + "]")[0].Table.join(','));
+                            //process(response);
+                            //eval("[" + response + "]")[0].Table
+                            //                                    var array = $.map(JSON.parse(response).Table, function (el) {
+                            //                                        return [el.productname];
+                            //                                    });
+
+                            try {
+
+                                prodlist = eval("[" + response + "]")[0].Table;
+                                var array = $.map(eval("[" + response + "]")[0].Table, function (el) {
+                                    return [el.productname];
+                                });
+
+                                process(array);
+                                //process(JSON.parse(eval("[" + response + "]")[0].Table));
+                            }
+                            catch (ex) {
+                                prodlist = null;
+                                process("");
+                            }
+                        }
+                    });
+                },
+                //strict: true,
+                allowInvalid: false,
+                renderer: function (instance, td, row, col, prop, value) {
+                    if (row == instance.countRows() - 2) {
+                        td.innerText = "";
+                    }
+                    if (row == instance.countRows() - 1) {
+                        td.style.fontWeight = 'bold';
+                        td.style.textAlign = 'left';
+                        td.style.background = '#EEE';
+                        td.innerText = '$ ' + getGrandTotal(instance, row, col).toFixed(2);
+                        value = td.innerText;
+                    }
+                    else {
+                        Handsontable.AutocompleteRenderer.apply(this, arguments);
+                    }
+                }
+            });
+
+            colSource.push({
+                //"data": "price",
+                type: 'numeric',
+                allowInvalid: false,
+                format: '$ 0,0.00'
+            });
+
+
+
+            $.ajax({
+                url: '/Home/BindStore',
+                data: {},
+                async: false,
+                success: function (response) {
+                    try {
+                        var array = $.map(eval("[" + response + "]")[0].Table, function (el) {
+
+                            columnWidth.push(25);
+                            colHeaderList.push(el.storecode);
+                            colSource.push(
+                                {
+                                    //"data": el.storecode,
+                                    type: 'numeric',
+                                    allowInvalid: false,
+                                    format: '0,0.00',
+                                    renderer: function (instance, td, row, col, prop, value) {
+                                        if (row == instance.countRows() - 2) {
+                                            td.style.fontWeight = 'bold';
+                                            td.style.textAlign = 'right';
+                                            td.style.background = '#EEE';
+                                            td.innerText = '$ ' + getTotal(row, col).toFixed(2);
+                                            value = td.innerText;
+                                        }
+
+
+                                        Handsontable.NumericRenderer.apply(this, arguments);
+                                    }
+                                });
+                            return [el.storecode];
+                        });
+                    }
+                    catch (ex) {
+                    }
+                }
+            });
+
+
+            colHeaderList.push("Remarks");
+
+            colSource.push({
+                type: 'text'
+            });
+
+
+
+            // the load the order list
+            LoadOrderLists();
+
+
+            //            colHeaderList.push("171-00 QTY");
+            //            colHeaderList.push("AMK2 QTY");
+            //            colHeaderList.push("PP12-A QTY");
+
+            //            colSource.push({ type: 'numeric' });
+            //            colSource.push({ type: 'numeric' });
+            //            colSource.push({ type: 'numeric' });
+
+            container.handsontable({
+                data: dataOrderEntry,
+                //width : 1000,
+                colWidths: columnWidth, //can also be a number or a function
+                rowHeaders: true,
+                //colHeaders: true,
+                colHeaders: colHeaderList,
+                //colHeaders: ["SL#", "PRODUCTS", "", "AMK2 QTY", "PP12-A QTY", "TEST QTY"],
+                minSpareRows: 4,
+                maxCols: Infinity,
+                minRows: 20,
+                maxRows: 1000,
+                columns: colSource,
+                cells: function (row, col, prop) {
+                    var cellProperties = {};
+                    //                    if (row === container.handsontable('getInstance').countRows() - 4
+                    //                                            || row === container.handsontable('getInstance').countRows() - 5
+                    //                                            || row === container.handsontable('getInstance').countRows() - 6
+                    //                                            || row === container.handsontable('getInstance').countRows() - 7) {
+                    //                        cellProperties.readOnly = true; //make cell read-only if it is first row or the text reads 'readOnly'
+                    //                    }
+                    if (row === container.handsontable('getInstance').countRows() - 3
+                        || row === container.handsontable('getInstance').countRows() - 2
+                        || row === container.handsontable('getInstance').countRows() - 1) {
+                        cellProperties.readOnly = true;
+                    }
+                    //                    else if (col === 1 && (row === container.handsontable('getInstance').countRows() - 3
+                    //                                            || row === container.handsontable('getInstance').countRows() - 2
+                    //                                            || row === container.handsontable('getInstance').countRows() - 1)) {
+                    //                        cellProperties.type = "text";
+                    //                    }
+                    //                    else if (row < container.handsontable('getInstance').countRows() - 3) {
+                    //                        cellProperties.readOnly = false;
+                    //                    }
+                    if (row < container.handsontable('getInstance').countRows() - 3) {
+                        cellProperties.readOnly = false;
+                    }
+                    //                      var instance = container.handsontable('getInstance')
+                    //                      if (row == instance.countRows() - 4) {
+                    //                          cellProperties.renderer = firstRowRenderer; //uses function directly
+                    //                          cellProperties.value = "Total"
+                    //                      }
+                    //                      else if (row == instance.countRows() - 3) {
+                    //                          //td.style.fontWeight = 'bold';
+                    //                          //td.style.textAlign = 'center';
+                    //                          //td.innerText = 'Ordered by';
+                    //                          //Handsontable.TextRenderer.apply(this, arguments);
+                    //                          //return;
+                    //                      }
+                    //                      else if (row == instance.countRows() - 2) {
+                    //                          //td.style.fontWeight = 'bold';
+                    //                          //td.style.textAlign = 'center';
+                    //                          //td.innerText = 'HP/Tel No';
+                    //                          //return;
+                    //                      }
+                    //                      else if (row == instance.countRows() - 1) {
+                    //                          //td.style.fontWeight = 'bold';
+                    //                          //td.style.textAlign = 'center';
+                    //                          //td.innerText = 'Remarks';
+                    //                          //return;
+                    //                      }
+                    //                      else {
+                    //                          //Handsontable.NumericRenderer.apply(this, arguments);
+                    //                      }
+                    return cellProperties;
+                },
+                afterChange: function (arr, op) {
+                    if (op == "edit" && arr.length == 1 && prodlist != null && prodlist.length > 0) {
+                        if ((arr[0][2] == arr[0][3])) {
+                            return false;
+                        }
+                        else if (arr[0][1] == 1) // product name column
+                        {
+                            var value = arr[0][3];
+                            for (var i = 0; i < prodlist.length; i++) {
+                                if (prodlist[i].productname == value) {
+                                    //container.handsontable('getInstance').getSettings().columns[0].type = "text";
+                                    container.handsontable("setDataAtCell", arr[0][0], 0, prodlist[i].skuid);
+                                    container.handsontable("setDataAtCell", arr[0][0], 2, prodlist[i].price);
+                                    //container.handsontable('getInstance').getSettings().columns[0].type = "autocomplete";
+                                    return false;
+                                }
+                            }
+                        }
+                        else if (arr[0][1] == 0) // sku column
+                        {
+                            var value = arr[0][3];
+                            for (var i = 0; i < prodlist.length; i++) {
+                                if (prodlist[i].skuid == value) {
+                                    //container.handsontable('getInstance').getSettings().columns[1].type = "text";
+                                    container.handsontable("setDataAtCell", arr[0][0], 1, prodlist[i].productname);
+                                    container.handsontable("setDataAtCell", arr[0][0], 2, prodlist[i].price);
+                                    //container.handsontable('getInstance').getSettings().columns[1].type = "autocomplete";
+                                    return false;
+                                }
+                            }
+                        }
+                        else
+                            return false;
+                    }
+                },
+
+                //                columns: [
+                //                    {
+                //                        type: 'autocomplete',
+                //                        source: function (query, process) {
+                //                            $.ajax({
+                //                                url: '/Home/BindProductCode',
+                //                                data: {
+                //                                    query: query
+                //                                },
+                //                                success: function (response) {
+                //                                    try {
+                //                                        var array = $.map(eval("[" + response + "]")[0].Table, function (el) {
+                //                                            return [el.skuid];
+                //                                        });
+                //                                        process(array);
+                //                                    }
+                //                                    catch (ex) {
+                //                                        process("");
+                //                                    }
+                //                                }
+                //                            });
+                //                        },
+                //                        strict: true
+                //                    },
+                //                    {
+                //                        type: 'autocomplete',
+                //                        source: function (query, process) {
+                //                            $.ajax({
+                //                                //type: "POST",   
+                //                                url: '/Home/BindProduct',
+                //                                //contentType: "application/json; charset=utf-8",
+                //                                //dataType: "json",
+                //                                //async: true,
+                //                                data: {
+                //                                    query: query
+                //                                },
+                //                                success: function (response) {
+                //                                    //console.log("response", response);
+                //                                    //process(eval("[" + response + "]")[0].Table.join(','));
+                //                                    //process(response);
+                //                                    //eval("[" + response + "]")[0].Table
+                //                                    //                                    var array = $.map(JSON.parse(response).Table, function (el) {
+                //                                    //                                        return [el.productname];
+                //                                    //                                    });
+
+                //                                    try {
+                //                                        var array = $.map(eval("[" + response + "]")[0].Table, function (el) {
+                //                                            return [el.productname];
+                //                                        });
+
+                //                                        process(array);
+                //                                        //process(JSON.parse(eval("[" + response + "]")[0].Table));
+                //                                    }
+                //                                    catch (ex) {
+                //                                        process("");
+                //                                    }
+                //                                }
+                //                            });
+                //                        },
+                //                        strict: true
+                //                    },
+                //                    //{ type: 'numeric' },
+                //                    //{ type: 'numeric' },
+                //                    { type: 'numeric' }
+                //                  ],
+
+                //columns: function (row, col, prop) {},
+                stretchH: 'all',
+                //contextMenu: true,
+
+                fixedRowsTop: 0,
+                fixedColumnsLeft: 0,
+                nativeScrollbars: true,
+
+                currentRowClassName: 'currentRow',
+                currentColClassName: 'currentCol',
+
+                columnSorting: true,
+                manualColumnMove: true,
+                manualColumnResize: true
+
+                //                cells: function (row, col, prop) {
+                //                    var cellProperties = {};
+                //                    if (row === 0 || container.handsontable('getData')[row][col] === 'readOnly') {
+                //                        cellProperties.readOnly = true; //make cell read-only if it is first row or the text reads 'readOnly'
+                //                    }
+                //                    if (row === 0) {
+                //                        cellProperties.renderer = firstRowRenderer; //uses function directly
+                //                    }
+                //                    else {
+                //                        cellProperties.renderer = "negativeValueRenderer"; //uses lookup map
+                //                    }
+                //                    return cellProperties;
+                //                }
+
+            });
+
+            var handsontable = container.data('handsontable');
+
+
+            $('#btnSave').click(function () {
+
+                var saveOrders = [];
+
+                var orders = [];
+                $.each(handsontable.getColHeader(), function (i, d) {
+                    saveOrders.push(d);
+                });
+
+                $.each(handsontable.getData(), function (index, dataRow) {
+                    orders = [];
+                    $.each(dataRow, function (i, d) {
+                        //saveOrdersList[index][saveOrders[i]] = d;
+                        //saveOrdersList.push({ saveOrders[i] : d });
+                        orders["[" + saveOrders[i] + "]"] = d;
+                    });
+
+                    saveOrdersList.push(orders);
+
+                });
+
+                var cnt = handsontable.countRows();
+                var total = handsontable.getCell(cnt - 1, 1).innerText;
+                var orderby = $('#txtOrderBy').val(); // handsontable.getCell(cnt - 3, 1).innerText;
+                var phone = $('#txtPhone').val(); // handsontable.getCell(cnt - 2, 1).innerText;
+                var remarks = $('#txtRemarks').val(); // handsontable.getCell(cnt - 1, 1).innerText;
+
+
+                $.ajax({
+                    url: "/Home/SaveOrders",
+                    data: { "total": total, "orderby": orderby, "phone": phone, "remarks": remarks, "data": JSON.stringify(handsontable.getData()), "header": JSON.stringify(handsontable.getColHeader()) }, //returns all cells' data
+                    dataType: 'json',
+                    type: 'POST',
+                    success: function (res) {
+                        if (res === '1') {
+                            alert('Data Saved');
+                        }
+                        else {
+                            alert('Error - Not Saved');
+                        }
+                    },
+                    error: function () {
+                        alert('Error - Not Saved');
+                    }
+                });
+            });
+
+            function getTotal(row, col) {
+                //return dataOrderEntry.reduce(function (sum, row) {
+                var sum = 0;
+                $.map(dataOrderEntry, function (dataRow) {
+
+                    if (isNaN(parseFloat(dataRow[col])))
+                        sum = sum + 0;
+                    else if (isNaN(parseFloat(dataRow[2])))   // price column not exists
+                        sum = sum + 0;
+                    else
+                        sum = sum + (dataRow[col] * dataRow[2]); // price column
+                });
+
+                return sum;
+            }
+
+            function getGrandTotal(table, row, col) {
+                var sum = 0;
+                if (table != null && table != undefined) {
+                    //var cnt = table.countRows();
+                    //var row = dataOrderEntry[cnt - 4];
+
+                    for (var i = 3; i < table.countCols(); i++) {
+
+                        var total = table.getCell((row - 1), i).innerText;
+
+                        if (total != null && total != undefined && total != "")
+                            total = total.substring(2);
+
+                        if (isNaN(parseFloat(total)))
+                            sum = sum + 0;
+                        else
+                            sum = sum + parseFloat(total);
+                    }
+                }
+                return sum;
+
+            }
+
+
+            function LoadOrderLists() {
+
+                $.ajax({
+                    url: "/Home/LoadOrders",
+                    dataType: 'json',
+                    data: { "orderid": $('#hdnOrderId').val() },
+                    type: 'GET',
+                    async: false,
+                    success: function (res) {
+                        try {
+
+                            var data = eval("[" + res + "]")[0].Table;
+                            //handsontable.loadData(data);
+                            // dataOrderEntry
+                            $.each(data, function (index, item) {
+                                var array = new Array();
+                                $.each(item, function (i, d) {
+                                    array.push(d);
+                                });
+                                dataOrderEntry.push(array);
+                            });
+                            //alert('Data loaded');
+
+                            if ("@Session["Phone1"]" != "") {
+                                $('#txtPhone').val('@Session["Phone1"]'); // handsontable.getCell(cnt - 2, 1).innerText;
+                                $('#txtRemarks').val('@Session["Remarks"]'); // handsontable.getCell(cnt - 1, 1).innerText;
+                            }
+
+                        }
+                        catch (ex) {
+                            dataOrderEntry = [];
+                        }
+                    }
+                });
+
+            }
+
+
+            function footerRowRenderer(instance, td, row, col, prop, value, cellProperties) {
+                //                Handsontable.renderers.TextRenderer.apply(this, arguments);
+                //                td.style.fontWeight = 'bold';
+                //                td.style.color = 'green';
+                //                td.style.background = '#CEC';
+                td.style.background = '#EEE';
+            }
+
+            function firstRowRenderer(instance, td, row, col, prop, value, cellProperties) {
+                Handsontable.renderers.TextRenderer.apply(this, arguments);
+                td.style.fontWeight = 'bold';
+                td.style.color = 'green';
+                td.style.background = '#CEC';
+            }
+
+            function negativeValueRenderer(instance, td, row, col, prop, value, cellProperties) {
+                Handsontable.renderers.TextRenderer.apply(this, arguments);
+                if (parseInt(value, 10) < 0) { //if row contains negative number
+                    td.className = 'negative'; //add class "negative"
+                }
+
+                if (!value || value === '') {
+                    td.style.background = '#EEE';
+                }
+                else {
+                    if (value === 'Nissan') {
+                        td.style.fontStyle = 'italic';
+                    }
+                    td.style.background = '';
+                }
+            }
+
+
+            $("#btnCancel").bind("click", function (e) {
+                window.location.pathname = '/Home/Dashboard';
+            });
+
+
+
+        });
+        
+    </script>
+}

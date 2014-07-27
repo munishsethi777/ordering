@@ -1,0 +1,352 @@
+﻿@{
+    ViewBag.Title = "ReportDeliveryStatus";
+    Layout = "~/Views/Shared/_BootstrapLayout.cshtml";
+}
+<form id="frmReportReorderHitByDay" class="form-horizontal">
+<div class="wellNew">
+    <legend>Delivery Status Report</legend>
+    <div class="row-fluid">
+        <input type="hidden" id="hdnGroupId" value="0" />
+        <input type="hidden" id="hdnProductId" value="0" />
+        <div class="control-group">
+            <label class="control-label" for="ddlAccount">
+                Account :
+            </label>
+            <div class="controls">
+                <select id="ddlAccount" name="ddlAccount" onchange="ChangeAccount();">
+                    <option value="">ALL</option>
+                    @Html.BindAccount()
+                </select>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ddlGroup">
+                Region :
+            </label>
+            <div class="controls">
+                <select id="ddlGroup" name="ddlGroup" onchange="ChangeGroup();">
+                    <option value="0">ALL</option>
+                    @Html.BindTankGroup()
+                </select>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ddlSubGroup">
+                Sub Group :
+            </label>
+            <div class="controls">
+                <select id="ddlSubGroup" name="ddlSubGroup" onchange="ChangeSubGroup();">
+                    <option value="0">ALL</option>
+                </select>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ddlSite">
+                Tank Name :
+            </label>
+            <div class="controls">
+                @Html.Partial("_Lookup", new string[] { "txtTankName", "Select Tank", "lkpClassForReport", "false" })
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ddlSite">
+                Site :
+            </label>
+            <div class="controls">
+                @Html.Partial("_Lookup", new string[] { "txtSite", "Select Site", "lkpClassForReport", "false" })
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="dtFromDate">
+                From Date <sup style='color: Red'>*</sup> :
+            </label>
+            <div class="controls">
+                <input type="text" id="dtFromDate" name="dtFromDate" class="RptPreviousMonth DateDiffMin" data-val="true" data-val-required="This field is required" />
+                <span class="field-validation-valid" data-valmsg-for="dtFromDate" data-valmsg-replace="true">
+                </span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="dtToDate">
+                To Date <sup style='color: Red'>*</sup> :
+            </label>
+            <div class="controls">
+                <input type="text" id="dtToDate" name="dtToDate" class="RptCurrentMonth DateDiffMax" data-val="true" data-val-required="This field is required" />
+                <span class="field-validation-valid" data-valmsg-for="dtToDate" data-valmsg-replace="true">
+                </span>
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button type="button" id="btnViewResults" class="btn btn-primary">
+                    <span class="ui-button-text">View Report</span></button>
+                <button type="button" id="btnViewDeliveryCollection" class="btn btn-info">
+                    <span class="ui-button-text">View Delivery Collection</span></button>
+                <button type="button" id="btnClear" class="btn">
+                    <span class="ui-button-text">Clear</span></button>
+                @*<button type="button" id="btnSchedule" class="btn">
+                    <span class="ui-button-text">Schedule</span></button>
+                <!-- /btn-group -- export -->
+                <div class="btn-group">
+                    <button type="button" id="btnExport" class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
+                        Export <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Excel</a></li>
+                        <li><a href="#">PDF</a></li>
+                        <li><a href="#">Word</a></li>
+                        <li><a href="#">CSV</a></li>
+                        <li><a href="#">Print</a></li>
+                    </ul>
+                </div>*@
+            </div>
+        </div>
+    </div>
+</div>
+<!-- tank reorder by ETR -->
+<div id="deliveryCollection" style="display: none">
+</div>
+<!-- consumption type dialog -->
+<div id="consumptionType" style="display: none">
+    @Html.Partial("_ConsumptionType")
+</div>
+</form>
+@section scripts
+{
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            $('#btnClear').click(function () {
+
+                //clear hidden ctrl = 0
+                $('#frmReportReorderHitByDay input[type=hidden]').each(function () {
+                    $(this).val('0');
+                });
+
+                //clear text ctrl = ''
+                $('#frmReportReorderHitByDay input[type=text]').each(function () {
+                    $(this).val('');
+                });
+
+                //drop down controls
+                $('#frmReportReorderHitByDay select').each(function () {
+                    $(this)[0].selectedIndex = 0;
+                });
+
+                //to clear lookup
+                $('#frmReportReorderHitByDay input[islookup=true]').each(function () {
+                    $(this).attr({ text: "", value: "", selectedrow: "" });
+                });
+
+            });
+
+            $('#btnViewResults').click(function () {
+                if (!$('form').valid())
+                    return;
+
+                //                var reportUrl = 'https://www.psenergy.com/dmsdemoreports/Reports.aspx?';
+                //                var reportId = '7';
+                //                reportUrl = reportUrl + 'ReportID=' + reportId + QueryString();
+                //                window.open(reportUrl);
+
+                reportParamModel =
+                {
+                    ReportID: '7',
+                    CustomerID: $('#hdnCustomerId').val(),
+                    UserID: $('#hdnUserId').val(),
+                    ReportParams: []
+                };
+
+                reportParamModel.ReportParams.push(
+                    {
+                        "ParamName": "CustomerID",
+                        "ParamValue": $('#hdnCustomerId').val(),
+                        "ParamText": $('#hdnCustomerName').val()
+                    },
+                    {
+                        "ParamName": "AccountID",
+                        "ParamValue": $('#ddlAccount option:selected').val(),
+                        "ParamText": $('#ddlAccount option:selected').text()
+                    },
+                    {
+                        "ParamName": "TankID",
+                        "ParamValue": $('#txtTankName').attr('text'),
+                        "ParamText": ""
+                    },
+                    {
+                        "ParamName": "SiteID",
+                        "ParamValue": $('#txtSite').attr('text'),
+                        "ParamText": ""
+                    },
+                    {
+                        "ParamName": "GroupID",
+                        "ParamValue": $('#ddlGroup option:selected').val(),
+                        "ParamText": $('#ddlGroup option:selected').text()
+                    },
+                    {
+                        "ParamName": "SubGroupID",
+                        "ParamValue": $('#ddlSubGroup option:selected').val(),
+                        "ParamText": $('#ddlSubGroup option:selected').text()
+                    },
+                    {
+                        "ParamName": "FromDate",
+                        "ParamValue": $('#dtFromDate').val(),
+                        "ParamText": $('#dtFromDate').val()
+                    },
+                    {
+                        "ParamName": "ToDate",
+                        "ParamValue": $('#dtToDate').val(),
+                        "ParamText": $('#dtToDate').val()
+                    },
+                    {
+                        "ParamName": "ProductID",
+                        "ParamValue": 1,
+                        "ParamText": ""
+                    });
+
+                //open report window/tab
+                OpenReport(reportParamModel);
+
+            });
+
+            //delivery collection - like main page
+            $('#btnViewDeliveryCollection').click(function () {
+                //load  delivery collection tank
+                LoadDeliveryCollection();
+            });
+
+        });
+
+        /*
+        ReportTank                  = 0,
+        ReportConsumption           = 1,
+        ReportReorderHitByDate      = 2,
+        ReportReorderAfterconsumption = 3,
+        ReportTankNoInventory       = 4,
+        ReportRecorderStatus        = 5,
+        ReportDeliveryStatus        = 6,
+        ReportTrueup                = 7,
+        ReportTrueUpSummary         = 8,
+        ReportTankManagement        = 9,
+        ReportHistoricInventoryBalance = 10
+        */
+
+        function LoadDeliveryCollection() {
+            try {
+                // delivery collection view
+                $('#deliveryCollection').html('');
+
+                // Dialogs window for add
+                $("#deliveryCollection").dialog({
+                    title: 'Delivery Collection Tank',
+                    autoOpen: false,
+                    resizable: true,
+                    width: winWidth - 10,
+                    height: winHeight - 10,
+                    position: 'center',
+                    modal: true,
+                    draggable: true,
+                    open: function (event, ui) {
+                        $.ajax({
+                            type: 'POST',
+                            url: '/Report/Report/DeliveryCollection',
+                            data: {
+                                RptType: 6, //   ReportDeliveryStatus        = 6,
+                                AccountID: $('#ddlAccount').val(),
+                                SiteID: ($('#txtSite').attr('text') == undefined) ? '' : $('#txtSite').attr('text'),
+                                GroupID: $('#ddlGroup').val(),
+                                SubGroupID: $('#ddlSubGroup').val(),
+                                FromDate: $('#dtFromDate').val(),
+                                ToDate: $('#dtToDate').val()
+                            },
+                            async: false,
+                            success: function (data) {
+                                try {
+                                    if (data == "") {
+                                        if ($("#deliveryCollection").closest('.ui-dialog').is(':visible'))
+                                            $('#deliveryCollection').dialog('close')
+
+                                        AlertError('Page could not load, please try again');
+                                        return;
+                                    }
+                                    $('#deliveryCollection').html(data);
+
+                                }
+                                catch (e) {
+                                    ScriptDialogError(e);
+                                }
+                            }
+                        });
+
+                    },
+                    close: function (event, ui) {
+
+                        if ($("#deliveryCollection").closest('.ui-dialog').is(':visible'))
+                            $('#deliveryCollection').dialog('close')
+                    }
+                });
+
+                //open dialog
+                $('#deliveryCollection').dialog('open');
+                return false;
+            }
+            catch (e) {
+                ScriptError(e);
+            }
+        }
+        //delivery collection-end
+
+
+        function QueryString() {
+            var queryString = '';
+
+            queryString = '&CustomerID=' + $('#hdnCustomerId').val();
+            queryString += '&Customer=' + $('#hdnCustomerName').val();
+            queryString += '&AccountID=' + $('#ddlAccount').val();
+            queryString += '&TankID=' + (($('#txtTankName').attr('text') == undefined) ? '' : $('#txtTankName').attr('text'));
+            queryString += '&SiteID=' + (($('#txtSite').attr('text') == undefined) ? '' : $('#txtSite').attr('text'));
+            queryString += '&ProductID=1';
+            queryString += '&GroupID=' + $('#ddlGroup').val();
+            queryString += '&SubGroupID=' + $('#ddlSubGroup').val();
+            queryString += '&FromDate=' + $('#dtFromDate').val();
+            queryString += '&ToDate=' + $('#dtToDate').val();
+            return queryString;
+
+        }
+
+        function ChangeAccount() {
+            //store account id in session
+            $.post('/Home/ChangeAccount', { sAccount: accountid }, function (data) { });
+        }
+
+        function ChangeSubGroup() {
+            //store SubGroup id in session
+            $.post('/Home/ChangeSubGroup', { sSubGroupID: $('#ddlSubGroup').val() }, function (data) { });
+        }
+
+        function ChangeGroup() {
+            var groupid = $('#ddlGroup').val();
+
+            //$('#ddlSubGroup').html('');
+
+            //append site 
+            $.ajax({
+                type: 'POST',
+                url: '/DMS/DMS/BindSubGroup',
+                data: { iGroupId: groupid },
+                async: false,
+                success: function (data) {
+                    try {
+                        $('#ddlSubGroup').html(data);
+                        //$('#ddlSubGroup').selectpicker("refresh");
+                    }
+                    catch (e) {
+                        ScriptDialogError(e);
+                    }
+                }
+            });
+        }
+
+    </script>
+}

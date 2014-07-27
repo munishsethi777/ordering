@@ -1,0 +1,33 @@
+﻿@model bool
+
+@if (Model)
+{
+<div class="control-group">
+    <label class="control-label" for="ddlTimeZone">
+        Time Zone <sup style='color:Red' >*</sup>
+    </label>
+    <div class="controls">
+        <select id="ddlTimeZone" name="ddlTimeZone" class="selectpicker" data-val="true" data-val-required="The field is required.">
+            <option value="">Select Time Zone</option>
+            @Html.BindTimeZone();
+        </select>
+        <label class="field-validation-valid" data-valmsg-for="ddlTimeZone" data-valmsg-replace="true">
+        </label>
+    </div>
+</div>
+}
+else
+{
+    <div class="control-group">
+    <label class="control-label" for="ddlTimeZone">
+        Time Zone
+    </label>
+    <div class="controls">
+        <select id="ddlTimeZone" name="ddlTimeZone" class="selectpicker">
+            <option value="0">Select Time Zone</option>
+            @Html.BindTimeZone();
+        </select>
+    </div>
+</div>
+
+}

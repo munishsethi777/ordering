@@ -1,0 +1,121 @@
+﻿@model MVCDataModel.tblPage
+@Html.Partial("_Dialog")
+<script type="text/javascript">
+    var model = null;
+    $(document).ready(function () {
+        
+        model = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+        
+        $('#btnSave').bind('click', function () {
+
+            try {
+
+                // Force validation to reevaluate next time
+                var inputs = $('#pageForm').find(":input");
+                inputs.removeData("previousValue");
+                $('#pageForm').valid();
+
+                resultValation = $('#pageForm').validate();
+
+                timerValidation = $.timer(function () {
+
+                    if (resultValation.pendingRequest == 0) {
+                        timerValidation.stop();
+                        if ($('#pageForm').valid())
+                            CreateEditPage('Add');
+                    }
+                }, 1000, true);
+
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+
+        });
+
+        $('#btnUpdate').bind('click', function () {
+            try {
+                // Force validation to reevaluate next time
+                var inputs = $('#pageForm').find(":input");
+                inputs.removeData("previousValue");
+                $('#pageForm').valid();
+
+                resultValation = $('#pageForm').validate();
+
+                timerValidation = $.timer(function () {
+
+                    if (resultValation.pendingRequest == 0) {
+
+                        timerValidation.stop();
+                        if ($('#pageForm').valid())
+                            CreateEditPage('Update');
+                    }
+
+                }, 1000, true);
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+        });
+
+        $("#btnCancel").bind("click", function (e) {
+            ClearForm();
+        });
+
+    }); 
+    
+</script>
+<form id="pageForm" class="form-horizontal">
+<div class="">
+    <div class="row-fluid">
+        <input type="hidden" id="hdnPageId" value="0" />
+        <div class="control-group">
+            <label class="control-label" for="txtPageTitle">
+                Page Title</label>
+            <div class="controls">
+                <input data-val="true" data-val-remote="Page is already exists." 
+                        data-val-remote-url="/Validation/IsExists" data-val-required="The Page Title field is required." 
+                        data-val-remote-additionalfields="primaryfield,primaryvalue, tablename,columnname,columnvalue"
+                        data-val-remote-columnname="pagetitle" 
+                        data-val-remote-tablename="tblpage"
+                        data-val-remote-columnvalue="txtPageTitle" 
+                        data-val-remote-primaryfield="PageId" 
+                        data-val-remote-primaryvalue="hdnPageId" id="txtPageTitle" name="txtPageTitle" type="text">
+                <label class="field-validation-valid" data-valmsg-for="txtPageTitle" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtDesc">
+                Description</label>
+            <div class="controls">
+                <input type="text" id="txtDesc" name="txtDesc"/>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtArea">
+                Area</label>
+            <div class="controls">
+                <input type="text" id="txtArea" name="txtArea" />
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtController">
+                Controller</label>
+            <div class="controls">
+                <input type="text" id="txtController" name="txtController" />
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtAction">
+                Action</label>
+            <div class="controls">
+                <input type="text" id="txtAction" name="txtAction" />
+            </div>
+        </div>
+        @Html.Partial("_Status")
+        @Html.Partial("_SubmitClear")
+    </div>
+</div>
+</form>
+@Html.Partial("_Alert")

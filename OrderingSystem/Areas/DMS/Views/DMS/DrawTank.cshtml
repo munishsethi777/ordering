@@ -1,0 +1,173 @@
+﻿@model List<MVCDataModel.GetAllTanksMainPage_Result>
+@{
+    if (Model.Count() == 0)
+    {
+    <center>
+        <div style="display: inline-block;">
+            <div>
+                <p class="text-error">
+                    No Records Found</p>
+            </div>
+        </div>
+    </center>
+    }
+    else
+    {
+        for (int i = 1; i <= ViewBag.Row; i++)
+        {
+    <center>
+        <div style="display: inline-block;">
+            @{
+    
+            //foreach (var item in @Model)
+            for (int j = 0; j < ViewBag.Column; j++)
+            {
+
+                int k = ((i - 1) * ViewBag.Column) + j;
+                if (k < ViewBag.PageCount)
+                {
+                <div class="contextone" TankId="@Model[k].TankID" TankCapacity="@Model[k].Tankcapacity"
+                    TankName="@Model[k].TankName" style="padding-right: 5px; width: 310px; float: left;
+                    padding-bottom: 10px;">
+                    <div class="col-sm-6 col-md-3">
+                        <div class="thumbnail bgColorTankmanagement">
+                            <div align="center" style="color: Maroon; height: 25px;">
+                                <div class="dropdown">
+                                    <!-- Link or button to toggle dropdown -->
+                                    <ul class='nav nav-pills pull-right' style="text-align: left;">
+                                        <li class='dropdown'><a class='dropdown-toggle' data-toggle='dropdown' href='#'><b
+                                            class='icon-th-list'></b></a>
+                                            <ul class='dropdown-menu nav pull-right'>
+                                                <li class='dropdown-submenu'><a href='#'>Delivery Companion</a>
+                                                    <ul class="dropdown-menu pull-right">
+                                                        <li class="dropdown-submenu pull-left"><a tabindex="-1" href="#">Distance</a>
+                                                            <ul class='dropdown-menu'>
+                                                                <li><a onclick="LoadReorderByMile(@Model[k].TankID, 50);" tabindex="-1" href="#">1-5
+                                                                    miles</a></li>
+                                                                <li><a onclick="LoadReorderByMile(@Model[k].TankID, 10);" tabindex="-1"
+                    href="#">1-10 miles</a></li>
+                                                                <li><a onclick="LoadReorderByMile(@Model[k].TankID,
+                    15);" tabindex="-1" href="#">1-15 miles</a></li>
+                                                                <li><a onclick="LoadReorderByMile(@Model[k].TankID,
+                    20);" tabindex="-1" href="#">1-20 miles</a></li>
+                                                            </ul>
+                                                        </li>
+                                                        <li class="dropdown-submenu pull-left"><a tabindex="-1" href="#">ETR</a>
+                                                            <ul class='dropdown-menu'>
+                                                                <li><a onclick="SelectConsumptionType(1,
+                    @Model[k].TankID, 0, 3);" tabindex="-1" href="#">0-3 days</a></li>
+                                                                <li><a onclick="SelectConsumptionType(1,
+                    @Model[k].TankID, 4, 6);" tabindex="-1" href="#">4-6 days</a></li>
+                                                                <li><a onclick="SelectConsumptionType(1,
+                    @Model[k].TankID, 7, 10);" tabindex="-1" href="#">7-10 days</a></li>
+                                                            </ul>
+                                                        </li>
+                                                        <li class="dropdown-submenu pull-left"><a tabindex="-1" href="#">ETE</a>
+                                                            <ul class='dropdown-menu'>
+                                                                <li><a onclick="SelectConsumptionType(2, @Model[k].TankID, 0, 3);" tabindex="-1"
+                    href="#">0-3 days</a></li>
+                                                                <li><a onclick="SelectConsumptionType(2, @Model[k].TankID,
+                    4, 6);" tabindex="-1" href="#">4-6 days</a></li>
+                                                                <li><a onclick="SelectConsumptionType(2,
+                    @Model[k].TankID, 7, 10);" tabindex="-1" href="#">7-10 days</a></li>
+                                                            </ul>
+                                                        </li>
+                                                    </ul>
+                                                </li>
+                                                <li><a onclick="LoadTankDetails('#tankStatus', @Model[k].TankID);" href='#'>Tank Status</a></li>
+                                                <li><a onclick="LoadTankDetails('#tankAlarm', @Model[k].TankID);"
+                    href='#'>Tank Alarm</a></li>
+                                                <li><a onclick="LoadTankDetails('#tankLocation', @Model[k].TankID);"
+                    href='#'>Tank Location</a></li>
+                                                <li><a onclick="LoadTankDetails('#tankData', @Model[k].TankID);"
+                    href='#'>Tank Data</a></li>
+                                                <li><a onclick="LoadTankDetails('#tankEvent', @Model[k].TankID);"
+                    href='#'>Tank Event</a></li>
+                                                <li><a onclick="LoadTankDetails('#tankContact', @Model[k].TankID);"
+                    href='#'>Tank Contact</a></li>
+                                                <li><a onclick="LoadTankDetails('#showMap', @Model[k].TankID);"
+                    href='#'>Show Map</a></li>
+                                                <li><a onclick="LoadTankDetails('#tankOE', @Model[k].TankID);"
+                    href='#'>OE Default</a></li>
+                                                <li><a onclick="LoadTankDetails('#tankManualReading',
+                    @Model[k].TankID);" href='#'>Manual Reading</a></li>
+                                                <li><a onclick="LoadTankDetails('#tankComment',
+                    @Model[k].TankID);" href='#'>Tank Comments</a></li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <strong>@Model[k].TankName
+                                </strong>
+                            </div>
+                            <br />
+                            <p align="center">
+                                <strong>@Model[k].TankDipQty.ToPSEDecimal()
+                                    &nbsp;&nbsp; Gallons</strong></p>
+                            <p>
+                                <img src='@Url.Action("GenerateImage", "DMS", new { Percentage = @Model[k].Percentage, ReorderLevel = @Model[k].ReorderLevel })'
+                    alt="" />
+                                <strong style="color: Yellow">@Model[k].Percentage % </strong>
+                            </p>
+                            <div class=".thumbnail .caption">
+                                <div align="center">
+                                    <table>
+                                        <tr>
+                                            <td align="right">
+                                                <p>
+                                                    Capacity :
+                                                </p>
+                                            </td>
+                                            <td align="left">
+                                                <p>
+                                                    @Model[k].Tankcapacity Gallons
+                                                </p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" align="center">
+                                                <p>
+                                                    @Model[k].TankProduct
+                                                </p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right">
+                                                <p>
+                                                    Last Reading Time :
+                                                </p>
+                                            </td>
+                                            <td align="left">
+                                                <p>
+                                                    @Model[k].ReadingDttm.ToPSEDate()
+                                                </p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right">
+                                                <p>
+                                                    Last Load Price :
+                                                </p>
+                                            </td>
+                                            <td align="left">
+                                                <p>
+                                                    @Model[k].LastLoadPrice
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                }// if k < pagecount
+            }// for loop // j
+                
+       
+            }
+        </div>
+    </center>
+        } // for looj i
+    }// else of model count
+}

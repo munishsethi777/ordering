@@ -1,0 +1,78 @@
+﻿@Html.Partial("_Dialog")
+<script type="text/javascript">
+
+    function LoadTankData() {
+
+        if (!$('#tankDataForm').valid())
+            return;
+
+        //set manual parameters
+        $("#tblGridData").setGridParam({ postData: {
+            sFromDate: $('#frmDataDate').val(),
+            sToDate: $('#toDataDate').val()
+        }
+        });
+
+        //load the grid again
+        ReloadGrid('tblGridData');
+
+    }
+    
+</script>
+<form id="tankDataForm" class="form-horizontal">
+<div class="">
+    <div class="row-fluid">
+        <input type="hidden" id="hdnTankId" value="0" />
+        <div class="span4">
+            <div class="control-group">
+                <label class="control-label" for="frmDataDate">
+                    From <sup style='color: Red'>*</sup>
+                </label>
+                <div class="controls">
+                    <input type="text" id="frmDataDate" name="frmDataDate" onchange="LoadTankData();"
+                        class="RptPreviousMonth DateDiffMin" data-val="true" data-val-required="The field is required." />
+                    <label class="field-validation-valid" data-valmsg-for="frmDataDate" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="span4">
+            <div class="control-group">
+                <label class="control-label" for="toDataDate">
+                    To <sup style='color: Red'>*</sup></label>
+                <div class="controls">
+                    <input type="text" id="toDataDate" name="toDataDate" onchange="LoadTankData();" class="RptCurrentMonth DateDiffMax"
+                        data-val="true" data-val-required="The field is required." />
+                    <label class="field-validation-valid" data-valmsg-for="toDataDate" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+<table id="tblGridData">
+</table>
+<div id="pager">
+</div>
+@(Html.Grid("tblGridData")
+    .AddColumn(new Column("Status"))
+        .AddColumn(new Column("readingtime").SetLabel("Reading Time").SetSearchType(Searchtype.Datepicker).SetSearchDateFormat("mm/dd/yy"))
+        .AddColumn(new Column("inventory").SetLabel("Inventory (Gal)").SetAlign(Align.Right))
+        .AddColumn(new Column("percentage").SetLabel("%").SetAlign(Align.Right))
+    .SetUrl(Url.Action("GridDataTankData", "DMS"))
+    .SetAutoWidth(true)
+    .SetRowNum(10)
+    .SetRowList(new[] { 10, 15, 20, 50 })
+    .SetViewRecords(true)
+    .SetPager("pager")
+    .SetHeight(250)
+    .SetWidth(360)
+    .SetHoverRows(true)
+    .SetMultiSelect(false)
+    .SetToolbar(false)
+    .SetAltRows(true)
+    .SetShrinkToFit(true)
+    .SetDataType(DataType.Local)
+    .SetEmptyRecords("No Records Found")
+    )

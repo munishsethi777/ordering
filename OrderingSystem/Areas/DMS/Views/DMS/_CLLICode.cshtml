@@ -1,0 +1,198 @@
+﻿@model MVCDataModel.spCLLICodeManagement2_Result
+@Html.Partial("_Dialog")
+<script type="text/javascript">
+    var model = null;
+    $(document).ready(function () {
+        model = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+
+        $('#btnSave').bind('click', function () {
+            try {
+                // Force validation to reevaluate next time
+                var inputs = $('#frmTankClliCode').find(":input");
+                inputs.removeData("previousValue");
+                $('#frmTankClliCode').valid();
+
+                resultValation = $('#frmTankClliCode').validate();
+
+                timerValidation = $.timer(function () {
+
+                    if (resultValation.pendingRequest == 0) {
+                        timerValidation.stop();
+                        if ($('#frmTankClliCode').valid())
+                            CreateEditCLLICode('Add');
+                    }
+                }, 1000, true);
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+
+        });
+
+        $('#btnUpdate').bind('click', function () {
+            try {
+
+                // Force validation to reevaluate next time
+                var inputs = $('#frmTankClliCode').find(":input");
+                inputs.removeData("previousValue");
+                $('#frmTankClliCode').valid();
+
+                resultValation = $('#frmTankClliCode').validate();
+
+                timerValidation = $.timer(function () {
+
+                    if (resultValation.pendingRequest == 0) {
+
+                        timerValidation.stop();
+                        if ($('#frmTankClliCode').valid())
+                            CreateEditCLLICode('Update');
+                    }
+
+                }, 1000, true);
+
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+
+        });
+
+        $("#btnCancel").bind("click", function (e) {
+            ClearClliForm();
+        });
+
+
+    });
+    
+</script>
+<form id="frmTankClliCode" class="form-horizontal">
+<input type="hidden" id="hdnId" value="0" />
+<div class="row-fluid">
+    <div class="span5">
+        <div class="control-group">
+            <label class="control-label" for="ddlRegion">
+                Region <sup style='color: Red'>*</sup>
+            </label>
+            <div class="controls">
+                <select id="ddlRegion" name="ddlRegion" data-val="true" data-val-required="The field is required.">
+                    <option value="">Select Region</option>
+                    @Html.BindTankGroup()
+                </select>
+                <label class="field-validation-valid" data-valmsg-for="ddlRegion" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtCLLICode">
+                CLLI Code <sup style="color: Red">*</sup>
+            </label>
+            <div class="controls">
+                <input data-val="true" data-val-remote="CLLI is already exists." data-val-remote-url="/Validation/IsExistsWithCutomer"
+                    data-val-required="The field is required." data-val-remote-additionalfields="primaryfield,primaryvalue, tablename,columnname,columnvalue,customerid"
+                    data-val-remote-columnname="cllicode" data-val-remote-tablename="tbltanksite"
+                    data-val-remote-columnvalue="txtCLLICode" data-val-remote-customerid="hdnCustomerId"
+                    data-val-remote-primaryfield="id" data-val-remote-primaryvalue="hdnId" id="txtCLLICode"
+                    name="txtCLLICode" type="text" />
+                <label class="field-validation-valid" data-valmsg-for="txtCLLICode" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtShortName">
+                Site Name <sup style="color: Red">*</sup>
+            </label>
+            <div class="controls">
+                <input data-val="true" data-val-remote="Site Name is already exists." data-val-remote-url="/Validation/IsExistsWithCutomer"
+                    data-val-required="The field is required." data-val-remote-additionalfields="primaryfield,primaryvalue, tablename,columnname,columnvalue,customerid"
+                    data-val-remote-columnname="sitename" data-val-remote-tablename="tbltanksite"
+                    data-val-remote-columnvalue="txtShortName" data-val-remote-customerid="hdnCustomerId"
+                    data-val-remote-primaryfield="id" data-val-remote-primaryvalue="hdnId" id="txtShortName"
+                    name="txtShortName" type="text" />
+                <label class="field-validation-valid" data-valmsg-for="txtShortName" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtAddress">
+                Address
+            </label>
+            <div class="controls">
+                <input type="text" id="txtAddress" name="txtAddress" value="" />
+                <label class="field-validation-valid" data-valmsg-for="txtAddress" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtCity">
+                City
+            </label>
+            <div class="controls">
+                <input type="text" id="txtCity" name="txtCity" value="" />
+                <label class="field-validation-valid" data-valmsg-for="txtCity" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        @Html.Partial("_State", false)
+    </div>
+    <div class="span5">
+        <div class="control-group">
+            <label class="control-label" for="txtZip">
+                ZIP Code
+            </label>
+            <div class="controls">
+                <input type="text" id="txtZip" name="txtZip" value="" class="psezipcode" />
+                <label class="field-validation-valid" data-valmsg-for="txtZip" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtPwrSndName">
+                Power Second Name<sup style="color: Red">*</sup>
+            </label>
+            <div class="controls">
+                <input type="text" id="txtPwrSndName" name="txtPwrSndName" />
+                <label class="field-validation-valid" data-valmsg-for="txtPwrSndName" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtSndRspCode">
+                Second Resp Code <sup style="color: Red">*</sup>
+            </label>
+            <div class="controls">
+                <input type="text" id="txtSndRspCode" name="txtSndRspCode" data-val="true" data-val-required="The field is required." />
+                <label class="field-validation-valid" data-valmsg-for="txtSndRspCode" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtPwrThrdName">
+                Power Third Name<sup style="color: Red">*</sup>
+            </label>
+            <div class="controls">
+                <input type="text" id="txtPwrThrdName" name="txtPwrThrdName" data-val="true" data-val-required="The field is required." />
+                <label class="field-validation-valid" data-valmsg-for="txtPwrThrdName" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtThrdRspCode">
+                Third Resp Code <sup style="color: Red">*</sup>
+            </label>
+            <div class="controls">
+                <input type="text" id="txtThrdRspCode" name="txtThrdRspCode" data-val="true" data-val-required="The field is required." />
+                <label class="field-validation-valid" data-valmsg-for="txtThrdRspCode" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row-fluid">
+    <div class="control-group">
+        <div class="controls">
+            @Html.Partial("_SubmitClear")
+        </div>
+    </div>
+</div>
+</form>
+@Html.Partial("_Alert")

@@ -1,0 +1,336 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Lookups>
+  <Lookup LookupName="txtVehicle" CustomerId="0" SqlType="Query" Search="False" PageSize="10" IsSingle="False">
+    <Sql>
+      select vehicleid,customersvehicleid,make,model,year,replace(additionaldata,',','') as description, assetid
+      from tblvehicle  veh
+      where veh.status='1' and veh.customerid = SelectedCustomerId
+    </Sql>
+    <Columns>
+      <Column Name="vehicleid" FieldName="vehicleid" Alias="vehicleid" Style="width:150px;display:none;" ></Column>
+      <Column Name="customersvehicleid" FieldName="customersvehicleid" Alias="Vehicle ID" Style="width:150px;"></Column>
+      <Column Name="make" FieldName="make" Alias="Make" Style="width:150px;"></Column>
+      <Column Name="model" FieldName="model" Alias="Model" Style="width:150px;"></Column>
+      <Column Name="year" FieldName="year" Alias="Year" Style="width:150px;"></Column>
+      <Column Name="description" FieldName="additionaldata" Alias="Desc" Style="width:150px;"></Column>
+      <Column Name="assetid" FieldName="assetid" Alias="AssetID" Style="width:150px;display:none;"></Column>
+      
+    </Columns>
+    <Params>
+      <Param Name=""></Param>
+    </Params>
+    <OrderField></OrderField>
+    <DataTextField>customersvehicleid</DataTextField>
+    <DataValueField>vehicleid</DataValueField>
+    <SearchLength>0</SearchLength>
+  </Lookup>
+  <Lookup LookupName="txtVehicleAPC" CustomerId="0" SqlType="Query" Search="True" PageSize="10" IsSingle="false">
+    <Sql>
+      select vehicleid,customersvehicleid,make,model,year,replace(additionaldata,',','') as description, assetid
+      from tblvehicle  veh
+      where veh.status='1' and veh.customerid = 4
+    </Sql>
+    <Columns>
+      <Column Name="vehicleid" FieldName="vehicleid" Alias="vehicleid" Style="width:150px;display:none;" ></Column>
+      <Column Name="customersvehicleid" FieldName="customersvehicleid" Alias="Vehicle ID" Style="width:150px;"></Column>
+      <Column Name="make" FieldName="make" Alias="Make" Style="width:150px;"></Column>
+      <Column Name="model" FieldName="model" Alias="Model" Style="width:150px;"></Column>
+      <Column Name="year" FieldName="year" Alias="Year" Style="width:150px;"></Column>
+      <Column Name="description" FieldName="additionaldata" Alias="Desc" Style="width:150px;"></Column>
+      <Column Name="assetid" FieldName="assetid" Alias="AssetID" Style="width:150px;display:none;"></Column>
+
+    </Columns>
+    <Params>
+      <Param Name=""></Param>
+    </Params>
+    <OrderField></OrderField>
+    <DataTextField>customersvehicleid</DataTextField>
+    <DataValueField>vehicleid</DataValueField>
+    <SearchLength>0</SearchLength>
+  </Lookup>
+
+  <!-- Department Lookup -->
+  <Lookup LookupName="txtDepartment" CustomerId="0" SqlType="Query" Search="False" PageSize="5" IsSingle="false">
+    <Sql>
+      select customerdepartmentid,departmentname,customersdepartmentcode
+      from tblcustomerdepartments
+      where customerid='@selectedcustomerid' 
+    </Sql>
+    <Columns>
+      <Column Name="customerdepartmentid" FieldName="customerdepartmentid" Alias="" Style="display:none;" ></Column>
+      <Column Name="departmentname" FieldName="departmentname" Alias="Dept Name" Width="100" Style=""></Column>
+      <Column Name="customersdepartmentcode" FieldName="customersdepartmentcode" Alias="Dept Code" Width="100" Style=""></Column>
+    </Columns>
+    <Params>
+      <Param Name=""></Param>
+    </Params>
+    <OrderField>DepartmentName</OrderField>
+    <DataTextField>departmentname</DataTextField>
+    <DataValueField>customerdepartmentid</DataValueField>
+    <SearchLength>0</SearchLength>
+  </Lookup>
+
+  <!-- Division Lookup -->
+  <Lookup LookupName="txtDivision" CustomerId="0" SqlType="Query" Search="False" PageSize="5" IsSingle="false">
+    <Sql>
+      select customerdivisionid,divisionname from tblcustomerdivision
+      where customerid='@selectedcustomerid'
+    </Sql>
+    <Columns>
+      <Column Name="customerdivisionid" FieldName="customerdivisionid" Alias="" Width="200" Style="display:none;" ></Column>
+      <Column Name="divisionname" FieldName="divisionname" Alias="Division Name" Width="100" Style=""></Column>
+    </Columns>
+    <Params>
+      <Param Name=""></Param>
+    </Params>
+    <OrderField>divisionname</OrderField>
+    <DataTextField>divisionname</DataTextField>
+    <DataValueField>customerdivisionid</DataValueField>
+    <SearchLength>0</SearchLength>
+  </Lookup>
+
+  <!-- Accounting code Lookup -->
+  <Lookup LookupName="txtAccountCode" CustomerId="0" SqlType="Query" Search="False" PageSize="5" IsSingle="false">
+    <Sql>
+      select customeraccountingcodeid, customersaccountcode from tblcustomeraccountingcodes 
+      where customerid='@selectedcustomerid'
+    </Sql>
+    <Columns>
+      <Column Name="customeraccountingcodeid" FieldName="customeraccountingcodeid" Alias=""  Width="0" Style="display:none;" ></Column>
+      <Column Name="customersaccountcode" FieldName="customersaccountcode" Alias="Short Code" Width="100" Style=""></Column>
+    </Columns>
+    <Params>
+      <Param Name=""></Param>
+    </Params>
+    <OrderField>customersaccountcode</OrderField>
+    <DataTextField>customersaccountcode</DataTextField>
+    <DataValueField>customeraccountingcodeid</DataValueField>
+    <SearchLength>0</SearchLength>
+  </Lookup>
+
+  <!-- Tank Name - Main Page Lookup -->
+  <Lookup LookupName="txtTankName" CustomerId="2" SqlType="Query" Search="True" PageSize="10" IsSingle="False" Return="True">
+    <Sql>
+      select t.tankid as id, t.accountid, cllicode, t.tankname,t.customersiteid, acc.sitelocation, p.descrip, tg.groupname
+      from tankmaster t
+      inner join tbltanksite ts on t.tankid=ts.tankid
+      left join prodlist p on t.tankproduct = convert(int, prod)
+      left join accountsites acc on t.customerid=acc.customerid and t.siteid = acc.site and t.accountid = acc.account
+      left join tankgroup tg on t.groupid = tg.groupid
+      where t.productid = 1 and t.customerid='@customerid'
+      and '@account' = case when '@account' = '' then '@account' else account end
+      and '@groupid' = case when '@groupid' = '0' then '@groupid' else t.groupid end
+      and '@subgroupid' = case when '@subgroupid' = '0' then '@subgroupid' else t.subgroupid end
+    </Sql>
+    
+    <Columns>
+      <Column Name="id" FieldName="tankid" Alias="tankid" Style="display:none;"></Column>
+      <Column Name="accountid" FieldName="accountid" Alias="Account ID" Width="75" Style=""></Column>
+      <Column Name="cllicode" FieldName="cllicode" Alias="CLLI" Width="125" Style=""></Column>
+      <Column Name="tankname" FieldName="tankname" Alias="Tank Name" Width="175" Style="" ></Column>
+      <Column Name="customersiteid" FieldName="customersiteid" Alias="Site ID" Width="75" Style=";"></Column>
+      <Column Name="sitelocation" FieldName="acc.sitelocation" Alias="Site Location" Width="150" Style="" ></Column>
+      <Column Name="descrip" FieldName="p.descrip" Alias="Product" Width="100" Style=""></Column>
+      <Column Name="groupname" FieldName="tg.groupname" Alias="Region" Width="75" Style=""></Column>
+    </Columns>
+    <Params>
+      <Param Name=""></Param>
+    </Params>
+    <OrderField>tankname</OrderField>
+    <OrderBy>asc</OrderBy>
+    <DataTextField>tankname</DataTextField>
+    <DataValueField>id</DataValueField>
+    <SearchLength>2</SearchLength>
+  </Lookup>
+
+  <!-- Tank Name - Single Selection Lookup - Report -->
+  <Lookup LookupName="txtRptTankName" CustomerId="2" SqlType="Query" Search="True" PageSize="10" IsSingle="True" Return="False">
+    <Sql>
+      select t.tankid as id, t.accountid, t.tankname,t.customersiteid, acc.sitelocation, p.descrip, tg.groupname
+      from tankmaster t
+      left join prodlist p on t.tankproduct = convert(int, prod)
+      left join accountsites acc on t.customerid=acc.customerid and t.siteid = acc.site and t.accountid = acc.account
+      left join tankgroup tg on t.groupid = tg.groupid
+      where t.productid = 1 and t.customerid='@customerid'
+      and '@account' = case when '@account' = '' then '@account' else account end
+      and '@groupid' = case when '@groupid' = '0' then '@groupid' else t.groupid end
+      and '@subgroupid' = case when '@subgroupid' = '0' then '@subgroupid' else t.subgroupid end
+    </Sql>
+
+    <Columns>
+      <Column Name="id" FieldName="tankid" Alias="tankid" Style="display:none;"></Column>
+      <Column Name="accountid" FieldName="accountid" Alias="Account ID" Width="75" Style=""></Column>
+      <Column Name="tankname" FieldName="tankname" Alias="Tank Name" Width="175" Style="" ></Column>
+      <Column Name="customersiteid" FieldName="customersiteid" Alias="Site ID" Width="75" Style=""></Column>
+      <Column Name="sitelocation" FieldName="acc.sitelocation" Alias="Site Location" Width="150" Style="" ></Column>
+      <Column Name="descrip" FieldName="p.descrip" Alias="Product" Width="175" Style=""></Column>
+      <Column Name="groupname" FieldName="tg.groupname" Alias="Region" Width="100" Style=""></Column>
+    </Columns>
+    <Params>
+      <Param Name=""></Param>
+    </Params>
+    <OrderField>tankname</OrderField>
+    <OrderBy>asc</OrderBy>
+    <DataTextField>tankname</DataTextField>
+    <DataValueField>id</DataValueField>
+    <SearchLength>2</SearchLength>
+  </Lookup>
+  
+  <!-- Tank Site Lookup -->
+  <Lookup LookupName="txtSite" CustomerId="2" SqlType="Query" Search="True" PageSize="10" IsSingle="False" Return="True">
+    <Sql>
+      select id, Site, SiteLocation, site + ' - ' + sitelocation as siteid from AccountSites 
+      where '@account' = case when '@account' = '' then '@account' else account end
+    </Sql>
+
+    <Columns>
+      <Column Name="id" FieldName="id" Alias="id" Width="" Style="display:none;"></Column>
+      <Column Name="site" FieldName="site" Alias="Site ID" Width="75" Style=""></Column>
+      <Column Name="sitelocation" FieldName="sitelocation" Alias="Site Location" Width="275" Style="" ></Column>
+      <Column Name="siteid" FieldName="siteid" Alias="siteid" Width="" Style="display:none;" ></Column>
+    </Columns>
+    <Params>
+      <Param Name=""></Param>
+    </Params>
+    <OrderField>sitelocation</OrderField>
+    <OrderBy>asc</OrderBy>
+    <DataTextField>sitelocation</DataTextField>
+    <DataValueField>site</DataValueField>
+    <SearchLength>2</SearchLength>
+  </Lookup>
+  <Lookup LookupName="txtProduct" CustomerId="2" SqlType="Query" Search="True" PageSize="10" IsSingle="False" Return="True">
+    <Sql>
+      SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY Product)id, Product FROM (
+      SELECT DISTINCT  [DESCRIPTION] AS Product FROM pepsi.dbo.GPCINV$ G
+      INNER JOIN PEPSI.dbo.FUELCODEREF FR ON FR.PROD_CODE = G.PROD_CODE
+      WHERE [DESCRIPTION] IS NOT NULL AND  CUSTNAME = 'ATT'
+      )DT)DT2 WHERE 1=1
+    </Sql>
+
+    <Columns>
+      <Column Name="id" FieldName="id" Alias="id" Style="display:none;"></Column>
+      <Column Name="product" FieldName="product" Alias="Product" Width="250" Style=""></Column>
+    </Columns>
+    <Params>
+      <Param Name=""></Param>
+    </Params>
+    <OrderField>product</OrderField>
+    <OrderBy>asc</OrderBy>
+    <DataTextField>product</DataTextField>
+    <DataValueField>product</DataValueField>
+    <SearchLength>0</SearchLength>
+  </Lookup>
+  <Lookup LookupName="txtState" CustomerId="2" SqlType="Query" Search="True" PageSize="10" IsSingle="False" Return="True">
+    <Sql>
+      SELECT * FROM(SELECT ROW_NUMBER() OVER(ORDER BY State)id, State, StateName FROM (
+      SELECT DISTINCT State FROM pepsi.dbo.GPCINV$ G
+      INNER JOIN PEPSI.dbo.FUELCODEREF FR ON FR.PROD_CODE = G.PROD_CODE
+      WHERE State IS NOT NULL AND  CUSTNAME = 'ATT')DT JOIN tblstate on dt.state = statecode)DT2 where 1 = 1
+    </Sql>
+
+    <Columns>
+      <Column Name="id" FieldName="id" Alias="id" Style="display:none;"></Column>
+      <Column Name="state" FieldName="state" Alias="State" Width="50" Style=""></Column>
+      <Column Name="statename" FieldName="statename" Alias="State Name" Width="150" Style=""></Column>
+    </Columns>
+    <Params>
+      <Param Name=""></Param>
+    </Params>
+    <OrderField>state</OrderField>
+    <OrderBy>asc</OrderBy>
+    <DataTextField>state</DataTextField>
+    <DataValueField>state</DataValueField>
+    <SearchLength>0</SearchLength>
+  </Lookup>
+  <Lookup LookupName="txtCLLICode" CustomerId="2" SqlType="Query" Search="True" PageSize="10" IsSingle="False" Return="True">
+    <Sql>
+      SELECT * FROM(SELECT ROW_NUMBER() OVER(ORDER BY CLLICODE)id, CLLICODE FROM (
+      SELECT DISTINCT CLLICODE  FROM FMWEBTEST..tblATTDemoCLLIANDRCCode
+      )DT)DT2 where 1 = 1
+    </Sql>
+
+    <Columns>
+      <Column Name="id" FieldName="id" Alias="id" Style="display:none;"></Column>
+      <Column Name="cllicode" FieldName="cllicode" Alias="CLLI Code" Width="250" Style=""></Column>
+    </Columns>
+    <Params>
+      <Param Name=""></Param>
+    </Params>
+    <OrderField>cllicode</OrderField>
+    <OrderBy>asc</OrderBy>
+    <DataTextField>cllicode</DataTextField>
+    <DataValueField>cllicode</DataValueField>
+    <SearchLength>0</SearchLength>
+  </Lookup>
+  
+  <Lookup LookupName="txtRCCode" CustomerId="2" SqlType="Query" Search="True" PageSize="10" IsSingle="False" Return="True">
+    <Sql>
+      SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY RC)id, RC FROM (
+      SELECT DISTINCT RC FROM FMWEBTEST..tblATTDemoCLLIANDRCCode
+      )DT)DT2 WHERE 1=1
+    </Sql>
+
+    <Columns>
+      <Column Name="id" FieldName="id" Alias="id" Style="display:none;"></Column>
+      <Column Name="rc" FieldName="rc" Alias="RC Code" Width="200" Style=""></Column>
+    </Columns>
+    <Params>
+      <Param Name=""></Param>
+    </Params>
+    <OrderField>rc</OrderField>
+    <OrderBy>asc</OrderBy>
+    <DataTextField>rc</DataTextField>
+    <DataValueField>rc</DataValueField>
+    <SearchLength>0</SearchLength>
+  </Lookup>
+
+  <Lookup LookupName="txtPM3RCCode" CustomerId="2" SqlType="Query" Search="True" PageSize="10" IsSingle="False" Return="True">
+    <Sql>
+      SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY respcode)id, respcode, managerclerkname FROM (
+      select distinct b.respcode, t.managerclerkname from fmweb..tblbulkinvoicerccodes b
+      inner join fmweb..tblattuserrccode t on b.respcode=t.rccode
+      where b.respcode is not null and t.rctype='pm3'
+      )DT)DT2 WHERE 1=1
+    </Sql>
+
+    <Columns>
+      <Column Name="id" FieldName="id" Alias="id" Style="display:none;"></Column>
+      <Column Name="respcode" FieldName="respcode" Alias="RC Code" Width="200" Style=""></Column>
+      <Column Name="managerclerkname" FieldName="managerclerkname" Alias="Name" Width="200" Style=""></Column>
+    </Columns>
+    <Params>
+      <Param Name=""></Param>
+    </Params>
+    <OrderField>respcode</OrderField>
+    <OrderBy>asc</OrderBy>
+    <DataTextField>respcode</DataTextField>
+    <DataValueField>respcode</DataValueField>
+    <SearchLength>0</SearchLength>
+  </Lookup>
+
+  <Lookup LookupName="txtPM2RCCode" CustomerId="2" SqlType="Query" Search="True" PageSize="10" IsSingle="False" Return="True">
+    <Sql>
+      SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY pm2rccode)id, pm2rccode, managerclerkname FROM (
+      select distinct b.pm2rccode, t.managerclerkname from fmweb..tblbulkinvoicerccodes b
+      inner join fmweb..tblattuserrccode t on b.pm2rccode=t.rccode
+      where pm2rccode is not null and t.rctype='pm2'
+      )DT)DT2 WHERE 1=1
+    </Sql>
+
+    <Columns>
+      <Column Name="id" FieldName="id" Alias="id" Style="display:none;"></Column>
+      <Column Name="pm2rccode" FieldName="pm2rccode" Alias="RC Code" Width="200" Style=""></Column>
+      <Column Name="managerclerkname" FieldName="managerclerkname" Alias="Name" Width="200" Style=""></Column>
+    </Columns>
+    <Params>
+      <Param Name=""></Param>
+    </Params>
+    <OrderField>pm2rccode</OrderField>
+    <OrderBy>asc</OrderBy>
+    <DataTextField>pm2rccode</DataTextField>
+    <DataValueField>pm2rccode</DataValueField>
+    <SearchLength>0</SearchLength>
+  </Lookup>
+</Lookups>
+
+

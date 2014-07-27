@@ -1,0 +1,124 @@
+﻿@model MVCDataModel.spTankGroupManagement_Result
+@Html.Partial("_Dialog")
+<script type="text/javascript">
+    var model = null;
+    $(document).ready(function () { 
+    
+        model = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+       
+
+        $('#btnSave').bind('click', function () {
+            try
+            {
+                // Force validation to reevaluate next time
+                var inputs = $('#tankGroupForm').find(":input");
+                inputs.removeData("previousValue");
+                $('#tankGroupForm').valid();
+
+                resultValation =  $('#tankGroupForm').validate();
+
+                timerValidation = $.timer(function() {
+                
+                       if (resultValation.pendingRequest==0)
+                       {
+                            timerValidation.stop();
+                            if ( $('#tankGroupForm').valid())
+                                CreateEditItem('Add');
+                        }
+                }, 1000, true );
+            } 
+            catch (e) 
+            {
+                ScriptDialogError(e);
+            }
+            
+        }); 
+
+        $('#btnUpdate').bind('click', function () {
+            try 
+            {
+ 
+                // Force validation to reevaluate next time
+                var inputs = $('#tankGroupForm').find(":input");
+                inputs.removeData("previousValue");
+                $('#tankGroupForm').valid();
+
+                resultValation =  $('#tankGroupForm').validate();
+
+                timerValidation = $.timer(function() {
+                
+                       if (resultValation.pendingRequest==0)
+                       {
+                        
+                            timerValidation.stop();
+                            if ( $('#tankGroupForm').valid())
+                                CreateEditItem('Update');
+                        }
+
+                }, 1000, true );
+
+            } 
+            catch (e) 
+            {
+                ScriptDialogError(e);
+            }
+
+        }); 
+
+        $("#btnCancel").bind("click", function (e) {
+                ClearForm();
+        });
+            
+
+    });
+    
+</script>
+<form id="tankGroupForm" class="form-horizontal">
+<div class="container-fluid">
+    <div class="row-fluid">
+        <input type="hidden" id="hdnGroupId" value="0" />
+        <input type="hidden" id="hdnProductId" value="0" />
+        <div class="control-group">
+            <label class="control-label" for="txtGroupName">
+                Group Name <sup style='color: Red'>*</sup> :</label>
+            <div class="controls">
+                <input type="text" id="txtGroupName" name="txtGroupName" data-val="true" data-val-remote="Group is already exists."
+                    data-val-remote-url="/Validation/IsExistsWithCutomer" data-val-required="The field is required."
+                    data-val-remote-additionalfields="primaryfield,primaryvalue, tablename,columnname,columnvalue"
+                    data-val-remote-columnname="groupname" data-val-remote-tablename="tankgroup"
+                    data-val-remote-columnvalue="txtGroupName" 
+                    data-val-remote-primaryfield="groupid" data-val-remote-primaryvalue="hdnGroupId" />
+                <label class="field-validation-valid" data-valmsg-for="txtGroupName" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ddlIconName">
+                Icon Name <sup style='color: Red'>*</sup> :</label>
+            <div class="controls">
+                <select id="ddlIconName" name="ddlIconName" class="selectpicker" data-val="true"
+                    data-val-required="The field is required.">
+                    <option value="">Select</option>
+                    @Html.BindIconName()
+                </select>
+                <label class="field-validation-valid" data-valmsg-for="ddlIconName" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtOrderpercentage">
+                Order %:</label>
+            <div class="controls">
+                <input data-val="true" id="txtOrderpercentage" class="number" name="txtOrderpercentage"
+                    type="text" />
+                <label class="field-validation-valid" data-valmsg-for="txtOrderpercentage" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="row-fluid">
+            @Html.Partial("_SubmitClear")
+        </div>
+    </div>
+</div>
+</form>
+@Html.Partial("_Alert")

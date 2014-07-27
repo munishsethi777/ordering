@@ -1,0 +1,259 @@
+﻿@model MVCDataModel.spUserManagement_Result
+@Html.Partial("_Dialog")
+<script type="text/javascript">
+    var model = null;
+    $(document).ready(function () { 
+    
+        model = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+       
+
+        $('#btnSave').bind('click', function () {
+            try
+            {
+                // Force validation to reevaluate next time
+                var inputs = $('#webUserForm').find(":input");
+                inputs.removeData("previousValue");
+                $('#webUserForm').valid();
+
+                resultValation =  $('#webUserForm').validate();
+
+                timerValidation = $.timer(function() {
+                
+                       if (resultValation.pendingRequest==0)
+                       {
+                            timerValidation.stop();
+                            if ( $('#webUserForm').valid())
+                                CreateEditItem('Add');
+                        }
+                }, 1000, true );
+            } 
+            catch (e) 
+            {
+                ScriptDialogError(e);
+            }
+            
+        }); 
+
+        $('#btnUpdate').bind('click', function () {
+            try 
+            {
+ 
+                // Force validation to reevaluate next time
+                var inputs = $('#webUserForm').find(":input");
+                inputs.removeData("previousValue");
+                $('#webUserForm').valid();
+
+                resultValation =  $('#webUserForm').validate();
+
+                timerValidation = $.timer(function() {
+                
+                       if (resultValation.pendingRequest==0)
+                       {
+                        
+                            timerValidation.stop();
+                            if ( $('#webUserForm').valid())
+                                CreateEditItem('Update');
+                        }
+
+                }, 1000, true );
+
+            } 
+            catch (e) 
+            {
+                ScriptDialogError(e);
+            }
+
+        }); 
+
+        $("#btnCancel").bind("click", function (e) {
+                ClearUserForm();
+        });
+            
+
+    });
+    
+</script>
+<form id="webUserForm" class="form-horizontal">
+<div class="">
+    <div class="row-fluid">
+        <input type="hidden" id="hdnWebUserId" value="0" />
+        <input type="hidden" id="hdnPersonId" value="0" />
+        <input type="hidden" id="hdnLocationId" value="0" />
+        <div class="span5">
+         @if(Session["CustomerId"].ToString() == "1"){
+             @:<div class="control-group" style="display:block;">
+          } 
+          else {
+             @:<div class="control-group" style="display:none;">
+          } 
+          
+                <label class="control-label" for="ddlCustomer">
+                    Customer <sup style='color:Red' >*</sup>
+                </label>
+                <div class="controls">
+                    <select id="ddlCustomer" name="ddlCustomer" class="selectpicker" onchange="ChangeCustomer();" data-val="true" data-val-required="The Customer field is required.">
+                        <option value="">Select Customer</option>
+                        @Html.BindCustomers()
+                    </select>
+                   <label class="field-validation-valid" data-valmsg-for="ddlCustomer" data-valmsg-replace="true">
+                    </label>
+                </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtEmailId">
+                Email ID <sup style='color:Red' >*</sup></label>
+            <div class="controls">
+                <input data-val="true" data-val-remote="Email Id is already exists." 
+                        data-val-remote-url="/Validation/IsExistsWithCutomer" data-val-required="The field is required." 
+                        data-val-remote-additionalfields="primaryfield,primaryvalue, tablename,columnname,columnvalue,customerid"
+                        data-val-remote-columnname="emailaddress" 
+                        data-val-remote-tablename="tblwebuser"
+                        data-val-remote-columnvalue="txtEmailId" 
+                        data-val-remote-customerid="ddlCustomer" 
+                        data-val-remote-primaryfield="WebUserId" 
+                        data-val-remote-primaryvalue="hdnWebUserId" id="txtEmailId" name="txtEmailId" class="email" type="text" />
+                 <label class="field-validation-valid" data-valmsg-for="txtEmailId" data-valmsg-replace="true"></label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ddlRole">
+                Role <sup style='color:Red' >*</sup></label>
+            <div class="controls">
+                <select id="ddlRole" name="ddlRole" class="selectpicker" data-val="true" data-val-required="The field is required.">
+                        <option value="">Select Role</option>
+                </select>
+                <label class="field-validation-valid" data-valmsg-for="ddlRole" data-valmsg-replace="true"></label>
+            </div>
+        </div>
+         <div class="control-group">
+            <label class="control-label" for="ddlAccountNumber">
+                Account Number <sup style='color:Red' >*</sup></label>
+            <div class="controls">
+                <select id="ddlAccountNumber" name="ddlAccountNumber" class="selectpicker" multiple="multiple" data-val="true" data-val-required="The field is required.">
+                    <option value="">Select Account Number</option>
+                </select>
+                <label class="field-validation-valid" data-valmsg-for="ddlAccountNumber" data-valmsg-replace="true"></label>
+            </div>
+        </div>
+         <div class="control-group">
+            <label class="control-label" for="ddlDefaultAccountNumber">
+                Default Account Number</label>
+            <div class="controls">
+                <select id="ddlDefaultAccountNumber" name="ddlDefaultAccountNumber" class="selectpicker" data-val="true" data-val-required="The field is required.">
+                    <option value="">Select Account Number</option>
+                </select>
+                <label class="field-validation-valid" data-valmsg-for="ddlDefaultAccountNumber" data-valmsg-replace="true"></label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtFName">
+                First Name <sup style='color:Red' >*</sup></label>
+            <div class="controls">
+                <input type="text" id="txtFName" name="txtFName" data-val="true" data-val-required="The field is required." />
+                <label class="field-validation-valid" data-valmsg-for="txtFName" data-valmsg-replace="true"></label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtFName">
+                Last Name <sup style='color:Red' >*</sup></label>
+            <div class="controls">
+                <input type="text" id="txtLName" name="txtLName" data-val="true" data-val-required="The field is required."  />
+                <label class="field-validation-valid" data-valmsg-for="txtLName" data-valmsg-replace="true"></label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtDOB">
+                DOB <sup style='color:Red' >*</sup></label>
+            <div class="controls">
+                <input type="text" id="txtDOB" name="txtDOB" class="psedatepickerpast" data-val="true" data-val-required="The field is required."/>
+                <label class="field-validation-valid" data-valmsg-for="txtDOB" data-valmsg-replace="true"></label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtLocation">
+                Location <sup style='color:Red' >*</sup></label>
+            <div class="controls">
+                <input type="text" id="txtLocation" name="txtLocation" data-val="true" data-val-required="The field is required."/>
+                <label class="field-validation-valid" data-valmsg-for="txtLocation" data-valmsg-replace="true"></label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtAddress">
+                Address <sup style='color:Red' >*</sup></label>
+            <div class="controls">
+                <input type="text" id="txtAddress" name="txtAddress" data-val="true" data-val-required="The field is required."/>
+                <label class="field-validation-valid" data-valmsg-for="txtAddress" data-valmsg-replace="true"></label>
+            </div>
+        </div>
+        
+
+        </div>
+        <div class="span5">
+         <div class="control-group">
+            <label class="control-label" for="txtCity">
+                City <sup style='color:Red' >*</sup></label>
+            <div class="controls">
+                <input type="text" id="txtCity" name="txtCity" data-val="true" data-val-required="The field is required."/>
+                <label class="field-validation-valid" data-valmsg-for="txtCity" data-valmsg-replace="true"></label>
+            </div>
+        </div>
+        @Html.Partial("_State", true)
+         <div class="control-group">
+            <label class="control-label" for="txtZip">
+                ZIP Code <sup style='color:Red' >*</sup></label>
+            <div class="controls">
+                <input type="text" id="txtZip" name="txtZip" class="psezipcode" data-val="true" data-val-required="The field is required."/>
+                <label class="field-validation-valid" data-valmsg-for="txtZip" data-valmsg-replace="true"></label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtPhone">
+                Phone Number</label>
+            <div class="controls">
+                <input type="text" id="txtPhone" name="txtPhone" class="psephone" />
+                <label class="field-validation-valid" data-valmsg-for="txtPhone" data-valmsg-replace="true"></label>
+            </div>
+        </div>
+            @Html.Partial("_Timezone", true)
+        <div class="control-group">
+            <label class="control-label" for="rbDST">
+                Adjust For DST </label>
+            <div class="controls">
+                <label class="radio">
+                    <input type="radio" name="rbDST" id="rbDSTYes" value="Yes" checked="checked" />
+                    Yes
+                </label>
+                <label class="radio">
+                    <input type="radio" name="rbDST" id="rbDSTNo" value="No" />
+                    No
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtDepartment">
+                Department </label>
+            <div class="controls">
+                @Html.Partial("_LookupControl", new MVCDataModel.LookupParam("txtDepartment", "0", "", false, "Select Department", ""))
+                <label class="field-validation-valid" data-valmsg-for="txtDepartment" data-valmsg-replace="true"></label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtDivision">
+                Division </label>
+            <div class="controls">
+                @Html.Partial("_LookupControl", new MVCDataModel.LookupParam("txtDivision", "0", "", false, "Select Division", ""))
+                <label class="field-validation-valid" data-valmsg-for="txtDivision" data-valmsg-replace="true"></label>
+            </div>
+        </div>
+            @Html.Partial("_Status")
+        </div>
+        
+        
+    </div>
+    <div class="row-fluid">
+        @Html.Partial("_SubmitClear")
+    </div>
+</div>
+</form>
+@Html.Partial("_Alert")
+@Html.Partial("_Lookup", new string[] { "Register"})

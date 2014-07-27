@@ -1,0 +1,218 @@
+﻿@model MVCDataModel.TankComment
+@Html.Partial("_Dialog")
+<script type="text/javascript">
+    var model = null;
+
+    $(document).ready(function () {
+
+
+        model = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+
+        //frozen or lock the columns
+        $("#tblGridComment").jqGrid('setColProp', 'Action', { frozen: true });
+        jQuery("#tblGridComment").jqGrid('setFrozenColumns');
+
+
+        //hide and show column option - runtime
+        GridColumnChooser('tblGridComment');
+
+        //refresh grid
+        ReloadGrid('tblGridComment');
+
+        $('#btnCommentUpdate').bind('click', function () {
+            try {
+                if (!$('#frmTankComment').valid())
+                    return;
+
+
+                CreateEditItem($('#btnCommentUpdate').val());
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+
+        });
+
+        $("#btnCommentCancel").bind("click", function (e) {
+            
+            ClearForm();
+        });
+
+    });
+
+    function buttonize(cellvalue, options, rowobject) {
+        return "<ul class='the-icons'>" +
+                        "<li title='Delete' onclick=\"DeleteTankComment(" + cellvalue + ");\"><i class='icon-remove'></i></li>" +
+                        "<li title='Edit' onclick=\"EditTankComment(" + cellvalue + ");\"><i class='icon-edit'></i></li>" +
+                    "</ul>"
+    }
+
+
+    // Dialog - Edit Entry
+    function EditTankComment(commentId) {
+        try {
+
+            $.post("EditTankCommentId",
+                            {
+                                iTankCommentID: commentId
+                            },
+                            function (data) {
+                                try {
+                                    if (data == "") {
+                                        AlertDialogError('Page could not load, please try again');
+                                        return;
+                                    }
+
+                                    //Do something with the data returned.
+                                    $('#hdnCommentId').val(data.CommentID);
+                                    $('#txtComment').val(data.Comment);
+                                    if (data.IsActive == 1)
+                                        $('#rbStatusActive').attr('checked', 'checked');
+                                    else if (data.IsActive == 0)
+                                        $('#rbStatusInActive').attr('checked', 'checked');
+
+                                    $('#btnCommentUpdate').val('Update');
+                                }
+                                catch (e) {
+                                    ScriptDialogError(e);
+                                }
+                            }
+                        );
+
+        }
+        catch (e) {
+            ScriptError(e);
+        }
+
+    }
+
+    // add and edit item
+    function CreateEditItem(command) {
+        try {
+
+            model.CommentID = $('#hdnCommentId').val();
+            model.Comment = $('#txtComment').val();
+            model.IsActive = $('input[name=rbStatus]:checked').val();
+
+            //Pass it to a controller method
+            $.post("CreateEditTankComment",
+                {
+                    viewModel: JSON.stringify(model),
+                    sCommand: command
+                },
+                function (data) {
+
+                    if (data.result == "fail") {
+                        AlertDialogError(data.message);
+                        return;
+                    }
+
+                    //refress the grid again
+                    ReloadGrid('tblGridComment');
+                    AlertDialogSuccess(data.message);
+                    ClearForm();
+
+                });
+        }
+        catch (e) {
+            ScriptDialogError(e);
+        }
+    }
+
+    //clear the form fields
+    function ClearForm() {
+        try {
+        
+            $('#hdnCommentId').val('0');
+            $('#txtComment').val('');
+            $('#rbStatusActive').attr('checked', 'checked');
+            $('#btnCommentUpdate').val('Add');
+        }
+        catch (e) {
+            ScriptDialogError(e);
+        }
+    }
+
+    // Dialog - Delete Entry
+    function DeleteTankComment(commentId) {
+        Confirmation('Are you sure to delete?', commentId);
+    }
+
+    function CallbackConfirmation(status, item) {
+
+        if (status) // true - click yes, false - click no
+        {
+            $.post('DeleteTankComment', { iTankCommentID: item }, function (data) {
+                if (data.result == "fail") {
+                    AlertDialogError(data.message);
+                    return;
+                }
+
+                //refress the grid again
+                ReloadGrid('tblGridComment');
+                AlertMsg(data.message);
+            });
+
+        }
+    }
+
+</script>
+<form id="frmTankComment" class="form-horizontal">
+<div class="">
+    <div class="row-fluid">
+        <input type="hidden" id="hdnCommentId" value="0" />
+        <div class="span4">
+            <div class="control-group">
+                <label class="control-label" for="txtComment">
+                    Comment <sup style='color: Red'>*</sup></label>
+                <div class="controls">
+                    <textarea id="txtComment" name="txtComment" data-val="true" data-val-required="The field is required." />
+                    <label class="field-validation-valid" data-valmsg-for="txtComment" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="span4">
+            @Html.Partial("_Status")
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button type="button" id="btnCommentUpdate" name="Command" data-loading-text="Loading..."
+                    value="Add" class="btnAddEdit btn btn-primary">
+                    <span class="ui-button-text">Save</span></button>
+                <button type="button" id="btnCommentCancel" class="btn btn-info">
+                    <span class="ui-button-text">Clear</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+<table id="tblGridComment">
+</table>
+<div id="pager">
+</div>
+@(Html.Grid("tblGridComment")
+    .AddColumn(new Column("Action").SetCustomFormatter("buttonize").SetWidth(75).SetSearch(false))
+    .AddColumn(new Column("Comment"))
+            .AddColumn(new Column("Status").SetSearchType(Searchtype.Select).SetSearchTerms(new string[] { "0:Inactive", "1:Active" }))
+    .AddColumn(new Column("createdby").SetLabel("Created By"))
+    .AddColumn(new Column("createddate").SetLabel("Created Date").SetSearchType(Searchtype.Datepicker).SetSearchDateFormat("mm/dd/yy"))
+    .AddColumn(new Column("modifieddate").SetLabel("Modified Date").SetSearchType(Searchtype.Datepicker).SetSearchDateFormat("mm/dd/yy"))
+    .SetUrl(Url.Action("GridDataTankComment", "DMS"))
+    .SetAutoWidth(true)
+    .SetRowNum(10)
+    .SetRowList(new[] { 10, 15, 20, 50 })
+    .SetViewRecords(true)
+    .SetPager("pager")
+    .SetHeight(150)
+    .SetWidth(250)
+    .SetSearchClearButton(true)
+    .SetMultiBoxOnly(false)
+    .SetMultiSelect(false)
+    .SetMultiSelectWidth(40)
+    .SetToolbar(false)
+    .SetToolbarPosition(ToolbarPosition.Top)
+    .SetHoverRows(true)
+    .SetAltRows(true)
+    .SetShrinkToFit(true)
+    )

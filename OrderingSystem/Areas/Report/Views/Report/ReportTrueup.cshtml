@@ -1,0 +1,257 @@
+﻿@{
+    ViewBag.Title = "ReportTrueup";
+    Layout = "~/Views/Shared/_BootstrapLayout.cshtml";
+}
+<form id="frmReportReorderHitByDay" class="form-horizontal">
+<div class="wellNew">
+    <legend>True-up Report</legend>
+    <div class="row-fluid">
+        <input type="hidden" id="hdnGroupId" value="0" />
+        <input type="hidden" id="hdnProductId" value="0" />
+        <div class="control-group">
+            <label class="control-label" for="ddlAccount">
+                Account :
+            </label>
+            <div class="controls">
+                <select id="ddlAccount" name="ddlAccount" onchange="ChangeAccount();">
+                    <option value="">ALL</option>
+                    @Html.BindAccount()
+                </select>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ddlGroup">
+                Region :
+            </label>
+            <div class="controls">
+                <select id="ddlGroup" name="ddlGroup" onchange="ChangeGroup();">
+                    <option value="0">ALL</option>
+                    @Html.BindTankGroup()
+                </select>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ddlSubGroup">
+                Sub Group :
+            </label>
+            <div class="controls">
+                <select id="ddlSubGroup" name="ddlSubGroup" onchange="ChangeSubGroup();">
+                    <option value="0">ALL</option>
+                </select>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtRptTankName">
+                Tank Name :
+            </label>
+            <div class="controls">
+                @Html.Partial("_Lookup", new string[] { "txtRptTankName", "Select Tank", "lkpClassForReport", "false" })
+            </div>
+        </div>
+        @* <div class="control-group">
+            <label class="control-label" for="ddlSite">
+                Site :
+            </label>
+            <div class="controls">
+                @Html.Partial("_Lookup", new string[] { "txtSite", "Select Site", "lkpClassForReport", "false" })
+            </div>
+        </div>*@
+        <div class="control-group">
+            <label class="control-label" for="dtFromDate">
+                From Date <sup style='color: Red'>*</sup> :
+            </label>
+            <div class="controls">
+                <input type="text" id="dtFromDate" name="dtFromDate" class="RptPreviousMonth DateDiffMin"
+                    data-val="true" data-val-required="This field is required" />
+                <span class="field-validation-valid" data-valmsg-for="dtFromDate" data-valmsg-replace="true">
+                </span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="dtToDate">
+                To Date <sup style='color: Red'>*</sup> :
+            </label>
+            <div class="controls">
+                <input type="text" id="dtToDate" name="dtToDate" class="RptCurrentMonth DateDiffMax"
+                    data-val="true" data-val-required="This field is required" />
+                <span class="field-validation-valid" data-valmsg-for="dtToDate" data-valmsg-replace="true">
+                </span>
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button type="button" id="btnViewResults" class="btn btn-primary">
+                    <span class="ui-button-text">View Report</span></button>
+                <button type="button" id="btnClear" class="btn">
+                    <span class="ui-button-text">Clear</span></button>
+                @*  <button type="button" id="btnViewDeliveryCollection" class="btn btn-info">
+                    <span class="ui-button-text">View Delivery Collection</span></button>*@ @*<button type="button" id="btnSchedule" class="btn">
+                    <span class="ui-button-text">Schedule</span></button>
+                <!-- /btn-group -- export -->
+                <div class="btn-group">
+                    <button type="button" id="btnExport" class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
+                        Export <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Excel</a></li>
+                        <li><a href="#">PDF</a></li>
+                        <li><a href="#">Word</a></li>
+                        <li><a href="#">CSV</a></li>
+                        <li><a href="#">Print</a></li>
+                    </ul>
+                </div>*@
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+@section scripts
+{
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            $('#btnClear').click(function () {
+
+                //clear hidden ctrl = 0
+                $('#frmReportReorderHitByDay input[type=hidden]').each(function () {
+                    $(this).val('0');
+                });
+
+                //clear text ctrl = ''
+                $('#frmReportReorderHitByDay input[type=text]').each(function () {
+                    $(this).val('');
+                });
+
+                //drop down controls
+                $('#frmReportReorderHitByDay select').each(function () {
+                    $(this)[0].selectedIndex = 0;
+                });
+
+                //to clear lookup
+                $('#frmReportReorderHitByDay input[islookup=true]').each(function () {
+                    $(this).attr({ text: "", value: "", selectedrow: "" });
+                });
+
+            });
+
+            $('#btnViewResults').click(function () {
+                if (!$('form').valid())
+                    return;
+
+                //                var reportUrl = 'https://www.psenergy.com/dmsdemoreports/Reports.aspx?';
+                //                var reportId = '8';
+                //                reportUrl = reportUrl + 'ReportID=' + reportId + QueryString();
+                //                window.open(reportUrl);
+                reportParamModel =
+                {
+                    ReportID: '8',
+                    CustomerID: $('#hdnCustomerId').val(),
+                    UserID: $('#hdnUserId').val(),
+                    ReportParams: []
+                };
+
+                reportParamModel.ReportParams.push(
+                        {
+                            "ParamName": "TankID",
+                            "ParamValue": $('#txtRptTankName').attr('text'),
+                            "ParamText": $('#txtRptTankName').attr('value')
+                        },
+                        {
+                            "ParamName": "Startdate",
+                            "ParamValue": $('#dtFromDate').val(),
+                            "ParamText": $('#dtFromDate').val()
+                        },
+                        {
+                            "ParamName": "Enddate",
+                            "ParamValue": $('#dtToDate').val(),
+                            "ParamText": $('#dtToDate').val()
+                        });
+                //                    {
+                //                        "ParamName": "CustomerID",
+                //                        "ParamValue": $('#hdnCustomerId').val(),
+                //                        "ParamText": $('#hdnCustomerName').val()
+                //                    },
+                //                    {
+                //                        "ParamName": "AccountID",
+                //                        "ParamValue": $('#ddlAccount option:selected').val(),
+                //                        "ParamText": $('#ddlAccount option:selected').text()
+                //                    },
+
+                //                    {
+                //                        "ParamName": "GroupID",
+                //                        "ParamValue": $('#ddlGroup option:selected').val(),
+                //                        "ParamText": $('#ddlGroup option:selected').text()
+                //                    },
+                //                    {
+                //                        "ParamName": "SubGroupID",
+                //                        "ParamValue": $('#ddlSubGroup option:selected').val(),
+                //                        "ParamText": $('#ddlSubGroup option:selected').text()
+                //                    },
+
+                //                    {
+                //                        "ParamName": "ProductID",
+                //                        "ParamValue": 1,
+                //                        "ParamText": ""
+                //                    }
+
+
+                //open report window/tab
+                OpenReport(reportParamModel);
+
+            });
+
+        });
+
+        function QueryString() {
+            var queryString = '';
+
+            queryString = '&CustomerID=' + $('#hdnCustomerId').val();
+            queryString += '&Customer=' + $('#hdnCustomerName').val();
+            queryString += '&AccountID=' + $('#ddlAccount').val();
+            queryString += '&TankID=' + (($('#txtRptTankName').attr('text') == undefined) ? '' : $('#txtRptTankName').attr('text'));
+            //queryString += '&SiteID=' + (($('#txtSite').attr('text') == undefined) ? '' : $('#txtSite').attr('text'));
+            queryString += '&ProductID=1';
+            queryString += '&GroupID=' + $('#ddlGroup').val();
+            queryString += '&SubGroupID=' + $('#ddlSubGroup').val();
+            queryString += '&STARTDATE=' + $('#dtFromDate').val();
+            queryString += '&ENDDTATE=' + $('#dtToDate').val();
+
+            return queryString;
+
+        }
+
+        function ChangeAccount() {
+            //store account id in session
+            $.post('/Home/ChangeAccount', { sAccount: accountid }, function (data) { });
+        }
+        function ChangeSubGroup() {
+            //store SubGroup id in session
+            $.post('/Home/ChangeSubGroup', { sSubGroupID: $('#ddlSubGroup').val() }, function (data) { });
+        }
+
+        function ChangeGroup() {
+            var groupid = $('#ddlGroup').val();
+
+            //append site 
+            $.ajax({
+                type: 'POST',
+                url: '/DMS/DMS/BindSubGroup',
+                data: { iGroupId: groupid },
+                async: false,
+                success: function (data) {
+                    try {
+                        $('#ddlSubGroup').html(data);
+                        //$('#ddlSubGroup').selectpicker("refresh");
+                    }
+                    catch (e) {
+                        ScriptDialogError(e);
+                    }
+                }
+            });
+
+
+        }
+
+    </script>
+}

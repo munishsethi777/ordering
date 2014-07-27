@@ -1,0 +1,17 @@
+﻿@model int?
+
+@{
+    Layout = "~/Views/Shared/_BootstrapLayout.cshtml";
+}
+
+<h2></h2>
+@section scripts
+{
+<script type="text/javascript" language="javascript">
+    //load initial menu - get from tblDefaultMenuPage table
+    var menuid =   @Html.Raw(Json.Encode(Model));
+    menuid = @TempData["MenuId"];
+
+    LoadVerticalMenu(null, menuid);
+    </script>
+}

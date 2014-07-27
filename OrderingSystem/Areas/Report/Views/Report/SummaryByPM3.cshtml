@@ -1,0 +1,126 @@
+﻿@{
+    ViewBag.Title = "Summary By PM3";
+    Layout = "~/Views/Shared/_BootstrapLayout.cshtml";
+}
+<form id="frmReport" class="form-horizontal">
+<div class="wellNew">
+    <legend>Summary By PM3</legend>
+    <div class="row-fluid">
+        <div class="control-group">
+            <label class="control-label" for="txtPM3RCCode">
+                PM3 RC Code <sup style='color: Red'>*</sup> :
+            </label>
+            <div class="controls">
+                @Html.Partial("_Lookup", new string[] { "txtPM3RCCode", "Select PM3 RC Code", "lkpClassForReport", "true" })
+                <span class="field-validation-valid" data-valmsg-for="txtPM3RCCode" data-valmsg-replace="true">
+                </span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="dtFromDate">
+                From Date <sup style='color: Red'>*</sup> :
+            </label>
+            <div class="controls">
+                <input type="text" id="dtFromDate" name="dtFromDate" class="RptPreviousMonth DateDiffMin"
+                    data-val="true" data-val-required="This field is required" />
+                <span class="field-validation-valid" data-valmsg-for="dtFromDate" data-valmsg-replace="true">
+                </span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="dtToDate">
+                To Date <sup style='color: Red'>*</sup> :
+            </label>
+            <div class="controls">
+                <input type="text" id="dtToDate" name="dtToDate" class="RptCurrentMonth DateDiffMax"
+                    data-val="true" data-val-required="This field is required" />
+                <span class="field-validation-valid" data-valmsg-for="dtToDate" data-valmsg-replace="true">
+                </span>
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button type="button" id="btnViewResults" class="btn btn-primary">
+                    <span class="ui-button-text">View Report</span></button>
+                    <button type="button" id="btnClear" class="btn">
+                <span class="ui-button-text">Clear</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+@section scripts
+{
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            $('#btnClear').click(function () {
+
+                //clear hidden ctrl = 0
+                //                $('#frmReport input[type=hidden]').each(function () {
+                //                    $(this).val('0');
+                //                });
+
+                //clear text ctrl = ''
+                $('#frmReport input[type=text]').each(function () {
+                    $(this).val('');
+                });
+
+                //drop down controls
+                //                $('#frmReport select').each(function () {
+                //                    $(this)[0].selectedIndex = 0;
+                //                });
+
+                //to clear lookup
+                $('#frmReport input[islookup=true]').each(function () {
+                    $(this).attr({ text: "", value: "", selectedrow: "" });
+                });
+
+            });
+
+            $('#btnViewResults').click(function () {
+
+                if (!$('form').valid())
+                    return;
+
+                //open Summary By PM3 report
+                reportParamModel =
+                {
+                    ReportID: '90',
+                    CustomerID: $('#hdnCustomerId').val(),
+                    UserID: $('#hdnUserId').val(),
+                    ReportParams: []
+                };
+
+                reportParamModel.ReportParams.push(
+                    {
+                        "ParamName": "CustomerID",
+                        "ParamValue": $('#hdnCustomerId').val(),
+                        "ParamText": $('#hdnCustomerName').val()
+                    },
+                    {
+                        "ParamName": "RC",
+                        "ParamValue": $('#txtPM3RCCode').attr('text'),
+//                        "ParamText": ""
+                        "ParamText": $('#txtPM3RCCode').attr('text')
+                    },
+                    {
+                    "ParamName": "Startdate",
+                    "ParamValue": $('#dtFromDate').val(),
+                    "ParamText": $('#dtFromDate').val()
+                },
+                    {
+                        "ParamName": "enddate",
+                        "ParamValue": $('#dtToDate').val(),
+                        "ParamText": $('#dtToDate').val()
+                    });
+
+
+                //open report window/tab
+                OpenReport(reportParamModel);
+            });
+
+        });
+    </script>
+}

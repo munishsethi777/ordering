@@ -1,0 +1,108 @@
+﻿@model MVCDataModel.spCustomerManagement_Result
+@Html.Partial("_Dialog")
+<script type="text/javascript">
+    var model = null;
+    $(document).ready(function () {
+        model = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+
+        $('#txtCutoffTime').timepicker({
+            timeFormat: "hh:mm TT"
+        });
+        
+
+        $('#btnSave').bind('click', function () {
+            try {
+                // Force validation to reevaluate next time
+                var inputs = $('#frmCustomer').find(":input");
+                inputs.removeData("previousValue");
+                $('#frmCustomer').valid();
+
+                resultValation = $('#frmCustomer').validate();
+
+                timerValidation = $.timer(function () {
+
+                    if (resultValation.pendingRequest == 0) {
+                        timerValidation.stop();
+                        if ($('#frmCustomer').valid())
+                            CreateEditCustomer('Add');
+                    }
+                }, 1000, true);
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+
+        });
+
+        $('#btnUpdate').bind('click', function () {
+            try {
+
+                // Force validation to reevaluate next time
+                var inputs = $('#frmCustomer').find(":input");
+                inputs.removeData("previousValue");
+                $('#frmCustomer').valid();
+
+                resultValation = $('#frmCustomer').validate();
+
+                timerValidation = $.timer(function () {
+
+                    if (resultValation.pendingRequest == 0) {
+
+                        timerValidation.stop();
+                        if ($('#frmCustomer').valid())
+                            CreateEditCustomer('Update');
+                    }
+
+                }, 1000, true);
+
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+
+        });
+
+        $("#btnCancel").bind("click", function (e) {
+            ClearClliForm();
+        });
+
+
+    });
+    
+</script>
+<form id="frmCustomer" class="form-horizontal">
+<input type="hidden" id="hdnId" value="0" />
+<div class="row-fluid">
+    <div class="control-group">
+        <label class="control-label" for="txtCustomer">
+            Customer Name<sup style="color: Red">*</sup>:
+        </label>
+        <div class="controls">
+            <input data-val="true" data-val-remote="Customer Name is already exists." data-val-remote-url="/Validation/IsExists"
+                data-val-required="The field is required." data-val-remote-additionalfields="primaryfield,primaryvalue, tablename,columnname,columnvalue"
+                data-val-remote-columnname="Customername" data-val-remote-tablename="tblCustomer"
+                data-val-remote-columnvalue="txtCustomer" data-val-remote-primaryfield="Customerid" data-val-remote-primaryvalue="hdnId"
+                id="txtCustomer" name="txtCustomer" type="text"  style="width:300px;"/>
+            <label class="field-validation-valid" data-valmsg-for="txtCustomer" data-valmsg-replace="true">
+            </label>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="txtCutoffTime">
+            Cut-Off Time<sup style="color: Red">*</sup>:
+        </label>
+        <div class="controls">
+            <input type="text" id="txtCutoffTime" name="txtCutoffTime" data-val="true" data-val-required="The field is required." />
+            <label class="field-validation-valid" data-valmsg-for="txtCutoffTime" data-valmsg-replace="true">
+            </label>
+        </div>
+    </div>
+    @Html.Partial("_Status")
+    <div>
+        <div class="controls">
+            @Html.Partial("_SubmitClear")
+        </div>
+    </div>
+</div>
+</form>
+@Html.Partial("_Alert")

@@ -1,0 +1,57 @@
+﻿@model List<MVCDataModel.spGetMenuList_Result>
+@{
+    Layout = null;
+}
+@if (Model != null)
+{
+    <div class="navbar navbar-fixed-top ">
+        <div class="navbar-inner ">
+            <div style="display:none;" class="row-fluid bodybackgroundcolor">
+                <div class="span6">
+                    <img src="../../Images/ps-logo1.png" />
+                </div>
+                <div class="span6">
+                    @if (Session["CustomerId"] != null && Session["CustomerId"].ToString() != "1")
+                    {
+                        var imgCustomer = "../../Images/" + Session["CustomerId"].ToString() + ".png";
+                        <div style="float: right;">
+                            <img alt="Customer" src="@imgCustomer" />
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="row-fluid hor_menu_backgroun-color">
+                @Html.Partial("_LoginPartial")
+                @*<div class="btn-group pull-right" style="padding-right: 5px">
+                    <a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-th-list">
+                    </i>&nbsp;Links&nbsp;<span class="caret"></span> </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="http://www.google.com/" target="_blank"><span class="icon-globe"></span>
+                            About us</a> </li>
+                        <li><a href="http://www.google.com/" target="_blank">
+                            <span class="icon-info-sign"></span>Help</a> </li>
+                    </ul>
+                </div>*@
+                <div class="nav-collapse">
+                    <ul id="horizontalMenu" class="nav-inner nav-rootmenu nav nav-tabs">
+                        @foreach (var item in @Model)
+                        {
+                            if (item.IsDefault.Value)
+                            {
+                            <li class="@(item.MenuUrl == Session["MenuUrl"].ToString() ? "ActiveMenu" : "")"><a title="@item.Description" style="color:White; text-shadow:none" class="active" onclick="RedirectMenuURL('@item.MenuUrl');" href="@item.MenuUrl">
+                                <span class="icon-home"></span>@item.MenuTitle</a> </li>
+                            }
+                            else
+                            {
+                            <li class="@(item.MenuId.ToString() == Session["MenuId"].ToString() ? "ActiveMenu" : "")">
+                                <a title="@item.Description" style="color:White; text-shadow:none" class="active" onclick="LoadVerticalMenu(this, @item.MenuId);" href="#">@item.MenuTitle</a>
+                            </li>
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+            <!--/.nav-collapse -->
+        </div>
+    </div>
+}

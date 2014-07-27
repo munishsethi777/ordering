@@ -1,0 +1,114 @@
+﻿@model MVCDataModel.TankAlarm
+@Html.Partial("_Dialog")
+
+<script type="text/javascript">
+
+    var model = null;
+
+    $(document).ready(function () {
+
+       
+        model = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+
+        $('#btnAlarmUpdate').bind('click', function () {
+            try {
+                if (!$('#frmTankAlarm').valid())
+                    return;
+
+                model.TankID = $('#hdnTankId').val();
+                model.MinimumLevel = $('#txtTankLow').val();
+                model.MaximumLevel = $('#txtTankHigh').val();
+                model.WaterVolume = $('#txtWaterVolume').dval();
+                model.WaterHeight = $('#txtWaterHeight').dval();
+                model.Email = $('#txtEmailId').val();
+
+                //Pass it to a controller method
+                $.post("SaveTankAlarm",
+                {
+                    viewModel: JSON.stringify(model)
+                },
+                function (data) {
+
+                    if (data.result == "fail") {
+                        AlertDialogError(data.message);
+                        return;
+                    }
+                    AlertDialogSuccess(data.message);
+
+                });
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+
+        });
+
+        $("#btnAlarmCancel").bind("click", function (e) {
+            ClearForm();
+        });
+
+    });
+</script>
+<form id="frmTankAlarm" class="form-horizontal">
+<div class="">
+    <div class="row-fluid">
+        <div class="control-group">
+            <label class="control-label" for="txtTankLow">
+                Tank Low <sup style='color:Red' >*</sup> </label>
+            <div class="controls">
+                <input type="text" id="txtTankLow" name="txtTankLow" value="@Model.MinimumLevel" class="digits" data-val="true" data-val-required="The field is required."/>
+                <label class="field-validation-valid" data-valmsg-for="txtTankLow" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtTankHigh">
+                Tank High <sup style='color:Red' >*</sup>
+            </label>
+            <div class="controls">
+                <input type="text" id="txtTankHigh" name="txtTankHigh" value="@Model.MaximumLevel" class="digits" data-val="true" data-val-required="The field is required."/>
+                <label class="field-validation-valid" data-valmsg-for="txtTankHigh" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtWaterVolume">
+                Water Volume <sup style='color:Red' >*</sup>
+            </label>
+            <div class="controls">
+                <input type="text" id="txtWaterVolume" name="txtWaterVolume" value="@Model.WaterVolume.ToPSEDecimal()" class="number" data-val="true" data-val-required="The field is required."/>
+                <label class="field-validation-valid" data-valmsg-for="txtWaterVolume" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtWaterHeight">
+                Water Height <sup style='color:Red' >*</sup>
+            </label>
+            <div class="controls">
+                <input type="text" id="txtWaterHeight" name="txtWaterHeight" value="@Model.WaterHeight.ToPSEDecimal()" class="number" data-val="true" data-val-required="The field is required." />
+                <label class="field-validation-valid" data-valmsg-for="txtWaterHeight" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtEmailId">
+                Email ID <sup style='color:Red' >*</sup> </label>
+            <div class="controls">
+                <input id="txtEmailId" name="txtEmailId" class="email" type="text" value="@Model.Email" data-val="true" data-val-required="The field is required."/>
+                <label class="field-validation-valid" data-valmsg-for="txtEmailId" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button type="button" id="btnAlarmUpdate" name="Command" data-loading-text="Loading..."
+                    value="Update" class="btnAddEdit btn btn-primary">
+                    <span class="ui-button-text">Update</span></button>
+                <button type="button" id="btnAlarmCancel" class="btn btn-info">
+                    <span class="ui-button-text">Clear</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+</form>

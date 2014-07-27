@@ -1,0 +1,404 @@
+﻿@{
+    Layout = "~/Views/Shared/_BootstrapLayout.cshtml";
+}
+@*<h4>Group</h4>*@
+<table id="tblGrid">
+</table>
+<div id="pager">
+</div>
+@section scripts {
+    @(Html.Grid("tblGrid")
+    .SetCaption("Group Master").AddColumn(new Column("Action").SetCustomFormatter("buttonize").SetWidth(75).SetSearch(false))
+    .AddColumn(new Column("customerid").SetHidden(true).AddClass("Hide"))
+    .AddColumn(new Column("customername").SetLabel("Customer Name").SetSearchType(Searchtype.Select))
+    .AddColumn(new Column("grouptitle").SetLabel("Group Title"))
+    .AddColumn(new Column("Description"))
+    .AddColumn(new Column("Status").SetSearchType(Searchtype.Select).SetSearchTerms(new string[] { "1:Active", "0:Inactive" }))
+            .AddColumn(new Column("ordergroup").SetLabel("Order Group").SetAlign(Align.Right))
+    .AddColumn(new Column("lastchangeduser").SetLabel("Last Changed User").SetWidth(200))
+    .AddColumn(new Column("createddate").SetLabel("Created Date").SetWidth(200).SetSearchType(Searchtype.Datepicker).SetSearchDateFormat("mm/dd/yy"))
+            .AddColumn(new Column("lastchangeddate").SetLabel("Last Changed Date").SetWidth(200).SetSearchType(Searchtype.Datepicker).SetSearchDateFormat("mm/dd/yy"))
+    .SetUrl(Url.Action("GridDataGroup", "Admin"))
+    .SetAutoWidth(true)
+    .SetRowNum(10)
+    .SetRowList(new[] { 10, 15, 20, 50 })
+    .SetViewRecords(true)
+    .SetPager("pager")
+            .SetHeight(290)
+    .SetWidth(400)
+    .SetSearchToolbar(true)
+    .SetSearchOnEnter(true)
+    .SetSearchClearButton(true)
+    .SetSearchToggleButton(true)
+    .SetMultiSelect(true)
+    .SetMultiBoxOnly(false)
+    .SetMultiSelectWidth(40)
+    .SetToolbar(true)
+    .SetToolbarPosition(ToolbarPosition.Top)
+    .SetHoverRows(true)
+    .SetAltRows(true)
+    .SetShrinkToFit(false)
+    .SetSortName("customername")
+
+        )
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            try {
+
+                var tool = "<ul class='nav nav-pills'>" +
+                            "<li><a onclick=\"AddGroup();\" title='Add New' href='#'>Add New</a></li>" +
+                            "<li><a onclick=\"DeleteSelectedItem();\" title='Delete Multiple Item' href='#'>Delete</a></li>" +
+                            "<li class='dropdown'><a title='Export' class='dropdown-toggle' data-toggle='dropdown' href='#'>Export <b class='caret'></b></a>" +
+                                "<ul class='dropdown-menu'>" +
+                                      "<li><a onclick=\"ExportGroupMaster('PDF');\" title='PDF' href='#'>PDF</a></li>" +
+                                      "<li><a onclick=\"ExportGroupMaster('CSV');\" title='CSV' href='#'>CSV</a></li>" +
+                                      "<li><a onclick=\"ExportGroupMaster('Excel');\" title='Excel' href='#'>Excel</a></li>" +
+                                      "<li><a onclick=\"ExportGroupMaster('Word');\" title='Word' href='#'>Word</a></li>" +
+                                      "<li><a onclick=\"PrintGroupMaster();\" title='Print' href='#'>Print</a></li>" +
+                                "</ul>" +
+                            "</li>" +
+                        "</ul>";
+
+                // create tool bar in grid
+                $('#t_tblGrid').append(tool);
+
+                //frozen or lock the columns
+                $("#tblGrid").jqGrid('setColProp', 'Action', { frozen: true });
+                jQuery("#tblGrid").jqGrid('setFrozenColumns');
+
+                //bind customers list to search
+                var customer = '@Html.BindCustomers()';
+                $("#gs_customername").html('<option value="">All</option>' + customer);
+
+                //load complete event hanlder
+                LoadComplete('tblGrid');
+
+                //customer change event 
+                $("#gs_customername").bind('change', function () {
+                    //selected customer id
+                    $('#hdnSelectedCustomerId').val($("#gs_customername").val());
+                });
+
+                //jqGrid hide column dynamically
+                var CustomerId = $('#hdnCustomerId').val();
+                if (CustomerId != '1')
+                    HideGridColumn('tblGrid', ['customername'])
+                //$("#tblGrid").jqGrid('hideCol', ["customername"]);
+
+                //hide and show column option - runtime
+                GridColumnChooser('tblGrid');
+
+
+                //refresh grid
+                ReloadGrid('tblGrid');
+
+            }
+            catch (e) {
+                ScriptError(e);
+            }
+
+        });
+
+        function buttonize(cellvalue, options, rowobject) {
+            return "<ul class='the-icons'>" +
+                        "<li title='Delete' onclick=\"DeleteGroup(" + cellvalue + ");\"><i class='icon-remove'></i></li>" +
+                        "<li title='Edit' onclick=\"EditGroup(" + cellvalue + ");\"><i class='icon-edit'></i></li>" +
+                    "</ul>"
+        }
+        function ExportGroupMaster(exportType) {
+
+            GenerateExportParam('tblGrid');
+            exportGrid.ExportType = exportType;
+
+            var form = $('<form></form>');
+            $('body').append(form);
+            form.attr('action', '/Admin/Admin/ExportGroupMaster' + '?model=' + JSON.stringify(exportGrid));
+            form.attr('method', 'POST');
+            form.submit();
+        }
+
+        function PrintGroupMaster() {
+
+            //build the param 
+            GenerateExportParam('tblGrid')
+
+            $.post("PrintGroupMaster",
+                                {
+                                    model: JSON.stringify(exportGrid)
+                                },
+                                function (data) {
+                                    try {
+                                        if (data == "") {
+                                            AlertError('Could not able to Print, please try again');
+                                            return;
+                                        }
+
+                                        var printWin = window.open('', '', 'left=0" ,top=0,width=1000,height=600,status=0');
+                                        printWin.document.write(data);
+
+                                        printWin.document.close();
+                                        printWin.focus();
+                                        printWin.print();
+                                        printWin.close();
+
+                                    }
+                                    catch (e) {
+                                        ScriptDialogError(e);
+                                    }
+
+                                }
+                            );
+
+        }
+
+        // Dialog Modal - Add New Entry
+        function AddGroup() {
+            try {
+                // clear edit and add view
+                ClearDialog();
+
+                // Dialogs window for add
+                $("#dialog-add").dialog({
+                    title: 'Add New',
+                    autoOpen: false,
+                    resizable: true,
+                    width: 600,
+                    height: 500,
+                    position: 'center',
+                    modal: true,
+                    draggable: true,
+                    open: function (event, ui) {
+                        $.post("CreateGroup",
+                            {},
+                            function (data) {
+                                try {
+                                    if (data == "") {
+                                        CloseDialog();
+                                        AlertError('Page could not load, please try again');
+                                        return;
+                                    }
+
+                                    $('#dialog-add').html(data.view);
+                                    var CustomerId = $('#hdnSelectedCustomerId').val();
+                                    $('#ddlCustomer').val(CustomerId).change();
+
+                                }
+                                catch (e) {
+                                    ScriptDialogError(e);
+                                }
+                            }
+                        );
+                    },
+                    close: function (event, ui) {
+                        CloseDialog();
+                    }
+                });
+
+                //open dialog
+                OpenDialog();
+                return false;
+            }
+            catch (e) {
+                ScriptError(e);
+            }
+        }
+
+        // Dialog - Edit Entry
+        function EditGroup(groupId) {
+            try {
+                // clear edit and add view
+                ClearDialog();
+
+                // dialgo window for edit
+                $("#dialog-add").dialog({
+                    title: 'Edit',
+                    autoOpen: false,
+                    resizable: true,
+                    width: 600,
+                    height: 500,
+                    position: 'center',
+                    modal: true,
+                    draggable: true,
+                    open: function (event, ui) {
+
+                        $.post("EditGroupId",
+                            {
+                                iGroupId: groupId
+                            },
+                            function (data) {
+                                try {
+                                    if (data == "") {
+                                        CloseDialog();
+                                        AlertError('Page could not load, please try again');
+                                        return;
+                                    }
+                                    $('#dialog-add').html(data.view);
+
+                                    //Do something with the data returned.
+                                    $('#hdnGroupId').val(data.model.GroupId);
+                                    $('#ddlCustomer').val(data.model.CustomerId).change();
+                                    $('#txtGroupTitle').val(data.model.GroupTitle);
+                                    $('#txtGroupDesc').val(data.model.Description);
+
+                                    if (data.model.Status == '1')
+                                        $('#rbStatusActive').attr('checked', 'checked');
+                                    else if (data.model.Status == '0')
+                                        $('#rbStatusInActive').attr('checked', 'checked');
+
+                                    $('#ddlOrderGroup').val(data.model.OrderGroup).change();
+
+                                }
+                                catch (e) {
+                                    ScriptDialogError(e);
+                                }
+                            }
+                        );
+                    },
+                    close: function (event, ui) {
+                        CloseDialog();
+                    }
+                });
+
+                //open dialog
+                OpenDialog();
+                return false;
+
+            }
+            catch (e) {
+                ScriptError(e);
+            }
+
+        }
+
+        // add and edit item
+        function CreateEditGroup(command) {
+            try {
+                group.GroupId = $('#hdnGroupId').val();
+                group.CustomerId = $('#ddlCustomer').val();
+                group.GroupTitle = $('#txtGroupTitle').val();
+                group.Description = $('#txtGroupDesc').val();
+                group.Status = $('input[name=rbStatus]:checked').val();
+                group.OrderGroup = $('#ddlOrderGroup').val();
+
+                //Pass it to a controller method
+                $.post("CreateEditGroup",
+                {
+                    viewModel: JSON.stringify(group),
+                    sCommand: command
+                },
+                function (data) {
+
+                    if (data.result == "fail") {
+                        CloseDialog();
+                        AlertError(data.message);
+                        return;
+                    }
+
+                    //refress the grid again
+                    ReloadGrid('tblGrid');
+
+
+                    if (command == 'Add') {
+                        ClearGroupForm();
+                        AlertDialogSuccess(data.message);
+                    }
+                    else {
+                        CloseDialog();
+                        AlertMsg(data.message);
+                    }
+
+                });
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+        }
+
+        //clear the form fields
+        function ClearGroupForm() {
+
+            try {
+
+
+                //reset to - selected customer
+                $('#ddlCustomer').val($('#hdnSelectedCustomerId').val()).change();
+
+                //clear hidden ctrl = 0
+                $('#groupForm input[type=hidden]').each(function () {
+                    $(this).val('0');
+                });
+
+                //clear text ctrl = 0
+                $('#groupForm input[type=text]').each(function () {
+                    $(this).val('');
+                });
+
+                //drop down controls
+                $("#groupForm select[name != 'ddlCustomer']").each(function () {
+                    $(this)[0].selectedIndex = 0;
+                    $(this).change();
+                });
+
+                $('#rbStatusActive').attr('checked', 'checked');
+
+
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+        }
+
+        // Dialog - Delete Entry
+        function DeleteGroup(groupId) {
+            Confirmation('Are you sure to delete?', groupId);
+        }
+
+
+        //Delete selected item
+        function DeleteSelectedItem() {
+            //get selected rows
+            var selMulti = $.map($('#tblGrid').jqGrid('getGridParam', 'selarrrow'), function (el, i) {
+                return el;
+            });
+            if (selMulti.length > 0)
+                DeleteGroup(selMulti.toString());
+            else
+                AlertMsg('Please select the Item');
+        }
+        function CallbackConfirmation(status, item) {
+
+            if (status) // true - click yes, false - click no
+            {
+                $.post('DeleteGroup', { iGroupId: item }, function (data) {
+                    if (data.result == "fail") {
+                        AlertError(data.message);
+                        return;
+                    }
+
+                    //refress the grid again
+                    ReloadGrid('tblGrid');
+                    AlertMsg(data.message);
+                });
+
+            }
+        }
+        function ChangeCustomer() {
+
+            var customerid = ($('#ddlCustomer').val() == '') ? 0 : $('#ddlCustomer').val();
+            $('#ddlOrderGroup').html('');
+
+            //append the order 
+            $.ajax({
+                type: 'POST',
+                url: '/Home/BindGroupOrder',
+                data: { iCustomerId: customerid },
+                async: false,
+                success: function (data) {
+                    $('#ddlOrderGroup').html(data).change();
+                }
+            });
+        }
+
+    </script>
+}

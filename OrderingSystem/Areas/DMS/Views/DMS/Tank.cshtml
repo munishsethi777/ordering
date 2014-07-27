@@ -1,0 +1,571 @@
+﻿@model MVCDataModel.TankModel
+@{
+    Layout = "~/Views/Shared/_BootstrapFullLayout.cshtml";
+}
+<div class="well_tank">
+    <div class="row-fluid" style="border: 1px; border-style: solid; border-color: White;">
+        <div align="center" style="padding-top:20px;">
+            @*<h5>
+                Dispatch Management System</h5>*@
+            <div class="span2" style="width: 160px;">
+                <div class="control-group">
+                    <div class="controls">
+                        <select id="ddlAccount" name="ddlAccount" class="" style="width: 160px;" onchange="ChangeAccount();">
+                            <option value="">Select Account</option>
+                            @Html.BindAccount()
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="span2" style="width: 160px">
+                <div class="control-group">
+                    <div class="controls">
+                        <select id="ddlGroup" name="ddlGroup" class="" style="width: 160px;" onchange="ChangeGroup();">
+                            <option value="0">Select Region</option>
+                            @Html.BindTankGroup()
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="span2" style="display: none; width: 160px">
+                <div class="control-group">
+                    <div class="controls">
+                        <select id="ddlSubGroup" name="ddlSubGroup" class="" style="width: 160px;" onchange="ChangeSubGroup();">
+                            <option value="0">Select Sub Group</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+             <div class="span2" style="width: 265px">
+                <div class="control-group">
+                    <div class="controls">
+                        @Html.Partial("_Lookup", new string[] { "txtSite", "Select Site", "lkpClassForReport", "false" })
+                    </div>
+                </div>
+            </div>
+            <div class="span2" style="width: 265px">
+                <div style="" class="control-group">
+                    <div class="controls">
+                        @Html.Partial("_LookupControl", new MVCDataModel.LookupParam("txtTankName", "", "", false, "Select Tank", "lkpClassForReport"))
+                    </div>
+                </div>
+            </div>
+            <div id="divDisplay" class="span2" style="width: 160px">
+                <div class="control-group">
+                    <div class="controls">
+                        <select id="ddlDisplay" name="ddlDisplay" style="width: 160px;" class="" onchange="ChangeSite();">
+                            @Html.BindDisplay(1)
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="span2" style="width: 50px">
+                <div class="control-group">
+                    <div class="controls">
+                        <label class="conrol-label" for="rbStatus">
+                        </label>
+                        <label class="radio">
+                            <input type="radio" name="rbTankStatus" id="rbTankList" value="1" checked="checked" />
+                            Tank
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="span2" style="width: 50px">
+                <div class="control-group">
+                    <div class="controls">
+                        <label class="radio">
+                            <input type="radio" name="rbTankStatus" id="rbTankMap" value="2" />
+                            Map
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--to draw tanks-->
+<div id="tankList" style="width: 100%; display: none;">
+</div>
+<!--to draw map-->
+<div id="tankmap" style="width: 100%; height: 500px; display: none;">
+</div>
+<div>
+    <div class="pagination pagination-centered">
+        <ul>
+        </ul>
+    </div>
+</div>
+<!--tank details -tab-->
+<div id="tankDetailsTab" style="display: none">
+</div>
+<!--tank reorder by mile-->
+<input type="hidden" id="hdnTankList" value="" />
+<div id="tankReorderByMile" style="display: none">
+</div>
+<!-- tank reorder by ETR -->
+<div id="tankReorderByETR" style="display: none">
+</div>
+<!-- consumption type dialog -->
+<div id="consumptionType" style="display: none">
+    @Html.Partial("_ConsumptionType")
+</div>
+<!--request deliver popup -->
+<div id="DialogDiv" style="display: none">
+    <form id="frmOEntry">
+    <div class="row-fluid">
+        <table>
+            <tr>
+                <td>
+                    <label class="labelstyle">
+                        Amount:</label>
+                </td>
+                <td>
+                    <label id="lblAmount" runat="server">
+                    </label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="labelstyle">
+                        Delivery Date:</label>
+                </td>
+                <td>
+                    <label id="lblDelDate" runat="server">
+                    </label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="labelstyle">
+                        Received:</label>
+                </td>
+                <td>
+                    <label id="lblReceived" runat="server">
+                    </label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="labelstyle">
+                        Approved:</label>
+                </td>
+                <td>
+                    <label id="lblApproved" runat="server">
+                    </label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="labelstyle">
+                        Order Status:</label>
+                </td>
+                <td>
+                    <label id="lblOrdStatus" runat="server">
+                    </label>
+                </td>
+            </tr>
+        </table>
+        <br />
+        <div class="control-group">
+            <label class="control-label" for="txtQuantiy">
+                Quantity <sup style='color: Red'>*</sup> :</label>
+            <div class="controls">
+                <input type="text" id="txtQuantiy" name="txtQuantiy" class="number" data-val="true"
+                    data-val-required="Entered Re order quantity." />
+                <label class="field-validation-valid" data-valmsg-for="txtQuantiy" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtOrdDate">
+                Date <sup style='color: Red'>*</sup> :</label>
+            <div class="controls">
+                <input type="text" id="txtOrdDate" name="txtOrdDate" class="psedatepickerfuture"
+                    data-val="true" data-val-required="The field is required." />
+                <label class="field-validation-valid" data-valmsg-for="txtOrdDate" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="">
+            </label>
+            <div class="controls">
+                <button type="button" id="btnOESave" name="Command" value="Save" class="btnAddEdit btn btn-primary">
+                    <span class="ui-button-text">Save</span></button>
+            </div>
+        </div>
+    </div>
+    </form>
+</div>
+@section scripts{
+    <link href="../../../../Content/jquery.contextMenu.css" rel="stylesheet" type="text/css" />
+    <script src="../../../../Scripts/jquery.contextMenu.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        var model = '';
+
+        //for miles
+        var tankMile = 0;
+
+        //for map
+        var GlbMarker = [];
+        var map;
+        var sTankIDs = "";
+        var tankid = "";
+
+        $(document).ready(function () {
+
+           
+           model = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+
+           //draw main map
+           map = InitialMapLoad(document.getElementById("tankmap"));
+
+           //load the change at first time
+           LoadTank(1);
+
+           $('input[name=rbTankStatus]').bind('click',function(){
+                var tankStatus =  $('input[name=rbTankStatus]:checked').val();
+                if(tankStatus == "1") //tank list 
+                {
+                    var list = '@Html.BindDisplay(1)';
+                    $('#ddlDisplay').html(list)
+                    LoadTank(1);
+                }
+                else if(tankStatus == "2") //tank map, pageindex = -1 for map - it doesn't have pagination 
+                {
+                    var list = '@Html.BindDisplay(2)';
+                    $('#ddlDisplay').html(list)
+                    LoadTank(1);
+                } 
+            });
+
+         
+        });
+
+
+        function LoadTank(pageIndex) {
+
+            model.CustomerId = $('#hdnCustomerId').val(); //$('#ddlCustomer').val();
+            model.AccountId = $('#ddlAccount').val();
+            model.GroupId =  $('#ddlGroup').val();
+            model.SubGroupId =  $('#ddlSubGroup').val();
+            model.SiteId = ($('#txtSite').attr('text') == undefined)? '' : $('#txtSite').attr('text');
+            model.SiteOrder = ""; //$('#ddlOrderBy').val();
+            model.TankName = (($('#txtTankName').attr('text') == undefined) ? '' : $('#txtTankName').attr('text')); //$('#txtTankName').val();
+
+            var rowCol = $('#ddlDisplay').val();
+            model.Row = rowCol.split(',')[0];
+            model.Column = rowCol.split(',')[1];
+            model.PageIndex = pageIndex; 
+            var tankStatus =  $('input[name=rbTankStatus]:checked').val();
+
+            if(tankStatus == "1")
+            {
+                $('#tankList').css('display', 'block');
+                $('#tankmap').css('display', 'none');
+
+                $.post("DrawTank", {
+                     viewModel: JSON.stringify(model),
+                },
+                function (data) {
+                    try {
+                        if (data == "") {
+                        }
+                                        
+                        $('#tankList').html(data.view);
+                        PageSize = data.pagesize;
+                        TotalRows = data.totalrow;
+                        SelectedRow = pageIndex;
+                        GeneratePageList(1);
+                    }
+                    catch (e) {
+                        ScriptDialogError(e);
+                    }
+                }
+                );
+            }
+            else if (tankStatus == "2")
+            {
+                $('#tankList').css('display', 'none');
+                $('#tankmap').css('display', 'block');
+
+                $.post("DrawMap", {
+                     viewModel: JSON.stringify(model),
+                },
+                function (data) {
+                    try {
+                        if (data == "") {
+                        }
+
+                        PinPointValues(data.view, document.getElementById("tankmap"));
+                        PageSize = data.pagesize;
+                        TotalRows = data.totalrow;
+                        SelectedRow = pageIndex;
+                        GeneratePageList(1);
+                    }
+                    catch (e) {
+                        ScriptDialogError(e);
+                    }
+                }
+                );
+            }
+        }
+
+        function LoadTankDetails(tabId, tankid)
+        {
+            try {
+                // clear edit and add view
+                $('#tankDetailsTab').html('');
+
+                // Dialogs window for add
+                $("#tankDetailsTab").dialog({
+                    title   : 'Tank Details',
+                    autoOpen: false,
+                    resizable: true,
+                    width: winWidth-10,
+                    height: winHeight-10,
+                    position: 'center',
+                    modal: true,
+                    draggable: true,
+                    open: function (event, ui) {
+                        $.post("/DMS/DMS/TankDetails",
+                            {
+                                iTankID : tankid
+                            },
+                            function (data) {
+                                try {
+                                    if (data == "") {
+                                        if ($("#tankDetailsTab").closest('.ui-dialog').is(':visible'))
+                                            $('#tankDetailsTab').dialog('close')
+                                        $('#tankDetailsTab').dialog('close')
+                                        AlertError('Page could not load, please try again');
+                                        return;
+                                    }
+
+                                    $('#tankDetailsTab').html(data);
+                                    $('#myTab a[href="'+tabId+'"]').click();
+                                    $('#hdnTankId').val(tankid);
+                                }
+                                catch (e) {
+                                    ScriptDialogError(e);
+                                }
+
+                            }
+                        );
+                    },
+                    close: function (event, ui) {
+                        if ($("#tankDetailsTab").closest('.ui-dialog').is(':visible'))
+                            $('#tankDetailsTab').dialog('close')
+                    }
+                });
+
+                //open dialog
+                 $('#tankDetailsTab').dialog('open');
+                return false;
+            }
+            catch (e) {
+                ScriptError(e);
+            }
+        }
+
+        
+        
+        function SelectPage(pageIndex)
+        {
+            LoadTank(pageIndex);
+        }
+        
+        function ChangeAccount() {
+            var accountid = $('#ddlAccount').val();
+            //store account id in session
+            $.post('/Home/ChangeAccount',{sAccount: accountid}, function (data) {});
+            
+            //load the tank
+            LoadTank(1);
+        }
+
+        function ChangeGroup() {
+            var groupid = $('#ddlGroup').val();
+
+            //append site 
+            $.ajax({
+                type: 'POST',
+                url: '/DMS/DMS/BindSubGroup',
+                data: { iGroupId: groupid },
+                async: false,
+                success: function (data) {
+                    try {
+                        //$('#ddlSubGroup').html(data);
+                    }
+                    catch (e) {
+                        ScriptDialogError(e);
+                    }
+                }
+            });
+
+            //load the tank
+            LoadTank(1);
+        }
+
+        function ChangeSite() {
+            //load the tank
+            LoadTank(1);
+        }
+        function ChangeSiteOrder() {
+            //load the tank
+            LoadTank(1);
+        }
+
+        function ChangeSubGroup() {
+            //load the tank
+            LoadTank(1);
+        }
+
+        //select tank from lookup
+        function CallbackLookup(lookupName)
+        {
+           LoadTank(1);
+        }
+
+       
+
+    </script>
+    <script type="text/javascript" class="showcase">
+        var e;
+        var sTankId = -1;
+        var sTankCap = -1;
+        var tankName = "";
+
+        $(function () {
+
+            //on focus out
+            $('#txtQuantiy').bind('focusout', function () {
+                if (parseInt($(this).val()) > parseInt(sTankCap))
+                    AlertMsg('Entered Quantity is more than the tank capacity');
+
+            });
+
+
+            $('#btnOESave').bind('click', function () {
+                try {
+                    if ($('#frmOEntry').valid()) {
+
+                        $.post('CreateOEEntries', {
+                            sTankName: tankName,
+                            iTankId: sTankId,
+                            sOrderQty: $('#txtQuantiy').val(),
+                            sOrderDate: $('#txtOrdDate').val()
+                        },
+                        function (data) {
+                            $('#DialogDiv').dialog("close");
+                            alert(data.message);
+                        });
+
+                    }
+
+                }
+                catch (e) {
+                    ScriptDialogError(e);
+                }
+
+            });
+
+
+            $.contextMenu({
+                selector: '.contextone',
+                callback: function (key, options) {
+
+                    sTankId = $(this).attr("TankId");
+                    sTankCap = $(this).attr("TankCapacity");
+                    tankName = $(this).attr("TankName");
+
+                    $.post('/Validation/IsNotExists', {
+                        columnvalue: sTankId,
+                        tablename: 'tblTankOEDefault',
+                        columnname: 'TankID'
+                    },
+                        function (data) {
+                            if (data == true) {
+                                //bind last oe
+                                BindLastOEEntry();
+
+                                $('#DialogDiv').dialog("open");
+                            }
+                            else
+                                alert('This tank does not have OE Default');
+
+                        });
+
+
+
+                },
+                items: {
+                    "reqdel": { name: "Request Delivery" }
+                }
+            });
+
+        });
+
+        function BindLastOEEntry() {
+
+            //alert(sTankId);
+            $('#DialogDiv').dialog({
+                modal: true,
+                autoOpen: false,
+                open: function () {
+                },
+                close: function (e) {
+                    //$(this).empty();
+                    $(this).dialog('destroy');
+                },
+                height: 460,
+                width: 270,
+                title: 'Status and Quick Order Entry'
+            });
+
+            $("#lblAmount")[0].innerText = "";
+            $("#lblDelDate")[0].innerText = "";
+            $("#lblReceived")[0].innerText = "";
+            $("#lblApproved")[0].innerText = "";
+            $("#lblOrdStatus")[0].innerText = "";
+            $('#txtQuantiy').val("");
+            $('#txtOrdDate').val("");
+
+            //bind last oe
+            $.ajax({
+                type: 'POST',
+                url: 'TankLastOEEntries',
+                data: { iTankId: sTankId },
+                async: false,
+                success: function (data) {
+                    try {
+                        if (data != "") {
+                            // bind oe data
+                            $("#lblAmount")[0].innerText = data.OrderQuantity;
+                            if (data.OrderRequiredDate != "")
+                                $("#lblDelDate")[0].innerText = data.OrderRequiredDate.toPSEDate();
+
+                            $("#lblReceived")[0].innerText = "";
+                            $("#lblApproved")[0].innerText = data.IsDispatched == 1 ? "Approved" : "Not Approved";
+                            $("#lblOrdStatus")[0].innerText = data.OrderStatus;
+
+                        }
+                    }
+                    catch (e) {
+                        ScriptDialogError(e);
+                    }
+                }
+            });
+        }
+
+
+        function CloseDialog() {
+            $('#DialogDiv').dialog('close');
+            return true;
+        }
+
+
+
+    </script>
+}

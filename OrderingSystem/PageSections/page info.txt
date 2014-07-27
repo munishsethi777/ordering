@@ -1,0 +1,160 @@
+﻿dynamic page
+
+1.page type - drop down list
+		-vehicle
+		-employee
+		-card 
+		-pin
+		-reports
+		-customer
+		-admin
+		-custom - customer tab
+
+2.page name
+
+3.fields/controls
+
+
+
+controls type
+-------------
+1.text box			- done
+2.button
+3.submit
+4.password
+5.file
+6.check box
+7.radio				- done
+8.hidden
+9.text area
+10.select-dropdown	- done
+11.lookup - pse user control	- done
+12.grid - grid also one of the control (e.x - view custom reports)
+
+
+
+text box
+-------
+1.value
+2.style
+3.class
+4.name
+5.id
+6.place holder
+7.label name
+
+	
+validation attributes
+---------------------
+1.required
+	e.x. []is required-required validation msg
+2.email
+3.minlength
+4.maxlength
+5.regex
+6.pwd and new - equalTo
+7.phone
+8.range(int, decimal, date, )
+9.custom
+	e.x.	"The Price cannot be above 250000 if the Year value is lower than 2010.", 
+10.compare - 2 or more fields
+	e.x		 
+		public DateTime SalesStartsAt { get; set; }
+        
+		[GreaterThan("SalesStartsAt")]
+        public DateTime SalesEndsAt { get; set; }            
+11.IsNumeric, ischar, is(custom pattern)
+12.date
+13.zip
+14.url
+15.masking - pattern 
+	e.x. lockheed customer vehicle id = xxx-xx-xxx
+16.remote validation
+		data-val-remote-url="/Validation/IsExists"
+		data-val-remote="Menu Title is already exists." 
+		data-val-remote-additionalfields="tablename,columnname,columnvalue"
+		data-val-remote-column-name="menutitle"
+		data-val-remote-table-name="tblmenu"
+		data-val-remote-column-value="txtMenuTitle" 
+		id="txtMenuTitle" 
+		name="txtMenuTitle"
+
+
+control data type
+-----------------
+1.int
+2.decimal
+3.string
+4.date
+5.lookup-user control
+6.xml
+7.bit
+
+control style attributes
+------------------------
+1.style properties and values
+2.class name
+3.class name for validation 
+		e.x. datepicker for date control
+
+control events
+--------------
+1.click 
+2.focusin
+3.focusout
+4.custom event handler - lookup user control
+5.change event
+6.type event
+
+
+control default value
+---------------------
+1.radio		-	status	- active, inactive, etc.,
+			-	default selection
+
+2.select	-	status	- active, inactive, etc.,
+			-	default selection(by value or text)
+			-	change event 
+					- change title, hide and show div controls
+					- e.x. reports - charts reports -(based on reports type hide and show the controls)
+
+3.input		-	default text, etc.,
+
+4.date picker		- default date, month and year only(e.x settlement report), time only, etc
+
+5.custom binding	- binding from methods 
+					- default binding - e.x. @Html.BindCustomers() 
+					- binding based on any event ( ex. if select state, then load city)
+					- bind based on parameters
+
+6.pse lookup		- bind default value
+					- select item in lookup - bind default value in other control
+
+
+default bind controls - templates
+---------------------------------
+1. select - drop down
+2. radio buttion
+3. custom binding
+	- query name
+	- text field
+	- value field
+	- paramter ( fixed value, session value, controls value)
+
+
+
+common feature and functionality
+--------------------------------
+1. load fields from table and its attributes ( length, type, etc)
+2. show the grid once select the item
+	- show fuel card grid when select customer vehicle id
+	- PIN Search
+3. grid edit option
+	e.x - vehicle eidt odo
+4. grid with view/edit permission based on roles
+		- e.x - Invoice Approval 
+		- grid binding with row and column level edit/view functionality
+5. verical menu- click directly open new page 
+	e.x - bulk fuel invoices
+
+	

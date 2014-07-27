@@ -1,0 +1,151 @@
+﻿@{
+    ViewBag.Title = "OrderUpload";
+    Layout = "~/Views/Shared/_BootstrapFullLayout.cshtml";
+}
+
+<style>
+    .handsontable .currentRow {
+        background-color: #E7E8EF;
+    }
+
+    .handsontable .currentCol {
+        background-color: #F9F9FB;
+    }
+</style>
+
+<h2>
+    Upload Order File
+</h2>
+<form  id="ajaxform" enctype="multipart/form-data" method="post">
+    <input type="file" id="file" name="file" />
+    <input type="button" value="OK" id="uploadFile" />
+    <div class="row-fluid">
+        <div style="height: 540px; overflow: scroll">
+            <div id="example1">
+            </div>
+        </div>
+        <input type="button" value="Save" id="btnSave" />
+    </div>
+    
+</form>
+@section scripts
+{
+    <script type="text/javascript" language="javascript">
+        var $container = $("#example1");
+       
+
+    $('#btnSave').click(function () {
+        var handsontable = $container.data('handsontable');
+        var saveOrders = [];
+        var saveOrdersList = [];
+        var orders = [];
+        $.each(handsontable.getColHeader(), function (i, d) {
+            saveOrders.push(d);
+        });
+
+        $.each(handsontable.getData(), function (index, dataRow) {
+            orders = [];
+            $.each(dataRow, function (i, d) {
+                //saveOrdersList[index][saveOrders[i]] = d;
+                //saveOrdersList.push({ saveOrders[i] : d });
+                orders["[" + saveOrders[i] + "]"] = d;
+            });
+
+            saveOrdersList.push(orders);
+
+        });
+
+        var cnt = handsontable.countRows();
+        var total = handsontable.getCell(cnt - 1, 1).innerText;
+        var orderby = "baljeet";//$('#txtOrderBy').val(); // handsontable.getCell(cnt - 3, 1).innerText;
+        var phone = "";//$('#txtPhone').val(); // handsontable.getCell(cnt - 2, 1).innerText;
+        var remarks = ""; //$('#txtRemarks').val(); // handsontable.getCell(cnt - 1, 1).innerText;
+
+
+        $.ajax({
+            url: "/Home/SaveUplaodedOrders",
+            data: { "total": total, "orderby": orderby, "phone": phone, "remarks": remarks, "data": JSON.stringify(handsontable.getData()), "header": JSON.stringify(handsontable.getColHeader()) }, //returns all cells' data
+            dataType: 'json',
+            type: 'POST',
+            success: function (res) {
+                if (res === '1') {
+                    alert('Data Saved');
+                }
+                else {
+                    alert('Error - Not Saved');
+                }
+            },
+            error: function () {
+                alert('Error - Not Saved');
+            }
+            });
+        });
+         
+        $('#uploadFile').on('click', function () {
+                var formData = new FormData($('#ajaxform')[0]);
+                var formURL = $(this).attr("action");
+                $.ajax({
+                    url: '/Home/UploadOrder',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: formData,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+
+                    beforeSend: function () {
+
+                    },
+                    complete: function (jqXHR) {
+                    
+                    },
+                    success: function (res) {
+                        try {
+                            var dataOrderEntry = [];
+                            var data = eval("[" + res + "]")[0].Table1;
+                            //handsontable.loadData(data);
+                            // dataOrderEntry
+                            $.each(data, function (index, item) {
+                                var array = new Array();
+                                $.each(item, function (i, d) {
+                                    array.push(d);
+                                });
+                                dataOrderEntry.push(array);                                
+                            });
+                            loadGrid(dataOrderEntry);
+                        }
+                        catch (ex) {
+                            dataOrderEntry = [];
+                        }
+                        
+                    },
+                    error: function () { }
+                }); //unbind. to stop multiple form submit.
+            });
+        
+        function loadGrid(rowData) {
+            var saveOrdersList = [];  
+            var container = $("#example1");
+            var colHeaderList = new Array();
+            colHeaderList.push("S/No");
+            colHeaderList.push("EAN");
+            colHeaderList.push("Description");
+            colHeaderList.push("NTUC Stock");
+            colHeaderList.push("Packing");
+            colHeaderList.push("UOM");
+            colHeaderList.push("Unit Price ($)");
+            colHeaderList.push("ST/WH No");
+            colHeaderList.push("ST/WH Name");
+            colHeaderList.push("Delivery");
+            colHeaderList.push("Amount ($)");
+           
+            $container.handsontable({
+                data:rowData,
+                startRows: 5,
+                colHeaders: colHeaderList,
+                minSpareRows: 1
+            });
+        }
+    </script>
+   
+}

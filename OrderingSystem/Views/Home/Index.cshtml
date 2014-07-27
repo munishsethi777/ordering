@@ -1,0 +1,58 @@
+﻿@{
+    ViewBag.Title = "Customers";
+    Layout = "~/Views/Shared/_BootstrapLayoutLogin.cshtml";
+}
+<form id="customerForm" class="form-horizontal">
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div>
+            <button type="button" class="ui-button-primary btn-block">
+                Customers</button>
+        </div>
+        <label class="field-validation-valid" data-valmsg-for="optionsRadios" data-valmsg-replace="true">
+        </label>
+        <div class="well">
+            <div class="clearfix">
+                <ul id="icons" name="icons" data-val="true" data-val-required="The Customer field is required."
+                    class="ui-widget ui-helper-clearfix">
+                    @Html.BindCustomersSelection()
+                </ul>
+            </div>
+        </div>
+        <div>
+            @*<a href="@Url.Action("Index", "Admin", new { area = "Admin" }, null)" class="ui-button-primary btn-block">
+                Ok</a>*@
+            <button type="button" id="btnCustomer" class="ui-button-primary btn-block">
+                Ok</button>
+        </div>
+    </div>
+</div>
+</form>
+@section scripts
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $('#btnCustomer').bind('click', function () {
+                if (!$('#customerForm').valid())
+                    return;
+
+                //select customer
+                var iCustomerId = $('input[name=optionsCustomer]:checked').val();
+                if (iCustomerId != undefined && iCustomerId != '') {
+
+                    //selected customerid
+                    $('#hdnSelectedCustomerId').val(iCustomerId);
+
+                    $.post('/Home/SelectCustomer', { iCustomerId: iCustomerId }, function (data) {
+                        if( iCustomerId == "1")
+                            window.location.pathname = '/Home/Admin';
+                        else
+                            window.location.pathname = '/Home/Dashboard';
+                    });
+                }
+            });
+        });
+        
+    </script>
+}

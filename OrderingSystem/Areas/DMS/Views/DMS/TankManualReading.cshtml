@@ -1,0 +1,240 @@
+﻿@model MVCDataModel.ManualDipReading
+@Html.Partial("_Dialog")
+<script type="text/javascript">
+    var model = null;
+        $(document).ready(function () {
+
+            model = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+
+            //frozen or lock the columns
+            $("#tblGrid").jqGrid('setColProp', 'Action', { frozen: true });
+            jQuery("#tblGrid").jqGrid('setFrozenColumns');
+
+
+            //hide and show column option - runtime
+            GridColumnChooser('tblGrid');
+
+            //refresh grid
+            ReloadGrid('tblGrid');
+
+            $('#btnReadingUpdate').bind('click', function () {
+                try {
+                    if (!$('#frmManualReading').valid())
+                        return;
+
+
+                    CreateEditItem($('#btnReadingUpdate').val());
+                }
+                catch (e) {
+                    ScriptDialogError(e);
+                }
+
+            });
+
+            $("#btnReadingCancel").bind("click", function (e) {
+                $('#btnReadingUpdate').val('Add');
+                ClearForm();
+            });
+
+        });
+
+        function buttonize(cellvalue, options, rowobject) {
+            return "<ul class='the-icons'>" +
+                        "<li title='Delete' onclick=\"DeleteManualReading(" + cellvalue + ");\"><i class='icon-remove'></i></li>" +
+                        "<li title='Edit' onclick=\"EditManualReading(" + cellvalue + ");\"><i class='icon-edit'></i></li>" +
+                    "</ul>"
+        }
+
+
+        // Dialog - Edit Entry
+        function EditManualReading(manualdipreadingid) {
+            try {
+
+                $.post("EditManualReadingId",
+                            {
+                                iManualDipReadingID: manualdipreadingid
+                            },
+                            function (data) {
+                                try {
+                                    if (data == "") {
+                                        AlertDialogError('Page could not load, please try again');
+                                        return;
+                                    }
+
+                                    //Do something with the data returned.
+                                    $('#hdnManualReadingId').val(data.ManualDipReadingID);
+                                    $('#readingDate').val(data.DipReadingDttm.toPSEDate());
+                                    $('#txtQty').val(data.DipQuantity);
+                                    $('#btnReadingUpdate').val('Update');
+                                }
+                                catch (e) {
+                                    ScriptDialogError(e);
+                                }
+                            }
+                        );
+
+            }
+            catch (e) {
+                ScriptError(e);
+            }
+
+        }
+
+        // add and edit item
+        function CreateEditItem(command) {
+            try {
+            
+                model.ManualDipReadingID = $('#hdnManualReadingId').val();
+                model.DipReadingDttm = $('#readingDate').val();
+                model.DipQuantity = $('#txtQty').val();
+
+                //Pass it to a controller method
+                $.post("CreateEditManualReading",
+                {
+                    viewModel: JSON.stringify(model),
+                    sCommand: command
+                },
+                function (data) {
+
+                    if (data.result == "fail") {
+                        AlertDialogError(data.message);
+                        return;
+                    }
+
+                    //refress the grid again
+                    ReloadGrid('tblGrid');
+
+
+                    if (command == 'Add') {
+                       
+                        AlertDialogSuccess(data.message);
+                    }
+                    else {
+                        AlertDialogSuccess(data.message);
+                    }
+                     ClearForm();
+
+                });
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+        }
+
+        //clear the form fields
+        function ClearForm() {
+
+            try {
+
+                //clear hidden ctrl = 0
+                $('#frmManualReading input[type=hidden]').each(function () {
+                    $(this).val('0');
+                });
+
+                //clear text ctrl = 0
+                $('#frmManualReading input[type=text]').each(function () {
+                    $(this).val('');
+                });
+
+                //drop down controls
+                $('#frmManualReading select').each(function () {
+                    $(this)[0].selectedIndex = 0;
+                    $(this).change();
+                });
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+        }
+
+        // Dialog - Delete Entry
+        function DeleteManualReading(manualdipreadingid) {
+            Confirmation('Are you sure to delete?', manualdipreadingid);
+        }
+
+        function CallbackConfirmation(status, item) {
+
+            if (status) // true - click yes, false - click no
+            {
+                $.post('DeleteManualReading', { iManualDipReadingID: item }, function (data) {
+                    if (data.result == "fail") {
+                        AlertDialogError(data.message);
+                        return;
+                    }
+
+                    //refress the grid again
+                    ReloadGrid('tblGrid');
+                    AlertMsg(data.message);
+                });
+
+            }
+        }
+
+</script>
+<form id="frmManualReading" class="form-horizontal">
+<div class="">
+    <div class="row-fluid">
+        <input type="hidden" id="hdnManualReadingId" value="0" />
+        <div class="span4">
+            <div class="control-group">
+                <label class="control-label" for="readingDate" style="width: 170px;">
+                    Reading Date and Time <sup style='color: Red'>*</sup>
+                </label>
+                <div class="controls">
+                    <input type="text" id="readingDate" name="readingDate" class="psedatetimepickerpast"
+                        data-val="true" data-val-required="The field is required." />
+                    <label class="field-validation-valid" data-valmsg-for="readingDate" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="span4">
+            <div class="control-group">
+                <label class="control-label" for="txtQty">
+                    Quantity <sup style='color: Red'>*</sup></label>
+                <div class="controls">
+                    <input type="text" id="txtQty" name="txtQty" class="number" data-val="true" data-val-required="The field is required." />
+                    <label class="field-validation-valid" data-valmsg-for="txtQty" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button type="button" id="btnReadingUpdate" name="Command" data-loading-text="Loading..."
+                    value="Add" class="btnAddEdit btn btn-primary">
+                    <span class="ui-button-text">Save</span></button>
+                <button type="button" id="btnReadingCancel" class="btn btn-info">
+                    <span class="ui-button-text">Clear</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+<table id="tblGrid">
+</table>
+<div id="pager">
+</div>
+@(Html.Grid("tblGrid")
+    .AddColumn(new Column("Action").SetCustomFormatter("buttonize").SetWidth(75).SetSearch(false))
+    .AddColumn(new Column("DipReadingDttm").SetLabel("Reading Date & Time").SetSearchType(Searchtype.Datepicker).SetSearchDateFormat("mm/dd/yy"))
+        .AddColumn(new Column("Quantity").SetAlign(Align.Right))
+    .AddColumn(new Column("lastchangeduser").SetLabel("Last Changed User"))
+    .AddColumn(new Column("lastchangeddate").SetLabel("Last Changed Date").SetSearchType(Searchtype.Datepicker).SetSearchDateFormat("mm/dd/yy"))
+    .SetUrl(Url.Action("GridDataManualReading", "DMS"))
+    .SetAutoWidth(true)
+    .SetRowNum(10)
+    .SetRowList(new[] { 10, 15, 20, 50 })
+    .SetViewRecords(true)
+    .SetPager("pager")
+    .SetHeight(150)
+    .SetWidth(250)
+    .SetMultiBoxOnly(false)
+    .SetMultiSelect(false)
+    .SetMultiSelectWidth(40)
+    .SetToolbar(false)
+    .SetToolbarPosition(ToolbarPosition.Top)
+    .SetHoverRows(true)
+    .SetAltRows(true)
+    .SetShrinkToFit(true)
+)

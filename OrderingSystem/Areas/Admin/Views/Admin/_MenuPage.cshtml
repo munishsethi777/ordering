@@ -1,0 +1,168 @@
+﻿@model MVCDataModel.tblMenuPage
+@Html.Partial("_Dialog")
+<script type="text/javascript">
+    var model = null;
+    $(document).ready(function () {
+
+        model = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+
+        $('#btnSave').bind('click', function () {
+            try {
+
+                // Force validation to reevaluate next time
+                var inputs = $('form').find(":input");
+                inputs.removeData("previousValue");
+                $('form').valid();
+
+                resultValation = $('form').validate();
+
+                timerValidation = $.timer(function () {
+
+                    if (resultValation.pendingRequest == 0) {
+                        timerValidation.stop();
+                        if ($('form').valid())
+                            CreateEditMenuPage('Add');
+                    }
+                }, 1000, true);
+
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+
+        });
+
+        $('#btnUpdate').bind('click', function () {
+            try {
+                // Force validation to reevaluate next time
+                var inputs = $('form').find(":input");
+                inputs.removeData("previousValue");
+                $('form').valid();
+
+                resultValation = $('form').validate();
+
+                timerValidation = $.timer(function () {
+
+                    if (resultValation.pendingRequest == 0) {
+
+                        timerValidation.stop();
+                        if ($('form').valid())
+                            CreateEditMenuPage('Update');
+                    }
+
+                }, 1000, true);
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+        });
+
+        $("#btnCancel").bind("click", function (e) {
+            ClearMenuPageForm();
+        });
+
+    }); 
+</script>
+<form id="menuPageForm" class="form-horizontal">
+<div class="">
+    <div class="row-fluid">
+        <input type="hidden" id="hdnMenuPageId" value="0" />
+       @if((Session["CustomerId"].ToString() == "1")){
+             @:<div class="control-group" style="display:block;">
+          } 
+          else {
+             @:<div class="control-group" style="display:none;">
+          } 
+                <label class="control-label" for="ddlCustomer">
+                    Customer
+                </label>
+                <div class="controls">
+                    <select id="ddlCustomer" name="ddlCustomer" class="selectpicker" onchange="ChangeCustomer();"
+                        data-val="true" data-val-required="The Customer field is required.">
+                        <option value="">Select Customer</option>
+                        @Html.BindCustomers()
+                    </select>
+                    <label class="field-validation-valid" data-valmsg-for="ddlCustomer" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+        
+        <div class="control-group">
+            <label class="control-label" for="ddlMenu">
+                Menu
+            </label>
+            <div class="controls">
+                <select id="ddlMenu" name="ddlMenu" class="selectpicker" data-val="true" data-val-required="The field is required.">
+                    <option value="">Select Menu</option>
+                    @Html.BindMenu(0)
+                </select>
+                <label class="field-validation-valid" data-valmsg-for="ddlMenu" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ddlGroup">
+                Group
+            </label>
+            <div class="controls">
+                <select id="ddlGroup" name="ddlGroup" class="selectpicker">
+                    <option value="0">Select Group</option>
+                    @Html.BindGroup(0)
+                </select>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ddlPage">
+                Page
+            </label>
+            <div class="controls">
+                <select id="ddlPage" name="ddlPage" class="selectpicker" onchange="ChangePage();"
+                    data-val="true" data-val-required="The field is required.">
+                    <option value="">Select Page</option>
+                    @Html.BindPage()
+                </select>
+                <label class="field-validation-valid" data-valmsg-for="ddlPage" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtPageTitle">
+                Page Title</label>
+            <div class="controls">
+                <input data-val="true" data-val-remote="Page is already exists." 
+                    data-val-remote-url="/Validation/IsExistsWithCutomer" data-val-required="The Page Title field is required." 
+                    data-val-remote-additionalfields="primaryfield,primaryvalue, tablename,columnname,columnvalue,customerid"
+                    data-val-remote-columnname="pagetitle" 
+                    data-val-remote-tablename="tblmenupage"
+                    data-val-remote-columnvalue="txtPageTitle" 
+                    data-val-remote-customerid="ddlCustomer" 
+                    data-val-remote-primaryfield="MenuPageId" 
+                    data-val-remote-primaryvalue="hdnMenuPageId"
+                    id="txtPageTitle" name="txtPageTitle" type="text" >
+                <label class="field-validation-valid" data-valmsg-for="txtPageTitle" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtDesc">
+                Description</label>
+            <div class="controls">
+                <input type="text" id="txtDesc" name="txtDesc" />
+            </div>
+        </div>
+        @Html.Partial("_Status")
+        <div class="control-group">
+            <label class="control-label" for="ddlOrderPage">
+                Order Page
+            </label>
+            <div class="controls">
+                <select id="ddlOrderPage" name="ddlOrderPage" class="selectpicker">
+                    <option value=1>1</option>
+                </select>
+            </div>
+        </div>
+       @Html.Partial("_SubmitClear")
+    </div>
+</div>
+</form>
+@Html.Partial("_Alert")

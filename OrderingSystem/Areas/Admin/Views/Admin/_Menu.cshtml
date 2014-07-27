@@ -1,0 +1,123 @@
+﻿@model MVCDataModel.tblMenu
+@Html.Partial("_Dialog")
+<script type="text/javascript">
+    var menu = null;
+    $(document).ready(function () {
+
+        menu = @Html.Raw(Json.Encode(Model));
+
+        $('#btnSave').bind('click', function () {
+            try {
+                // Force validation to reevaluate next time
+                var inputs = $('form').find(":input");
+                inputs.removeData("previousValue");
+                $('form').valid();
+
+                resultValation = $('form').validate();
+
+                timerValidation = $.timer(function () {
+
+                    if (resultValation.pendingRequest == 0) {
+                        timerValidation.stop();
+                        if ($('form').valid())
+                            CreateEditMenu('Add');
+                    }
+                }, 1000, true);
+
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+
+        });
+
+        $('#btnUpdate').bind('click', function () {
+            try {
+                // Force validation to reevaluate next time
+                var inputs = $('form').find(":input");
+                inputs.removeData("previousValue");
+                $('form').valid();
+
+                resultValation = $('form').validate();
+
+                timerValidation = $.timer(function () {
+
+                    if (resultValation.pendingRequest == 0) {
+
+                        timerValidation.stop();
+                        if ($('form').valid())
+                            CreateEditMenu('Update');
+                    }
+
+                }, 1000, true);
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+        });
+
+        $("#btnCancel").bind("click", function (e) {
+            ClearMenuForm();
+        });
+
+    });
+
+    
+</script>
+<form id="menuForm" class="form-horizontal">
+<div class="">
+    <div class="row-fluid">
+        <input type="hidden" id="hdnMenuId" value="0" />
+        @if ((Session["CustomerId"].ToString() == "1"))
+        {
+            @:<div class="control-group" style="display:block;">
+        }
+        else
+        {
+            @:<div class="control-group" style="display:none;">
+        }
+        <label class="control-label" for="ddlCustomer"> Customer </label> 
+            <div class="controls">
+            <select id="ddlCustomer" name="ddlCustomer" class="selectpicker" onchange="ChangeCustomer();" data-val="true" data-val-required="The Customer field is required."> 
+                <option value="">Select Customer</option>
+                @Html.BindCustomers() 
+            </select> 
+            <label class="field-validation-valid" data-valmsg-for="ddlCustomer" data-valmsg-replace="true"> </label> </div> 
+        </div> 
+        <div class="control-group"> 
+            <label class="control-label" for="txtMenuTitle"> Menu Title</label> 
+            <div class="controls">
+                <input data-val="true" data-val-remote="Menu Title is already exists." 
+                data-val-remote-url="/Validation/IsExistsWithCutomer" data-val-required="The Menu Title field is required." 
+                data-val-remote-additionalfields="primaryfield,primaryvalue, tablename,columnname,columnvalue,customerid"
+                data-val-remote-columnname="menutitle" 
+                data-val-remote-tablename="tblmenu"
+                data-val-remote-columnvalue="txtMenuTitle" 
+                data-val-remote-customerid="ddlCustomer" 
+                data-val-remote-primaryfield="menuid" 
+                data-val-remote-primaryvalue="hdnMenuId" 
+                id="txtMenuTitle" name="txtMenuTitle" type="text"> 
+                
+                <label class="field-validation-valid" data-valmsg-for="txtMenuTitle" data-valmsg-replace="true"> </label> 
+            </div> 
+        </div> 
+        <div class="control-group"> 
+            <label class="control-label" for="txtMenuDesc"> Menu Description</label> 
+            <div class="controls">
+                <input type="text" id="txtMenuDesc" name="txtMenuDesc" /> 
+            </div> 
+        </div> 
+        @Html.Partial("_Status")
+        <div class="control-group">
+            <label class="control-label" for="ddlOrderMenu"> Order Menu </label> 
+            <div class="controls">
+                <select id="ddlOrderMenu" name="ddlOrderMenu" class="selectpicker"> 
+                    <option value=1>1</option>
+                </select> 
+            </div> 
+        </div> 
+        @Html.Partial("_SubmitClear")
+    </div>
+    </div>
+</form>
+@Html.Partial("_Alert")

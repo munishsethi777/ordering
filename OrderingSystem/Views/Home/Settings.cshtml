@@ -1,0 +1,69 @@
+﻿@{
+    ViewBag.Title = "Settings";
+    Layout = "~/Views/Shared/_BootstrapLayout.cshtml";
+}
+<h4>
+    Settings</h4>
+<button title="" type="button" id="btnPostOrder" class="btn btn-primary">
+    <span class="ui-button-text">Insert Order</span></button>
+<br />
+<br />
+<button title="" type="button" id="btnProduct" class="btn btn-info">
+    <span class="ui-button-text">Synch Product</span></button>
+<br />
+<br />
+<button title="" type="button" id="btnPrice" class="btn btn-inverse">
+    <span class="ui-button-text">Synch Price</span></button>
+<br />
+<br />
+<button title="" type="button" id="btnCustomer" class="btn btn-success">
+    <span class="ui-button-text">Synch Customer</span></button>
+@section scripts
+{
+    <script type="text/javascript" language="javascript">
+
+        $(document).ready(function () {
+
+            // post order
+            $('#btnPostOrder').bind('click', function () {
+
+                $.post('InsertOrder', {}, function (data) {
+
+                    alert(data);
+                });
+
+            });
+
+            //merge product
+            $('#btnProduct').bind('click', function () {
+
+                $.post('SynchProduct', {}, function (data) {
+
+                    alert(data);
+                });
+
+            });
+
+            //merge price
+            $('#btnPrice').bind('click', function () {
+
+                $.post('SynchPrice', {}, function (data) {
+
+                    alert(data);
+                });
+
+            });
+
+            //merge customer
+            $('#btnCustomer').bind('click', function () {
+
+                $.post('SynchCustomer', {}, function (data) {
+
+                    alert(data);
+                });
+
+            });
+
+        });
+    </script>
+}

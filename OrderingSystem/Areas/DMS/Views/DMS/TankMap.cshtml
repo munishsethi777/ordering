@@ -1,0 +1,16 @@
+﻿<script type="text/javascript" language="javascript">
+    var GlbMarker = [];
+    var map;
+    var sTankIDs = "";
+    var tankid = "";
+
+    $(document).ready(function () {
+        map = InitialMapLoad(document.getElementById("map"));
+
+        $.post('GetTankMap', {}, function (returnData) {
+                        PinPointValues(returnData, document.getElementById("map"));
+                    });
+    });
+</script>
+<div id="map" style="width: 100%; height: 450px" runat="server">
+</div>

@@ -1,0 +1,37 @@
+﻿@{
+    ViewBag.Title = "ManageAccount";
+    Layout = "~/Views/Shared/_BootstrapLayout.cshtml";
+}
+
+<table id="tblGrid">
+</table>
+<div id="pager">
+</div>
+@section scripts {
+    @(Html.Grid("tblGrid")
+    .SetCaption("Manage Customer Account")
+    .AddColumn(new Column("customeraccountid").SetHidden(true).AddClass("Hide"))
+    .AddColumn(new Column("account").SetLabel("Account #"))
+    .AddColumn(new Column("isActive").SetLabel("Status"))
+    .SetUrl(Url.Action("GridDataCustomerAccount", "DMS"))
+    .SetAutoWidth(true)
+    .SetRowNum(10)
+    .SetRowList(new[] { 10, 15, 20, 50 })
+    .SetViewRecords(true)
+    .SetPager("pager")
+    .SetHeight(300)
+    .SetWidth(360)
+    .SetSearchToolbar(true)
+    .SetSearchOnEnter(true)
+    .SetSearchClearButton(true)
+    .SetSearchToggleButton(true)
+    .SetMultiSelect(true)
+    .SetMultiBoxOnly(false)
+    .SetMultiSelectWidth(40)
+    .SetToolbar(true)
+    .SetToolbarPosition(ToolbarPosition.Top)
+    .SetHoverRows(true)
+    .SetAltRows(true)
+    .SetShrinkToFit(false)
+    .SetSortName("customerid"))
+}

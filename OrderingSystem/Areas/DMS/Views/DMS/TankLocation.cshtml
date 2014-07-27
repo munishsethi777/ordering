@@ -1,0 +1,113 @@
+﻿@model MVCDataModel.TankLocation
+@Html.Partial("_Dialog")
+<script type="text/javascript">
+
+    var model = null;
+
+    $(document).ready(function () {
+
+        model = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+
+        $('#btnLocationUpdate').bind('click', function () {
+            try {
+                if (!$('#frmTankLocation').valid())
+                    return;
+
+                model.TankID = $('#hdnTankId').val();
+                model.PhysicalAddress = $('#txtAddress').val();
+                model.City = $('#txtCity').val();
+                model.State = $('#ddlState').val();
+                model.Zip = $('#txtZip').val();
+                model.CurrentLatitude = $('#txtLatitude').val();
+                model.CurrentLongitude = $('#txtLongitude').val();
+
+                //Pass it to a controller method
+                $.post("SaveTankLocation",
+                {
+                    viewModel: JSON.stringify(model)
+                },
+                function (data) {
+
+                    if (data.result == "fail") {
+                        AlertDialogError(data.message);
+                        return;
+                    }
+                    AlertDialogSuccess(data.message);
+
+                });
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+
+        });
+
+        $("#btnLocationCancel").bind("click", function (e) {
+            ClearForm();
+        });
+    });
+</script>
+<form id="frmTankLocation" class="form-horizontal">
+<div class="">
+    <div class="row-fluid">
+        
+        <div class="control-group">
+            <label class="control-label" for="txtAddress">
+                Street <sup style='color:Red' >*</sup> </label>
+            <div class="controls">
+                <input type="text" id="txtAddress" name="txtAddress" value = "@Model.PhysicalAddress" data-val="true" data-val-required="The field is required."  />
+                <label class="field-validation-valid" data-valmsg-for="txtAddress" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtCity">
+                City <sup style='color:Red' >*</sup> </label>
+            <div class="controls">
+                <input type="text" id="txtCity" name="txtCity" value = "@Model.City" data-val="true" data-val-required="The field is required." />
+                <label class="field-validation-valid" data-valmsg-for="txtCity" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        @Html.Partial("_EditState", new string[] { "true", @Model.State })
+        <div class="control-group">
+            <label class="control-label" for="txtZip">
+                ZIP Code <sup style='color:Red' >*</sup> </label>
+            <div class="controls">
+                <input type="text" id="txtZip" name="txtZip" value = "@Model.Zip"  class="psezipcode" data-val="true" data-val-required="The field is required." />
+                <label class="field-validation-valid" data-valmsg-for="txtZip" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtLatitude">
+                Latitude <sup style='color:Red' >*</sup>
+            </label>
+            <div class="controls">
+                <input type="text" id="txtLatitude" name="txtLatitude" value = "@Model.CurrentLatitude" class="number" data-val="true" data-val-required="The field is required." />
+                <label class="field-validation-valid" data-valmsg-for="txtLatitude" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtLongitude">
+                Longitude <sup style='color:Red' >*</sup>
+            </label>
+            <div class="controls">
+                <input type="text" id="txtLongitude" name="txtLongitude"  value = "@Model.CurrentLongitude" class="number" data-val="true" data-val-required="The field is required."/>
+                <label class="field-validation-valid" data-valmsg-for="txtLongitude" data-valmsg-replace="true">
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button type="button" id="btnLocationUpdate" name="Command" data-loading-text="Loading..."
+                    value="Update" class="btnAddEdit btn btn-primary">
+                    <span class="ui-button-text">Update</span></button>
+                <button type="button" id="btnLocationCancel" class="btn btn-info">
+                    <span class="ui-button-text">Clear</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+</form>

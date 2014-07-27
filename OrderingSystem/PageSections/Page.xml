@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Pages>
+  <Page PageName="pgVehicle" PageType="vehicle" CustomerId="0" Title="Vehicle Master">
+    <Controls>
+      
+      <!--control type - text box-->
+      <Control Id="vehicleid" Name="vehicleid" Label="Vehicle ID" ControlType="Text" DataType="string" 
+             Style="" Class="" DefaultValue="">
+        <Validations>
+          <Validation Type="Required" ValMsg="This field is required" ></Validation>
+          <Validation Type="Length" ValMsg="Length should be 2 to 10" Min ="2" Max ="10"></Validation>
+        </Validations>
+      </Control>
+      <Control Id="customer" Name="customer" Label="reg ex " ControlType="Text" DataType="string"
+             Style="" Class="" DefaultValue="">
+        <Validations>
+          <Validation Type="RegEx" ValMsg="This field should match pattern" Pattern="^(\d{1,3},?(\d{3},?)*\d{3}(\.\d{1,3})?|\d{1,3}(\.\d{2})?)$" ></Validation>
+        </Validations>
+      </Control>
+      <Control Id="email" Name="email" Label="mail valid" ControlType="Text" DataType="string"
+            Style="" Class="" DefaultValue="">
+        <Validations>
+          <Validation Type="Email" ValMsg="This field should be mail format"></Validation>
+        </Validations>
+      </Control>
+      <Control Id="phone" Name="phone" Label="phone" ControlType="Text" DataType="string"
+            Style="" Class="" DefaultValue="">
+      </Control>
+      <Control Id="menutitle" Name="menutitle" Label="menu title" ControlType="Text" DataType="string"
+            Style="" Class="" DefaultValue="">
+        <Validations>
+          <Validation Type="Remote" ValMsg="Menu Title is already exists." Table="test" Column="test" Value="test" ></Validation>
+        </Validations>
+      </Control>
+      
+      <!--control type - radio button -->
+      <Control Id="status" Name="status" Label="status" ControlType="Radio" Style="" Class="" DefaultValue="1">
+        <DataBinding Type="Inline">
+          <Item Text="Active" Value="0"></Item>
+          <Item Text="InActive" Value="1"></Item>
+        </DataBinding>
+        <Validations>
+          <Validation Type="Required" ValMsg="This field is required" ></Validation>
+        </Validations>
+      </Control>
+      <Control Id="status2" Name="status2" Label="status temp" ControlType="Radio" Style="" Class="" DefaultValue="2">
+        <DataBinding Type="Template" Template="tmpStatus">
+        </DataBinding>
+        <Validations>
+          <Validation Type="Required" ValMsg="This field is required" ></Validation>
+        </Validations>
+      </Control>
+      <Control Id="status3" Name="status3" Label="status db" ControlType="Radio" Style="" Class="" DefaultValue="">
+        <DataBinding Type="DataBase" SqlType="Query" TextField="enumtext" ValueField="enumvalue" Selected="1" >
+          <Sql>select enumvalue, enumtext from tblenumvalues where enumtypeid=1</Sql>
+          <Params>
+            <Param></Param>
+          </Params>
+        </DataBinding>
+        <Validations>
+          <Validation Type="Required" ValMsg="This field is required" ></Validation>
+        </Validations>
+      </Control>
+
+      <!--control type - drop down -->
+      <Control Id="status4" Name="status4" Label="status" ControlType="Select" Style="" Class="" DefaultValue="1">
+        <DataBinding Type="Inline">
+          <Item Text="Select Status" Value=""></Item>
+          <Item Text="Active" Value="0"></Item>
+          <Item Text="InActive" Value="1"></Item>
+        </DataBinding>
+        <Validations>
+          <Validation Type="Required" ValMsg="This field is required" ></Validation>
+        </Validations>
+      </Control>
+      <Control Id="status5" Name="status5" Label="status temp" ControlType="Select" Style="" Class="" DefaultValue="2">
+        <DataBinding Type="Template" Template="tmpStatus">
+        </DataBinding>
+        <Validations>
+          <Validation Type="Required" ValMsg="This field is required" ></Validation>
+        </Validations>
+      </Control>
+      <Control Id="status6" Name="status6" Label="status db" ControlType="Select" Style="" Class="" DefaultValue="">
+        <DataBinding Type="DataBase" SqlType="Query" TextField="enumtext" ValueField="enumvalue" Selected="1" >
+          <Sql>select enumvalue, enumtext from tblenumvalues where enumtypeid=1</Sql>
+          <Params>
+            <Param></Param>
+          </Params>
+        </DataBinding>
+        <Validations>
+          <Validation Type="Required" ValMsg="This field is required" ></Validation>
+        </Validations>
+      </Control>
+
+      <Control Id="txtVehicle" Name="txtVehicle" LookupName="txtVehicle" Label="lookup value" ControlType="Lookup" Style="" Class="" DefaultValue="">
+        <Validations>
+          <Validation Type="Required" ValMsg="This field is required" ></Validation>
+        </Validations>
+      </Control>
+  </Controls>
+  </Page>
+</Pages>

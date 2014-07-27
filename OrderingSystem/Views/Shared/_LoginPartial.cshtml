@@ -1,0 +1,11 @@
+﻿<div class="btn-group pull-right">
+    <a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-user">
+    </i>Welcome :&nbsp;&nbsp;@Session["UserName"]&nbsp;&nbsp;<span class="caret"></span></a>
+    <ul class="dropdown-menu">
+        @*<li>@Html.ActionLink("Profile", "Profile", "Account", routeValues: null, htmlAttributes: new { id = "profileLink" })</li>*@
+        <li><a href="#" onclick="ChangePassword();"><span class="icon-briefcase"></span>Change
+            Password</a> </li>
+        <li>@*@Html.ActionLink("Logoff", "Login", "Account", routeValues: null, htmlAttributes: new { id = "logoffLink" })*@
+            <a href="/" id="logoffLink"><span class="icon-lock"></span>Logoff</a> </li>
+    </ul>
+</div>

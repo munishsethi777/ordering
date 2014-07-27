@@ -1,0 +1,212 @@
+/* Styles for validation helpers -- for jquery.validate.unobtrusive.js
+-----------------------------------------------------------*/
+.field-validation-error
+{
+	color: #ff0000;
+}
+
+.field-validation-valid
+{
+	display: none;
+}
+
+.input-validation-error
+{
+	border: 1px solid #ff0000;
+	background-color: #ffeeee;
+}
+
+.validation-summary-errors
+{
+	font-weight: bold;
+	color: #ff0000;
+}
+
+.validation-summary-valid
+{
+	display: none;
+}
+/* ----------------- end --------------------*/
+
+
+/* bootstrap Icons
+------------------------- */
+.css_right {
+	text-align: right;
+}
+.the-icons
+{
+	margin-left: 0;
+	list-style: none;
+}
+.the-icons li
+{
+	float: left;
+	width: 25%;
+	line-height: 25px;
+	margin-right: 10px;
+}
+.the-icons i:hover
+{
+	background-color: rgba(255,0,0,.25);
+	cursor: pointer;
+}
+.customerSelection
+{
+	width: 250px;
+}
+
+
+.hor_menu
+{
+	color: #ffffff;
+}
+
+.hor_menu_backgroun-color
+{
+	background-color: #9c254f;
+}
+
+.ActiveMenu
+{
+	background-image: linear-gradient(rgb(0, 136, 180), rgb(0, 68, 180));
+	background-image: -o-linear-gradient(rgb(0, 136, 180), rgb(0, 68, 180));
+	background-image: -moz-linear-gradient(rgb(0, 136, 180), rgb(0, 68, 180));
+	background-image: -webkit-linear-gradient(rgb(0, 136, 180), rgb(0, 68, 180));
+	background-image: -ms-linear-gradient(rgb(0, 136, 180), rgb(0, 68, 180));
+	color: White;
+}
+
+.bodybackgroundcolor
+{
+	background-color: #D8D8D8;
+}
+
+.vMenubackgrouncolor
+{
+	background-color: #4b5676;
+}
+
+.labelstyle
+{
+   text-align:right;
+   font-weight:bold; 
+}
+
+/*knockout js -- dispatch / order entry*/
+.row_selected td
+    {
+        background-color: #f1eebf !important;
+    }
+    
+    
+    .formgrid table
+    {
+        font: normal 12px/150% Arial, Helvetica, sans-serif;
+        background: #fff;
+        overflow: hidden;
+        border: 1px solid #006699;
+        -webkit-border-radius: 3px;
+        -moz-border-radius: 3px;
+        border-radius: 3px;
+    }
+    .formgrid table td, .formgrid table th
+    {
+        padding: 3px 10px;
+    }
+    .formgrid table thead th
+    {
+        background: -webkit-gradient( linear, left top, left bottom, color-stop(0.05, #006699), color-stop(1, #00557F) );
+        background: -moz-linear-gradient( center top, #006699 5%, #00557F 100% );
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#006699', endColorstr='#00557F');
+        background-color: #006699;
+        color: #FFFFFF;
+        font-size: 12px;
+        font-weight: bold;
+        border-left: 1px solid #0070A8;
+    }
+    
+    
+    
+    #loading
+    {
+        position: absolute;
+        left: 330px;
+        top: 100px;
+        z-index: 100;
+        padding: 20px;
+        border: 2px solid #C6C6C6;
+        background-color: White;
+    }
+    .header
+    {
+        font: normal 16px/150% Arial, Helvetica, sans-serif;
+        background: -webkit-gradient( linear, left top, left bottom, color-stop(0.05, #006699), color-stop(1, #00557F) );
+        background: -moz-linear-gradient( center top, #006699 5%, #00557F 100% );
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#006699', endColorstr='#00557F');
+        background-color: #006699;
+        color: #FFFFFF;
+        font-size: 16px;
+        font-weight: bold;
+        border-left: 1px solid #0070A8;
+    }
+    
+    
+    #tabledispatch td
+    {
+        padding: 4px;
+        white-space: nowrap;
+    }
+/* knockout -- end */    
+
+/*jq grid override */
+.ui_jqgrid_tr_jqgrow_td			/* override class = ui-jqgrid tr.jqgrow td */
+	{
+            overflow:visible;
+	}
+	
+/* lookup style */
+.lkpClass
+{
+	width:110px;
+}
+
+.lkpClassForReport
+{
+	width:175px;
+}
+
+
+/* lookup selected row style */
+a.ui-state-focus-stable
+        {
+            font-weight: bold;
+            margin: 0;
+            color: #ffffff;
+            background: #0081C2;
+            background-color: #0081C2;
+            background-repeat: repeat-x;
+            background-image: -webkit-linear-gradient(top, #0088CC, #0077B3); /* Safari 5.1+, Chrome 10+ */
+            background-image: -moz-linear-gradient(top, #0088CC, #0077B3); /* Firefox 3.6 */
+            background-image: -o-linear-gradient(top, #0088CC, #0077B3); /* Opera 11.10+ */
+            background-image: linear-gradient(to bottom, #0088CC, #0077B3); /* CSS3 Compliant */
+            text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+            border-color: #0088CC #0088CC #0077B3;
+            border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#0088CC', endColorstr='#0077B3', GradientType=0); /* IE8 */
+            filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+        }
+        
+/* css for timepicker */
+.ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
+.ui-timepicker-div dl { text-align: left; }
+.ui-timepicker-div dl dt { float: left; clear:left; padding: 0 0 0 5px; }
+.ui-timepicker-div dl dd { margin: 0 10px 10px 45%; }
+.ui-timepicker-div td { font-size: 90%; }
+.ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
+
+.ui-timepicker-rtl{ direction: rtl; }
+.ui-timepicker-rtl dl { text-align: right; padding: 0 5px 0 0; }
+.ui-timepicker-rtl dl dt{ float: right; clear: right; }
+.ui-timepicker-rtl dl dd { margin: 0 45% 10px 10px; }        
+/* css for timepicker */

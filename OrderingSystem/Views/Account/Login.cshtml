@@ -1,0 +1,94 @@
+﻿@model MVCDataModel.LoginModel
+@{
+    ViewBag.Title = " ";
+    Layout = "~/Views/Shared/_BootstrapLayoutLogin.cshtml";
+}
+<hgroup class="title">
+    <h1>@ViewBag.Title</h1>
+    <br /><br /><br /><br /><br /> <br /><br />
+</hgroup>
+<div class="container">
+    <div class="span4">
+    </div>
+    <div class="span4">
+        <form id="loginForm" action="/" method="post">
+        @*
+        <input name="__RequestVerificationToken" type="hidden" value="BRyfQvM2RABh6LLJ5Mjy4TMnAGc0QcvmcHTd4v9BiynQTja1w3b8oBpeMci_wNofB15i_WTr5LSW3bIm_zzUMTHzX4I4B782xT24ZAn57ON7FkeEbdkmxtIS8tJUkli96pN9jrUnnDy4ENV_ZigY2KWPr2-iVVAt1j-8pkTySOo1" />    
+        <div class="validation-summary-errors">
+            <span>@ViewData["ErrorMsg"]</span>
+        </div>
+        *@
+        <div class="well">
+            <fieldset>
+                <legend>LogIn</legend>
+                <label for="UserName">
+                    User Name</label>
+                <input data-val="true" data-val-remote="This email id is not registered with us." data-val-remote-url="/Validation/IsNotExists"
+                    data-val-required="The User Name field is required." data-val-remote-additionalfields="tablename,columnname,columnvalue"
+                    data-val-remote-columnname="email" data-val-remote-tablename="tbluser"
+                    data-val-remote-columnvalue="UserName" id="UserName" name="UserName" class="email span3"
+                    type="text" />
+                <label data-valmsg-for="UserName" data-valmsg-replace="true">
+                </label>
+                <label for="Password">
+                    Password</label>
+                <input class="span3" data-val="true" data-val-required="The Password field is required."
+                    id="Password" name="Password" type="password" />
+                <label data-valmsg-for="Password" data-valmsg-replace="true">
+                </label>
+                <div class="row-fluid">
+                    <div class="span5">
+                        <label class="checkbox">
+                            <div>
+                                <input data-val="true" data-val-required="The Remember me? field is required." id="RememberMe"
+                                    name="RememberMe" type="checkbox" value="true" /><input name="RememberMe" type="hidden"
+                                        value="false" />
+                            </div>
+                            Remember Me?
+                        </label>
+                    </div>
+                    <div class="span5">
+                        <a href="#" onclick="ForgetPassword();">Forgot password?</a>
+                    </div>
+                </div>
+                <div class="">
+                    <input id="btnLogin" type="submit" value="Login" class="btn btn-primary" />
+                </div>
+            </fieldset>
+        </div>
+        @if (ViewData["ErrorMsg"] != null && ViewData["ErrorMsg"] != "")
+        {
+            <div id="alertLoginError" class="alert alert-error">
+                <button type="button" class="close" data-dismiss="alert">
+                    &times;</button>@ViewData["ErrorMsg"]
+            </div>
+        }
+        </form>
+    </div>
+    <div class="span4">
+    </div>
+</div>
+</div>
+@section scripts{
+    <script type="text/javascript">
+        var model = null;
+        $(document).ready(function () {
+
+           model = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+
+            $('#btnLogin').bind('click', function () {
+                if (!$('#loginForm').valid())
+                    return;
+                $('#loginForm').submit();
+            });
+
+            if(model != null && model.IsSessionExpired)
+            {
+                //window.location.pathname='/Account/Login';
+                AlertMsg("Your Session has been Expired...");
+            }
+
+        }); 
+    
+    </script>
+}

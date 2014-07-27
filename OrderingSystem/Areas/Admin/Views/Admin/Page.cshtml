@@ -1,0 +1,303 @@
+﻿@{
+    Layout = "~/Views/Shared/_BootstrapLayout.cshtml";
+}
+<table id="tblGrid">
+</table>
+<div id="pager">
+</div>
+@section scripts {
+    @(Html.Grid("tblGrid")
+    .SetCaption("Page Master")
+    .AddColumn(new Column("Action")
+    .SetCustomFormatter("buttonize")
+    .SetWidth(75)
+    .SetSearch(false)
+    )
+            //.AddColumn(new Column("pageid").SetHidden(true))
+    .AddColumn(new Column("pagetitle").SetLabel("Page Title"))
+    .AddColumn(new Column("Description"))
+    .AddColumn(new Column("Area"))
+    .AddColumn(new Column("Controller"))
+    .AddColumn(new Column("Action"))
+            .AddColumn(new Column("Status").SetSearchType(Searchtype.Select).SetSearchTerms(new string[] { "1:Active", "0:Inactive" }))
+            .AddColumn(new Column("lastchangeduser").SetLabel("Last Changed User").SetWidth(200))
+            .AddColumn(new Column("createddate").SetLabel("Created Date").SetWidth(200).SetSearchType(Searchtype.Datepicker).SetSearchDateFormat("mm/dd/yy"))
+            .AddColumn(new Column("lastchangeddate").SetLabel("Last Changed Date").SetWidth(200).SetSearchType(Searchtype.Datepicker).SetSearchDateFormat("mm/dd/yy"))
+    .SetUrl(Url.Action("GridDataPage", "Admin"))
+    .SetAutoWidth(true)
+    .SetRowNum(10)
+    .SetRowList(new[] { 10, 15, 20, 50 })
+    .SetViewRecords(true)
+    .SetPager("pager")
+                    .SetHeight(290)
+    .SetWidth(400)
+    .SetSearchToolbar(true)
+    .SetSearchOnEnter(true)
+    .SetSearchClearButton(true)
+    .SetSearchToggleButton(true)
+    .SetMultiSelect(true)
+    .SetMultiBoxOnly(false)
+    .SetMultiSelectWidth(40)
+    .SetToolbar(true)
+    .SetToolbarPosition(ToolbarPosition.Top)
+    .SetHoverRows(true)
+    .SetAltRows(true)
+    .SetShrinkToFit(false)
+    .SetSortName("pagetitle")
+)
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            var tool = "<ul class='nav nav-pills'>" +
+                            "<li><a onclick=\"AddPage();\" title='Add New' href='#'>Add New</a></li>" +
+                            "<li><a href='#'>Delete</a></li>" +
+                            "<li class='dropdown'><a title='Export' class='dropdown-toggle' data-toggle='dropdown' href='#'>Export <b class='caret'></b></a>" +
+                                "<ul class='dropdown-menu'>" +
+                                    "<li><a href='#'>PDF</a></li>" +
+                                    "<li><a href='#'>Excel</a></li>" +
+                                "</ul>" +
+                            "</li>" +
+                        "</ul>";
+
+            // create tool bar in grid
+            $('#t_tblGrid').append(tool);
+
+            //frozen or lock the columns
+            $("#tblGrid").jqGrid('setColProp', 'Action', { frozen: true });
+            jQuery("#tblGrid").jqGrid('setFrozenColumns');
+
+            //hide and show column option - runtime
+            GridColumnChooser('tblGrid');
+
+            //refresh grid
+            ReloadGrid('tblGrid');
+        });
+
+        function buttonize(cellvalue, options, rowobject) {
+            return "<ul class='the-icons'>" +
+                        "<li title='Delete' onclick=\"DeletePage(" + cellvalue + ");\"><i class='icon-remove'></i></li>" +
+                        "<li title='Edit' onclick=\"EditPage(" + cellvalue + ");\"><i class='icon-edit'></i></li>" +
+                    "</ul>"
+        }
+
+        // Dialog Modal - Add New Entry
+        function AddPage() {
+            try {
+                // clear edit and add view
+                ClearDialog();
+
+                // Dialogs window for add
+                $("#dialog-add").dialog({
+                    title: 'Add New',
+                    autoOpen: false,
+                    resizable: true,
+                    width: 600,
+                    height: 500,
+                    position: 'center',
+                    modal: true,
+                    draggable: true,
+                    open: function (event, ui) {
+                        $.post("CreatePage",
+                            {},
+                            function (data) {
+
+                                try {
+                                    if (data == "") {
+                                        CloseDialog();
+                                        AlertError('Page could not load, please try again');
+                                        return;
+                                    }
+
+                                    $('#dialog-add').html(data.view);
+                                }
+                                catch (e) {
+                                    ScriptDialogError(e);
+                                }
+                            }
+                        );
+                    },
+                    close: function (event, ui) {
+                        CloseDialog();
+                    }
+                });
+                //open dialog
+                OpenDialog();
+                return false;
+            }
+            catch (e) {
+                ScriptError(e);
+            }
+        }
+
+        // Dialog - Edit Entry
+        function EditPage(pageId) {
+            try {
+                // clear edit and add view
+                ClearDialog();
+
+
+                // dialgo window for edit
+                $("#dialog-add").dialog({
+                    title: 'Edit',
+                    autoOpen: false,
+                    resizable: true,
+                    width: 600,
+                    height: 500,
+                    position: 'center',
+                    //show: { effect: 'drop', direction: "up" },
+                    modal: true,
+                    draggable: true,
+                    open: function (event, ui) {
+
+                        $.post("EditPageId",
+                            {
+                                iPageId: pageId
+                            },
+                            function (data) {
+
+                                try {
+                                    if (data == "") {
+                                        CloseDialog();
+                                        AlertError('Page could not load, please try again');
+                                        return;
+                                    }
+
+                                    $('#dialog-add').html(data.view);
+
+                                    //Do something with the data returned.
+                                    $('#hdnPageId').val(data.model.PageId);
+                                    $('#txtPageTitle').val(data.model.PageTitle);
+                                    $('#txtDesc').val(data.model.Description);
+
+                                    $('#txtArea').val(data.model.Area);
+                                    $('#txtController').val(data.model.Controller);
+                                    $('#txtAction').val(data.model.Action);
+
+                                    if (data.model.Status == '1')
+                                        $('#rbStatusActive').attr('checked', 'checked');
+                                    else if (data.model.Status == '0')
+                                        $('#rbStatusInActive').attr('checked', 'checked');
+                                }
+                                catch (e) {
+                                    ScriptDialogError(e);
+                                }
+                            }
+                        );
+                    },
+                    close: function (event, ui) {
+                        CloseDialog();
+                    }
+                });
+
+                //open dialog
+                OpenDialog();
+                return false;
+
+            }
+            catch (e) {
+                ScriptError(e);
+            }
+        }
+
+        // add and edit item
+        function CreateEditPage(command) {
+            try {
+
+
+                model.PageId = $('#hdnPageId').val();
+                model.PageTitle = $('#txtPageTitle').val();
+                model.Description = $('#txtDesc').val();
+
+                model.Area = $('#txtArea').val();
+                model.Controller = $('#txtController').val();
+                model.Action = $('#txtAction').val();
+
+                model.Status = $('input[name=rbStatus]:checked').val();
+
+                //Pass it to a controller method
+                $.post("CreateEditPage",
+                {
+                    viewModel: JSON.stringify(model),
+                    sCommand: command
+                },
+                function (data) {
+
+                    if (data.result == "fail") {
+                        CloseDialog();
+                        AlertError(data.message);
+                        return;
+                    }
+
+                    //refress the grid again
+                    ReloadGrid('tblGrid');
+
+
+                    if (command == 'Add') {
+                        ClearForm();
+                        AlertDialogSuccess(data.message);
+                    }
+                    else {
+                        CloseDialog();
+                        AlertMsg(data.message);
+                    }
+
+                });  // post
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+        }
+
+        //clear the form fields
+        function ClearForm() {
+            try {
+
+                //clear hidden ctrl = 0
+                $('#pageForm input[type=hidden]').each(function () {
+                    $(this).val('0');
+                });
+
+                //clear text ctrl = 0
+                $('#pageForm input[type=text]').each(function () {
+                    $(this).val('');
+                });
+
+                //drop down controls
+                $('#pageForm select').each(function () {
+                    $(this)[0].selectedIndex = 0;
+                    $(this).change();
+                });
+
+                $('#rbStatusActive').attr('checked', 'checked');
+
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+        }
+
+        // Dialog - Delete Entry
+        function DeletePage(pageId) {
+            Confirmation('Are you sure to delete?', pageId);
+        }
+
+        function CallbackConfirmation(status, item) {
+
+            if (status) // true - click yes, false - click no
+            {
+                $.post('DeletePage', { iPageId: item }, function (data) {
+                    if (data.result == "fail") {
+                        AlertError(data.message);
+                        return;
+                    }
+
+                    //refress the grid again
+                    ReloadGrid('tblGrid');
+                    AlertMsg(data.message);
+
+                });
+            }
+        }
+
+    </script>
+}

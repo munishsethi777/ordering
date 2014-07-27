@@ -1,0 +1,307 @@
+﻿@model MVCDataModel.GetTankDetailsByTankID_Result
+@Html.Partial("_Dialog")
+<script type="text/javascript">
+
+    var model = null;
+
+    $(document).ready(function () {
+    
+        model = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+        $('#btnUpdate').bind('click', function () {
+            try {
+                if (!$('#frmTankStatus').valid())
+                    return;
+
+                model.TankID = $('#hdnTankId').val();
+                model.IU = $('#txtIU').sval();
+                model.TankTop = $('#txtTop').ival();
+                model.TankBottom = $('#txtBottom').ival();
+                model.ReorderLevel = $('#txtReorderLevel').val();
+                model.Equipment = $('#txtEquipment').sval();
+                model.Destination = $('#ddlDestination').val();
+
+                model.ARaccount = $('#ddlARAccount').val();
+                model.TankProduct = $('#ddlProduct').ival();
+                model.OEproduct = $('#ddlOEProduct').ival();
+
+                model.BeepForUser = $('#ddlAlarm').val();
+                model.GroupId = $('#ddlGroup').val();
+                model.SubGroupId = $('#ddlSubGroup').val();
+
+                //Pass it to a controller method
+                $.post("SaveTankStatus",
+                        {
+                            viewModel: JSON.stringify(model)
+                        },
+                        function (data) {
+
+                            if (data.result == "fail") {
+                                AlertDialogError(data.message);
+                                return;
+                            }
+                            AlertDialogSuccess(data.message);
+
+                        });
+
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+
+        });
+
+        $("#btnCancel").bind("click", function (e) {
+            
+            $('#frmTankStatus input[type="text"]').not(":disabled").each(function(){
+                this.value = "";
+            });
+
+             $('#frmTankStatus select').not(":disabled").each(function(){
+                this.value = "";
+            });
+        });
+    });
+
+    function ChangeGroup() {
+        var groupid = $('#ddlGroup').val();
+
+        //$('#ddlSubGroup').html('');
+
+        //append site 
+        $.ajax({
+            type: 'POST',
+            url: '/DMS/DMS/BindSubGroup',
+            data: { iGroupId: groupid },
+            async: false,
+            success: function (data) {
+                try {
+                    $('#ddlSubGroup').html(data);
+                    //$('#ddlSubGroup').selectpicker("refresh");
+                }
+                catch (e) {
+                    ScriptDialogError(e);
+                }
+            }
+        });
+    }
+</script>
+<form id="frmTankStatus" class="form-horizontal">
+<div class="">
+    <div class="row-fluid">
+        <input type="hidden" id="hdnTankId" value="@Model.TankID" />
+        <div class="span4">
+            <div class="control-group">
+                <label class="control-label" for="txtTankName">
+                    Tank Name <sup style='color: Red'>*</sup>
+                </label>
+                <div class="controls">
+                    <input type="text" id="txtTankName" name="txtTankName" value = "@Model.TankName" disabled="disabled" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="ddlSite">
+                    Site <sup style='color: Red'>*</sup>
+                </label>
+                <div class="controls">
+                    <select id="ddlSite" name="ddlSite" class="" disabled="disabled">
+                        <option value="">Select Site</option>
+                        @Html.EditSite(@Model.SiteID);
+                    </select>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="txtIU">
+                    IU <sup style='color: Red'>*</sup>
+                </label>
+                <div class="controls">
+                    <input type="text" id="txtIU" name="txtIU" value = "@Model.IU" data-val="true" data-val-required="The field is required." />
+                    <label class="field-validation-valid" data-valmsg-for="txtIU" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="txtCapacity">
+                    Capacity <sup style='color: Red'>*</sup>
+                </label>
+                <div class="controls">
+                    <input type="text" id="txtCapacity" name="txtCapacity" value="@Model.Tankcapacity" disabled="disabled" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="txtPercentage">
+                    Order Percentage
+                </label>
+                <div class="controls">
+                    <input type="text" id="txtPercentage" name="txtPercentage" value="@Model.OrderPercentage.ToPSEDecimal()" disabled="disabled" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="txtTop">
+                    Tank Top <sup style='color: Red'>*</sup>
+                </label>
+                <div class="controls">
+                    <input type="text" id="txtTop" name="txtTop" value = "@Model.TankTop.ToPSEDecimal()" class="number" data-val="true" data-val-required="The field is required." />
+                    <label class="field-validation-valid" data-valmsg-for="txtTop" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="txtBottom">
+                    Tank Bottom <sup style='color: Red'>*</sup>
+                </label>
+                <div class="controls">
+                    <input type="text" id="txtBottom" name="txtBottom" value = "@Model.TankBottom.ToPSEDecimal()" class="number" data-val="true" data-val-required="The field is required." />
+                    <label class="field-validation-valid" data-valmsg-for="txtBottom" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="txtInvBal">
+                    Inventory Balance
+                </label>
+                <div class="controls">
+                    <input type="text" id="txtInvBal" name="txtInvBal" value="@Model.TankDipQty.ToPSEDecimal()" disabled="disabled" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="txtReorderLevel">
+                    Reorder Level <sup style='color: Red'>*</sup></label>
+                <div class="controls">
+                    <input type="text" id="txtReorderLevel" name="txtReorderLevel" value = "@Model.ReorderLevel.ToPSEDecimal()" class="number" data-val="true" data-val-required="The field is required." />
+                    <label class="field-validation-valid" data-valmsg-for="txtReorderLevel" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="txtEquipment">
+                    Equipment <sup style='color: Red'>*</sup>
+                </label>
+                <div class="controls">
+                    <input type="text" id="txtEquipment" name="txtEquipment" value = "@Model.Equipment" data-val="true" data-val-required="The field is required." />
+                    <label class="field-validation-valid" data-valmsg-for="txtEquipment" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="span5">
+            <div class="control-group" style="">
+                <label class="control-label" for="txtConsumptionRate">
+                </label>
+                <div class="controls">
+                    <span><img src='@Url.Action("GenerateImageForTankStatus", "DMS", new { Percentage = @Model.Percentage, ReorderLevel = @Model.Reorder })' alt="" />
+                    @Model.Percentage</span> %
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="txtConsumptionRate">
+                    Consumption Rate/Day
+                </label>
+                <div class="controls">
+                    <input type="text" id="txtConsumptionRate" name="txtConsumptionRate" value="@Model.Consumption_Rate.ToPSEDecimal()" disabled="disabled" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="ddlDestination">
+                    Destination @*<sup style='color:Red' >*</sup>*@
+                </label>
+                <div class="controls">
+                    <select id="ddlDestination" name="ddlDestination">
+                        <option value="">Select Destination</option>
+                        @Html.EditDestination(@Model.Destination);
+                    </select>
+                    <label class="field-validation-valid" data-valmsg-for="ddlDestination" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="ddlARAccount">
+                    AR - Account @*<sup style='color:Red' >*</sup>*@
+                </label>
+                <div class="controls">
+                    <select id="ddlARAccount" name="ddlARAccount">
+                        <option value="">Select AR Account</option>
+                        @Html.EditARAccount(@Model.ARaccount);
+                    </select>
+                    <label class="field-validation-valid" data-valmsg-for="ddlARAccount" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="ddlProduct">
+                    Product <sup style='color: Red'>*</sup>
+                </label>
+                <div class="controls">
+                    <select id="ddlProduct" name="ddlProduct" data-val="true" data-val-required="The field is required.">
+                        <option value="">Select Product</option>
+                        @Html.EditProduct(@Model.TankProduct);
+                    </select>
+                    <label class="field-validation-valid" data-valmsg-for="ddlProduct" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="ddlOEProduct">
+                    OE Product @*<sup style='color:Red' >*</sup>*@
+                </label>
+                <div class="controls">
+                    <select id="ddlOEProduct" name="ddlOEProduct">
+                        <option value="">Select OE Product</option>
+                        @Html.EditOEProduct(@Model.OEproduct);
+                    </select>
+                    <label class="field-validation-valid" data-valmsg-for="ddlOEProduct" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="ddlAlarm">
+                    User for Alarm <sup style='color: Red'>*</sup>
+                </label>
+                <div class="controls">
+                    <select id="ddlAlarm" name="ddlAlarm" data-val="true" data-val-required="The field is required.">
+                        <option value="">Select User</option>
+                        @Html.EditBeepForUser(@Model.BeepForUser.Value);
+                    </select>
+                    <label class="field-validation-valid" data-valmsg-for="ddlAlarm" data-valmsg-replace="true">
+                    </label>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="ddlGroup">
+                    Group
+                </label>
+                <div class="controls">
+                    <select id="ddlGroup" name="ddlGroup" class="" onchange="ChangeGroup();">
+                        <option value="0">Select Group</option>
+                        @Html.EditTankGroup(@Model.GroupId.Value);
+                    </select>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="ddlSubGroup">
+                    Sub Group
+                </label>
+                <div class="controls">
+                    <select id="ddlSubGroup" name="ddlSubGroup" class="">
+                        <option value="0">Select Sub Group</option>
+                        @if (@Model.GroupId.Value > 0)
+                        {
+                            @Html.EditSubGroup(@Model.GroupId.Value, @Model.SubGroupId.Value);
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row-fluid">
+        <div class="control-group">
+            <div class="controls">
+                <button type="button" id="btnUpdate" name="Command" data-loading-text="Loading..."
+                    value="Update" class="btnAddEdit btn btn-primary">
+                    <span class="ui-button-text">Update</span></button>
+                 <button type="button" id="btnCancel" class="btn btn-info">
+                    <span class="ui-button-text">Clear</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+</form>

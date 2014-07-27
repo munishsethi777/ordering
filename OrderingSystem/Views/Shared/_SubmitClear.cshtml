@@ -1,0 +1,20 @@
+﻿<div class="control-group">
+    <div class="controls">
+        @if (ViewBag.IsUpdate == true)
+        { 
+
+            <button type="button" id="btnUpdate" name="Command" value="Update" class="btnAddEdit btn btn-primary">
+                <span class="ui-button-text">Update</span></button>
+        }
+        else
+        { 
+            <button type="button" id="btnSave" name="Command" value="Save" class="btnAddEdit btn btn-primary">
+                <span class="ui-button-text">Save</span></button>
+            
+             <button type="button" id="btnCancel" class="btn">
+            <span class="ui-button-text">Clear</span></button>
+        }
+        <button type="button" id="btnClosePopUp" class="btn btn-info">
+            <span class="ui-button-text">Close</span></button>
+    </div>
+</div>

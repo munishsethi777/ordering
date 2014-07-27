@@ -1,0 +1,340 @@
+﻿@{
+    ViewBag.Title = "";
+    Layout = "~/Views/Shared/_BootstrapLayout.cshtml";
+}
+<table id="tblGrid">
+</table>
+<div id="pager">
+</div>
+@section scripts {
+    @(Html.Grid("tblGrid")
+    .SetCaption("Add/Edit/Delete Group")
+    .AddColumn(new Column("Action").SetCustomFormatter("buttonize").SetWidth(75).SetSearch(false))
+    .AddColumn(new Column("groupname").SetLabel("Group Name"))
+    .AddColumn(new Column("productid").SetHidden(true).AddClass("Hide"))
+    .AddColumn(new Column("iconid").SetHidden(true).AddClass("Hide"))
+    .AddColumn(new Column("orderpercentage").SetLabel("Order Percentage").SetAlign(Align.Right))
+    .AddColumn(new Column("iconname").SetLabel("Icon Name"))
+    .SetUrl(Url.Action("GridDataGroup", "DMS"))
+    .SetPager("pager")
+    .SetHeight(290)
+    .SetWidth(250)
+    .SetSortName("groupname")
+)
+    <script type="text/javascript">
+       
+                
+        $(document).ready(function () {
+
+            try {
+                var tool = "<ul class='nav nav-pills'>" +
+                                "<li><a onclick=\"AddItem();\" title='Add New' href='#'>Add New</a></li>" +
+                                "<li><a onclick=\"DeleteSelectedItem();\" title='Delete Multiple Item' href='#'>Delete</a></li>" +
+                                "<li class='dropdown'><a title='Export' class='dropdown-toggle' data-toggle='dropdown' href='#'>Export <b class='caret'></b></a>" +
+                                    "<ul class='dropdown-menu'>" +
+                                         "<li><a onclick=\"ExportGroup('PDF');\" title='PDF' href='#'>PDF</a></li>" +
+                                        "<li><a onclick=\"ExportGroup('CSV');\" title='CSV' href='#'>CSV</a></li>" +
+                                        "<li><a onclick=\"ExportGroup('Excel');\" title='Excel' href='#'>Excel</a></li>" +
+                                         "<li><a onclick=\"ExportGroup('Word');\" title='Word' href='#'>Word</a></li>" +
+                                         "<li><a onclick=\"PrintGroup();\" title='Print' href='#'>Print</a></li>" +
+                                    "</ul>" +
+                                "</li>" +
+                            "</ul>";
+
+                // enable tool bar in grid
+                $('#t_tblGrid').append(tool);
+
+                //frozen or lock the columns
+                $("#tblGrid").jqGrid('setColProp', 'Action', { frozen: true });
+                jQuery("#tblGrid").jqGrid('setFrozenColumns');
+
+                //load complete event hanlder - no record found-search
+                LoadComplete('tblGrid');
+
+                //hide and show column option - runtime
+                GridColumnChooser('tblGrid');
+
+                ReloadGrid('tblGrid');
+
+            }
+            catch (e) {
+                ScriptError(e);
+            }
+
+        });
+
+        function buttonize(cellvalue, options, rowobject) {
+            return "<ul class='the-icons'>" +
+                        "<li title='Delete' onclick=\"DeleteItem(" + cellvalue + ");\"><i class='icon-remove'></i></li>" +
+                        "<li title='Edit' onclick=\"EditItem(" + cellvalue + ");\"><i class='icon-edit'></i></li>" +
+                    "</ul>"
+        }
+
+        
+        function ExportGroup(exportType) {
+
+            GenerateExportParam('tblGrid');
+            exportGrid.ExportType = exportType;
+
+            var form = $('<form></form>');
+            $('body').append(form);
+            form.attr('action', '/DMS/DMS/ExportGroup' + '?model=' + JSON.stringify(exportGrid));
+            form.attr('method', 'POST');
+            form.submit();
+        }
+
+        function PrintGroup() {
+
+            //build the param 
+            GenerateExportParam('tblGrid')
+
+            $.post("PrintGroup",
+                                {
+                                    model: JSON.stringify(exportGrid)
+                                },
+                                function (data) {
+                                    try {
+                                        if (data == "") {
+                                            AlertError('Could not able to Print, please try again');
+                                            return;
+                                        }
+
+                                        var printWin = window.open('', '', 'left=0" ,top=0,width=1000,height=600,status=0');
+                                        printWin.document.write(data);
+
+                                        printWin.document.close();
+                                        printWin.focus();
+                                        printWin.print();
+                                        printWin.close();
+
+                                    }
+                                    catch (e) {
+                                        ScriptDialogError(e);
+                                    }
+
+                                }
+                            );
+
+        }
+        // Dialog Modal - Add New Entry
+        function AddItem() {
+            try {
+                // clear edit and add view
+                ClearDialog();
+
+                // Dialogs window for add
+                $("#dialog-add").dialog({
+                    title: 'Add/Edit/Delete Group',
+                    autoOpen: false,
+                    resizable: true,
+                    width: 600,
+                    height: 500,
+                    position: 'center',
+                    modal: true,
+                    draggable: true,
+                    open: function (event, ui) {
+                        $.post("CreateGroup", {},
+                                function (data) {
+                                    try {
+                                        if (data == "") {
+                                            CloseDialog();
+                                            AlertError('Page could not load, please try again');
+                                            return;
+                                        }
+
+                                        //render the pop-up window
+                                        $('#dialog-add').html(data.view);
+
+                                    }
+                                    catch (e) {
+                                        ScriptDialogError(e);
+                                    }
+                                }
+                            );
+                    },
+                    close: function (event, ui) {
+                        CloseDialog();
+                    }
+                });
+
+                //open dialog
+                OpenDialog();
+                return false;
+
+            }
+            catch (e) {
+                ScriptError(e);
+            }
+        }
+
+        // Dialog - Edit Entry
+        function EditItem(prmId) {
+            try {
+                // clear edit and add view
+                ClearDialog();
+
+                // dialgo window for edit
+                $("#dialog-add").dialog({
+                    title: 'Add/Edit/Delete Group',
+                    autoOpen: false,
+                    resizable: true,
+                    width: 600,
+                    height: 500,
+                    position: 'center',
+                    modal: true,
+                    draggable: true,
+                    open: function (event, ui) {
+
+                        $.post("EditGroupId",
+                                {
+                                    iGroupId: prmId
+                                },
+                                function (data) {
+                                    try {
+                                        if (data == "") {
+                                            CloseDialog();
+                                            AlertError('Page could not load, please try again');
+                                            return;
+                                        }
+
+                                        $('#dialog-add').html(data.view);
+
+                                        //Do something with the data returned.
+                                        $('#hdnGroupId').val(data.model.groupid);
+                                        $('#txtGroupName').val(data.model.groupname);
+                                        //$('#txtGroupName').attr('disabled', 'disabled');
+                                        $('#hdnProductId').val(data.model.productid);
+                                        $('#ddlIconName').val(data.model.iconid).change();
+                                        $('#txtOrderpercentage').val(data.model.orderpercentage);
+
+                                    }
+                                    catch (e) {
+                                        ScriptDialogError(e);
+                                    }
+
+                                }
+                            );
+                    },
+                    close: function (event, ui) {
+                        CloseDialog();
+                    }
+                });
+
+                //open dialog
+                OpenDialog();
+                return false;
+
+            }
+            catch (e) {
+                ScriptError(e);
+            }
+        }
+
+        // add and edit item
+        function CreateEditItem(command) {
+            try {
+
+                model.groupid = $('#hdnGroupId').val();
+                model.groupname = $('#txtGroupName').val();
+                model.productid = $('#hdnProductId').val();
+                model.customerid = $('#hdnCustomerId').val();
+                model.iconid = $('#ddlIconName').val();
+                model.orderpercentage = $('#txtOrderpercentage').val();
+
+                //Pass it to a controller method
+                $.post("CreateEditGroup",
+                {
+                    viewModel: JSON.stringify(model),
+                    sCommand: command
+                },
+                function (data) {
+
+                    if (data.result == "fail") {
+                        CloseDialog();
+                        AlertError(data.message);
+                        return;
+                    }
+
+                    //refress the grid again
+                    ReloadGrid('tblGrid');
+
+                    if (command == 'Add') {
+                        ClearForm();
+                        AlertDialogSuccess(data.message);
+                    }
+                    else {
+                        CloseDialog();
+                        AlertMsg(data.message);
+                    }
+
+                });
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+        }
+
+        //clear the form fields
+        function ClearForm() {
+            try {
+
+                //clear hidden ctrl = 0
+                $('#tankGroupForm input[type=hidden]').each(function () {
+                    $(this).val('0');
+                });
+
+                //clear text ctrl = 0
+                $('#tankGroupForm input[type=text]').each(function () {
+                    $(this).val('');
+                });
+
+                //drop down controls
+                $('#tankGroupForm select').each(function () {
+                    $(this)[0].selectedIndex = 0;
+                    $(this).change();
+                });
+
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+        }
+
+        // Dialog - Delete Entry
+        function DeleteItem(prmId) {
+            Confirmation('Are you sure to delete?', prmId);
+        }
+
+        //delete selected item
+        function DeleteSelectedItem() {
+            //get selected rows
+            var selMulti = $.map($('#tblGrid').jqGrid('getGridParam', 'selarrrow'), function (el, i) {
+                return el;
+            });
+            if (selMulti.length > 0) 
+                DeleteItem(selMulti.toString());
+            else
+                AlertMsg('Please select the Item');
+        }
+
+        // status - true - click yes, false - click no
+        function CallbackConfirmation(status, prmId) {
+            if (status) {
+                $.post('DeleteGroup', { iGroupId: prmId }, function (data) {
+
+                    if (data.result == "fail") {
+                        AlertError(data.message);
+                        return;
+                    }
+
+                    //refress the grid again
+                    ReloadGrid('tblGrid');
+                    AlertMsg(data.message);
+
+                });
+
+
+            }
+        }
+    </script>
+}

@@ -1,0 +1,102 @@
+﻿@{
+    ViewBag.Title = "DyedDieselPurchase";
+    Layout = "~/Views/Shared/_BootstrapLayout.cshtml";
+}
+<form id="frmReport" class="form-horizontal">
+<div class="wellNew">
+    <legend>Dyed Diesel Purchase</legend>
+    <div class="row-fluid">
+        <div class="control-group">
+            <label class="control-label" for="dtFromDate">
+                Year <sup style='color: Red'>*</sup> :
+            </label>
+            <div class="controls">
+                <select id="ddlYear" name="ddlYear" class="selectpicker">
+                    <option value="2012">2012</option>
+                    <option value="2013">2013</option>
+                </select>
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button type="button" id="btnViewResults" class="btn btn-primary">
+                    <span class="ui-button-text">View Report</span></button>
+                <button type="button" id="btnClear" class="btn">
+                    <span class="ui-button-text">Clear</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+@section scripts
+{
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            $('#btnClear').click(function () {
+
+                //clear hidden ctrl = 0
+                //                $('#frmReport input[type=hidden]').each(function () {
+                //                    $(this).val('0');
+                //                });
+
+                //                //clear text ctrl = ''
+                //                $('#frmReport input[type=text]').each(function () {
+                //                    $(this).val('');
+                //                });
+
+                //drop down controls
+                $('#frmReport select').each(function () {
+                    $(this)[0].selectedIndex = 0;
+                });
+
+                //to clear lookup
+                //                $('#frmReport input[islookup=true]').each(function () {
+                //                    $(this).attr({ text: "", value: "", selectedrow: "" });
+                //                });
+
+            });
+
+            $('#btnViewResults').click(function () {
+
+                if (!$('form').valid())
+                    return;
+                //open DyedDieselPurchase report
+                reportParamModel =
+                {
+                    ReportID: '110',
+                    CustomerID: $('#hdnCustomerId').val(),
+                    UserID: $('#hdnUserId').val(),
+                    ReportParams: []
+                };
+
+                reportParamModel.ReportParams.push(
+                    {
+                        "ParamName": "CustomerID",
+                        "ParamValue": $('#hdnCustomerId').val(),
+                        "ParamText": $('#hdnCustomerName').val()
+                    },
+                //                    {
+                //                    "ParamName": "CLLI",
+                //                    "ParamValue": (($('#txtRCCode').attr('text') == undefined) ? '' : $('#txtRCCode').attr('text')),
+                //                    "ParamText": ""
+                //                    },
+                //                    {
+                //                    "ParamName": "Startdate",
+                //                    "ParamValue": $('#dtFromDate').val(),
+                //                    "ParamText": $('#dtFromDate').val()
+                //                },
+                    {
+                    "ParamName": "year",
+                    "ParamValue": $('#ddlYear').val(),
+                    "ParamText": $('#ddlYear').val()
+                });
+
+
+                //open report window/tab
+                OpenReport(reportParamModel);
+            });
+        });
+    </script>
+}

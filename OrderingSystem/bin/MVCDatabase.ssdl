@@ -1,0 +1,330 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Schema Namespace="DMSModel.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2005" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/02/edm/ssdl">
+  <EntityContainer Name="DMSModelStoreContainer">
+    <EntitySet Name="ELMAH_Error" EntityType="DMSModel.Store.ELMAH_Error" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="tblAuthorizedPage" EntityType="DMSModel.Store.tblAuthorizedPage" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="tblCustomer" EntityType="DMSModel.Store.tblCustomer" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="tblCustomerUserMap" EntityType="DMSModel.Store.tblCustomerUserMap" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="tblDefaultMenuPage" EntityType="DMSModel.Store.tblDefaultMenuPage" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="tblGroup" EntityType="DMSModel.Store.tblGroup" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="tblLoginAudit" EntityType="DMSModel.Store.tblLoginAudit" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="tblMenu" EntityType="DMSModel.Store.tblMenu" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="tblMenuPage" EntityType="DMSModel.Store.tblMenuPage" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="tblMenuPagePermission" EntityType="DMSModel.Store.tblMenuPagePermission" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="tblOrder" EntityType="DMSModel.Store.tblOrder" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="tblOrderDetail" EntityType="DMSModel.Store.tblOrderDetail" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="tblPage" EntityType="DMSModel.Store.tblPage" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="tblProduct" EntityType="DMSModel.Store.tblProduct" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="tblProductCustomerMap" EntityType="DMSModel.Store.tblProductCustomerMap" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="tblroles" EntityType="DMSModel.Store.tblroles" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="tblStore" EntityType="DMSModel.Store.tblStore" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="tblUser" EntityType="DMSModel.Store.tblUser" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="tblUserPassword" EntityType="DMSModel.Store.tblUserPassword" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="tblUserPasswordHistory" EntityType="DMSModel.Store.tblUserPasswordHistory" store:Type="Tables" Schema="dbo" />
+  </EntityContainer>
+  <EntityType Name="ELMAH_Error">
+    <Key>
+      <PropertyRef Name="ErrorId" />
+    </Key>
+    <Property Name="ErrorId" Type="uniqueidentifier" Nullable="false" />
+    <Property Name="Application" Type="nvarchar" Nullable="false" MaxLength="60" />
+    <Property Name="Host" Type="nvarchar" Nullable="false" MaxLength="50" />
+    <Property Name="Type" Type="nvarchar" Nullable="false" MaxLength="100" />
+    <Property Name="Source" Type="nvarchar" Nullable="false" MaxLength="60" />
+    <Property Name="Message" Type="nvarchar" Nullable="false" MaxLength="500" />
+    <Property Name="User" Type="nvarchar" Nullable="false" MaxLength="50" />
+    <Property Name="StatusCode" Type="int" Nullable="false" />
+    <Property Name="TimeUtc" Type="datetime" Nullable="false" />
+    <Property Name="Sequence" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="AllXml" Type="ntext" Nullable="false" />
+  </EntityType>
+  <EntityType Name="tblAuthorizedPage">
+    <Key>
+      <PropertyRef Name="MenuPageId" />
+    </Key>
+    <Property Name="MenuPageId" Type="int" Nullable="false" />
+    <Property Name="GroupTitle" Type="varchar" MaxLength="25" />
+    <Property Name="PageTitle" Type="varchar" MaxLength="50" />
+    <Property Name="Description" Type="varchar" MaxLength="50" />
+    <Property Name="Area" Type="varchar" MaxLength="25" />
+    <Property Name="Controller" Type="varchar" MaxLength="25" />
+    <Property Name="Action" Type="varchar" MaxLength="50" />
+  </EntityType>
+  <EntityType Name="tblCustomer">
+    <Key>
+      <PropertyRef Name="CustomerId" />
+    </Key>
+    <Property Name="CustomerId" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="CustomerName" Type="nvarchar" Nullable="false" MaxLength="255" />
+    <Property Name="CutoffTime" Type="nvarchar" MaxLength="10" />
+    <Property Name="IsActive" Type="bit" />
+    <Property Name="LastChangedUser" Type="int" />
+    <Property Name="CreatedDate" Type="datetime" />
+    <Property Name="LastChangedDate" Type="datetime" />
+  </EntityType>
+  <EntityType Name="tblCustomerUserMap">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="Customer" Type="int" Nullable="false" />
+    <Property Name="User" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="tblDefaultMenuPage">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="CustomerId" Type="int" Nullable="false" />
+    <Property Name="RoleId" Type="int" />
+    <Property Name="MenuId" Type="int" />
+    <Property Name="MenuPageId" Type="int" />
+  </EntityType>
+  <EntityType Name="tblGroup">
+    <Key>
+      <PropertyRef Name="GroupId" />
+    </Key>
+    <Property Name="GroupId" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="CustomerId" Type="int" Nullable="false" />
+    <Property Name="GroupTitle" Type="varchar" MaxLength="50" />
+    <Property Name="Description" Type="varchar" MaxLength="50" />
+    <Property Name="OrderGroup" Type="int" />
+    <Property Name="Status" Type="char" MaxLength="1" />
+    <Property Name="UserId" Type="int" Nullable="false" />
+    <Property Name="CreatedDate" Type="datetime" Nullable="false" />
+    <Property Name="LastChangeDate" Type="datetime" Nullable="false" />
+  </EntityType>
+  <EntityType Name="tblLoginAudit">
+    <Key>
+      <PropertyRef Name="AuditId" />
+    </Key>
+    <Property Name="AuditId" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="UserId" Type="int" Nullable="false" />
+    <Property Name="IpAdd" Type="varchar" MaxLength="25" />
+    <Property Name="LoginTime" Type="datetime" />
+    <Property Name="LogoutTime" Type="datetime" />
+  </EntityType>
+  <EntityType Name="tblMenu">
+    <Key>
+      <PropertyRef Name="MenuId" />
+    </Key>
+    <Property Name="MenuId" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="CustomerId" Type="int" Nullable="false" />
+    <Property Name="MenuTitle" Type="varchar" MaxLength="50" />
+    <Property Name="Description" Type="varchar" MaxLength="50" />
+    <Property Name="MenuUrl" Type="varchar" MaxLength="50" />
+    <Property Name="Status" Type="char" Nullable="false" MaxLength="1" />
+    <Property Name="UserId" Type="int" Nullable="false" />
+    <Property Name="CreatedDate" Type="datetime" Nullable="false" />
+    <Property Name="LastChangeDate" Type="datetime" Nullable="false" />
+    <Property Name="OrderMenu" Type="int" />
+    <Property Name="IsDefault" Type="bit" Nullable="false" />
+  </EntityType>
+  <EntityType Name="tblMenuPage">
+    <Key>
+      <PropertyRef Name="MenuPageId" />
+    </Key>
+    <Property Name="MenuPageId" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="CustomerId" Type="int" Nullable="false" />
+    <Property Name="MenuId" Type="int" Nullable="false" />
+    <Property Name="GroupId" Type="int" Nullable="false" />
+    <Property Name="PageId" Type="int" Nullable="false" />
+    <Property Name="PageTitle" Type="varchar" MaxLength="50" />
+    <Property Name="Description" Type="varchar" MaxLength="50" />
+    <Property Name="Status" Type="char" Nullable="false" MaxLength="1" />
+    <Property Name="UserId" Type="int" Nullable="false" />
+    <Property Name="CreatedDate" Type="datetime" Nullable="false" />
+    <Property Name="LastChangeDate" Type="datetime" Nullable="false" />
+    <Property Name="OrderPage" Type="int" />
+  </EntityType>
+  <EntityType Name="tblMenuPagePermission">
+    <Key>
+      <PropertyRef Name="MenuPagePermissionId" />
+    </Key>
+    <Property Name="MenuPagePermissionId" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="CustomerId" Type="int" Nullable="false" />
+    <Property Name="RoleId" Type="int" Nullable="false" />
+    <Property Name="MenuId" Type="varchar" MaxLength="255" />
+    <Property Name="MenuPageId" Type="varchar(max)" />
+    <Property Name="IsActive" Type="char" Nullable="false" MaxLength="1" />
+    <Property Name="UserId" Type="int" Nullable="false" />
+    <Property Name="CreatedDate" Type="datetime" Nullable="false" />
+    <Property Name="LastChangeDate" Type="datetime" Nullable="false" />
+  </EntityType>
+  <EntityType Name="tblOrder">
+    <Key>
+      <PropertyRef Name="OrderId" />
+    </Key>
+    <Property Name="OrderId" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="UserId" Type="int" Nullable="false" />
+    <Property Name="CustomerId" Type="int" Nullable="false" />
+    <Property Name="OrderedDate" Type="datetime" />
+    <Property Name="CutoffTime" Type="varchar" MaxLength="50" />
+    <Property Name="TotalAmount" Type="decimal" Precision="8" Scale="2" />
+    <Property Name="DeliveryDate" Type="datetime" />
+    <Property Name="Remarks" Type="varchar" MaxLength="250" />
+    <Property Name="LastChangedUser" Type="int" />
+    <Property Name="CreatedDate" Type="datetime" />
+    <Property Name="LastChangedDate" Type="datetime" />
+  </EntityType>
+  <EntityType Name="tblOrderDetail">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="OrderId" Type="int" Nullable="false" />
+    <Property Name="StoreId" Type="int" Nullable="false" />
+    <Property Name="ProductId" Type="int" Nullable="false" />
+    <Property Name="Quantity" Type="decimal" Nullable="false" Precision="10" Scale="2" />
+    <Property Name="Amount" Type="decimal" Precision="8" Scale="2" />
+    <Property Name="Remarks" Type="nvarchar" MaxLength="255" />
+    <Property Name="Remarks2" Type="nvarchar" MaxLength="255" />
+    <Property Name="LastChangedUser" Type="int" />
+    <Property Name="CreatedDate" Type="datetime" />
+    <Property Name="LastChangedDate" Type="datetime" />
+  </EntityType>
+  <EntityType Name="tblPage">
+    <Key>
+      <PropertyRef Name="PageId" />
+    </Key>
+    <Property Name="PageId" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="PageTitle" Type="varchar" MaxLength="50" />
+    <Property Name="Description" Type="varchar" MaxLength="50" />
+    <Property Name="Area" Type="varchar" MaxLength="25" />
+    <Property Name="Controller" Type="varchar" MaxLength="50" />
+    <Property Name="Action" Type="varchar" Nullable="false" MaxLength="50" />
+    <Property Name="Status" Type="char" Nullable="false" MaxLength="1" />
+    <Property Name="UserId" Type="int" Nullable="false" />
+    <Property Name="CreatedDate" Type="datetime" Nullable="false" />
+    <Property Name="LastChangeDate" Type="datetime" Nullable="false" />
+  </EntityType>
+  <EntityType Name="tblProduct">
+    <Key>
+      <PropertyRef Name="ProductId" />
+    </Key>
+    <Property Name="ProductId" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="CustomerId" Type="int" />
+    <Property Name="SKUId" Type="nvarchar" Nullable="false" MaxLength="100" />
+    <Property Name="ProductName" Type="nvarchar" Nullable="false" MaxLength="255" />
+    <Property Name="Price" Type="decimal" Precision="10" Scale="2" />
+    <Property Name="Units" Type="decimal" Nullable="false" Precision="10" Scale="2" />
+    <Property Name="IsActive" Type="bit" />
+    <Property Name="LastChangedUser" Type="int" />
+    <Property Name="CreatedDate" Type="datetime" />
+    <Property Name="LastChangedDate" Type="datetime" />
+  </EntityType>
+  <EntityType Name="tblProductCustomerMap">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="CustomerId" Type="int" Nullable="false" />
+    <Property Name="ProductId" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="tblroles">
+    <Key>
+      <PropertyRef Name="RoleID" />
+    </Key>
+    <Property Name="RoleID" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="RoleName" Type="varchar" Nullable="false" MaxLength="25" />
+    <Property Name="IsActive" Type="bit" />
+    <Property Name="CreatedBy" Type="int" />
+    <Property Name="ModifiedBy" Type="int" />
+    <Property Name="CreatedDate" Type="datetime" />
+    <Property Name="ModifiedDate" Type="datetime" />
+    <Property Name="RoleDescp" Type="varchar" MaxLength="40" />
+    <Property Name="CustomerId" Type="int" />
+  </EntityType>
+  <EntityType Name="tblStore">
+    <Key>
+      <PropertyRef Name="StoreId" />
+    </Key>
+    <Property Name="StoreId" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="CustomerId" Type="int" Nullable="false" />
+    <Property Name="StoreCode" Type="nvarchar" Nullable="false" MaxLength="50" />
+    <Property Name="StoreName" Type="nvarchar" Nullable="false" MaxLength="255" />
+    <Property Name="IsActive" Type="bit" />
+    <Property Name="LastChangedUser" Type="int" />
+    <Property Name="CreatedDate" Type="datetime" />
+    <Property Name="LastChangedDate" Type="datetime" />
+  </EntityType>
+  <EntityType Name="tblUser">
+    <Key>
+      <PropertyRef Name="userid" />
+    </Key>
+    <Property Name="userid" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="customerid" Type="int" Nullable="false" />
+    <Property Name="roleid" Type="int" Nullable="false" />
+    <Property Name="username" Type="nvarchar" Nullable="false" MaxLength="100" />
+    <Property Name="password" Type="nvarchar" Nullable="false" MaxLength="255" />
+    <Property Name="ispasswordencrypted" Type="bit" Nullable="false" />
+    <Property Name="firstname" Type="nvarchar" Nullable="false" MaxLength="100" />
+    <Property Name="lastname" Type="nvarchar" Nullable="false" MaxLength="100" />
+    <Property Name="email" Type="nvarchar" Nullable="false" MaxLength="100" />
+    <Property Name="birthdate" Type="datetime" />
+    <Property Name="phone1" Type="nvarchar" MaxLength="20" />
+    <Property Name="phone2" Type="nvarchar" MaxLength="20" />
+    <Property Name="address" Type="nvarchar" Nullable="false" MaxLength="255" />
+    <Property Name="address2" Type="nvarchar" MaxLength="255" />
+    <Property Name="city" Type="nvarchar" Nullable="false" MaxLength="120" />
+    <Property Name="state" Type="nvarchar" Nullable="false" MaxLength="100" />
+    <Property Name="country" Type="nvarchar" Nullable="false" MaxLength="100" />
+    <Property Name="zipcode" Type="nvarchar" Nullable="false" MaxLength="10" />
+    <Property Name="isactive" Type="bit" />
+    <Property Name="isnewuser" Type="char" MaxLength="1" />
+    <Property Name="secquestion" Type="varchar" MaxLength="150" />
+    <Property Name="answer" Type="varchar" MaxLength="150" />
+    <Property Name="lastchangeuser" Type="int" />
+    <Property Name="createddate" Type="datetime" />
+    <Property Name="lastchangedate" Type="datetime" />
+  </EntityType>
+  <EntityType Name="tblUserPassword">
+    <Key>
+      <PropertyRef Name="UserCustomerID" />
+    </Key>
+    <Property Name="UserCustomerID" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="UserID" Type="int" />
+    <Property Name="CustomerID" Type="int" />
+    <Property Name="CreatedDate" Type="datetime" />
+    <Property Name="ExpiryDate" Type="datetime" />
+    <Property Name="Password" Type="varchar" MaxLength="100" />
+  </EntityType>
+  <EntityType Name="tblUserPasswordHistory">
+    <Key>
+      <PropertyRef Name="PasswordHistoryID" />
+    </Key>
+    <Property Name="PasswordHistoryID" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="UserID" Type="int" />
+    <Property Name="Password" Type="varchar" MaxLength="100" />
+    <Property Name="CreatedDate" Type="datetime" />
+  </EntityType>
+  <Function Name="spGetMenuList" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+    <Parameter Name="RoleId" Type="int" Mode="In" />
+    <Parameter Name="CustomerId" Type="int" Mode="In" />
+  </Function>
+  <Function Name="spGetMenuPagePermission" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+    <Parameter Name="CustomerId" Type="int" Mode="In" />
+    <Parameter Name="RoleId" Type="int" Mode="In" />
+    <Parameter Name="MenuId" Type="varchar" Mode="In" />
+  </Function>
+  <Function Name="spGetPageList" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+    <Parameter Name="RoleId" Type="int" Mode="In" />
+    <Parameter Name="MenuId" Type="int" Mode="In" />
+    <Parameter Name="CustomerId" Type="int" Mode="In" />
+  </Function>
+  <Function Name="spGetUserByEmailId" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+    <Parameter Name="EmailId" Type="varchar" Mode="In" />
+  </Function>
+  <Function Name="spGetUserCredentials" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+    <Parameter Name="EmailAddress" Type="varchar" Mode="In" />
+    <Parameter Name="Password" Type="varchar" Mode="In" />
+  </Function>
+  <Function Name="spIsExists" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+    <Parameter Name="prmField" Type="varchar" Mode="In" />
+    <Parameter Name="prmValue" Type="int" Mode="In" />
+    <Parameter Name="Column" Type="varchar" Mode="In" />
+    <Parameter Name="Value" Type="varchar" Mode="In" />
+    <Parameter Name="TableName" Type="varchar" Mode="In" />
+    <Parameter Name="CustomerId" Type="int" Mode="In" />
+  </Function>
+</Schema>

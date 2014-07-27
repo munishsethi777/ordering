@@ -1,0 +1,429 @@
+﻿@{
+    Layout = "~/Views/Shared/_BootstrapLayout.cshtml";
+}
+@*<h4>Menu</h4>*@
+<table id="tblGrid">
+</table>
+<div id="pager">
+</div>
+@section scripts {
+    @(Html.Grid("tblGrid")
+    .SetCaption("Menu Master").AddColumn(new Column("Action").SetCustomFormatter("buttonize").SetWidth(75).SetSearch(false))
+    .AddColumn(new Column("Customer ID").SetHidden(true).AddClass("Hide"))
+    .AddColumn(new Column("customername").SetLabel("Customer Name").SetSearchType(Searchtype.Select))
+    .AddColumn(new Column("menutitle").SetLabel("Menu Title"))
+    .AddColumn(new Column("Description"))
+    .AddColumn(new Column("Status").SetSearchType(Searchtype.Select).SetSearchTerms(new string[] { "1:Active", "0:Inactive" }))
+    .AddColumn(new Column("ordermenu").SetLabel("Order Menu").SetAlign(Align.Right))
+    .AddColumn(new Column("lastchangeduser").SetLabel("Last Changed User").SetWidth(200))
+    .AddColumn(new Column("createddate").SetLabel("Created Date").SetWidth(200).SetSearchType(Searchtype.Datepicker).SetSearchDateFormat("mm/dd/yy"))
+                    .AddColumn(new Column("lastchangeddate").SetLabel("Last Changed Date").SetWidth(200).SetSearchType(Searchtype.Datepicker).SetSearchDateFormat("mm/dd/yy"))
+    .SetUrl(Url.Action("GridDataMenu", "Admin"))
+    .SetAutoWidth(true)
+    .SetRowNum(10)
+    .SetRowList(new[] { 10, 15, 20, 50 })
+    .SetViewRecords(true)
+    .SetPager("pager")
+            .SetHeight(290)
+    .SetWidth(400)
+    .SetSearchToolbar(true)
+    .SetSearchOnEnter(true)
+    .SetSearchClearButton(true)
+    .SetSearchToggleButton(true)
+    .SetMultiSelect(true)
+    .SetMultiBoxOnly(false)
+    .SetMultiSelectWidth(40)
+    .SetToolbar(true)
+    .SetToolbarPosition(ToolbarPosition.Top)
+    .SetHoverRows(true)
+    .SetAltRows(true)
+    .SetShrinkToFit(false)
+    .SetScrollOffset(30)
+    .SetSortName("customername")
+    .OnLoadComplete("OnLoadComplete")
+
+)
+    <script type="text/javascript">
+
+        function OnLoadComplete() {
+
+            if (this.p.records === 0) {
+                setTimeout(function () {
+                    $("#load_search-results-datagrid").show().text("No Matches Found.");
+                }, 500);
+            }
+
+            if ($(this).jqGrid('getGridParam', 'reccount') == 0) {
+                $(".ui-jqgrid-hdiv").css("overflow-x", "auto")
+            }
+            else {
+                $(".ui-jqgrid-hdiv").css("overflow-x", "hidden")
+            }
+        }
+
+        $(document).ready(function () {
+            var tool = "<ul class='nav nav-pills'>" +
+                            "<li><a onclick=\"AddMenu();\" title='Add New' href='#'>Add New</a></li>" +
+                            "<li><a onclick=\"DeleteSelectedItem();\" title='Delete Multiple Item' href='#'>Delete</a></li>" +
+                            "<li class='dropdown'><a title='Export' class='dropdown-toggle' data-toggle='dropdown' href='#'>Export <b class='caret'></b></a>" +
+                                "<ul class='dropdown-menu'>" +
+                                    "<li><a onclick=\"ExportMenu('PDF');\" title='PDF' href='#'>PDF</a></li>" +
+                                        "<li><a onclick=\"ExportMenu('CSV');\" title='CSV' href='#'>CSV</a></li>" +
+                                        "<li><a onclick=\"ExportMenu('Excel');\" title='Excel' href='#'>Excel</a></li>" +
+                                         "<li><a onclick=\"ExportMenu('Word');\" title='Word' href='#'>Word</a></li>" +
+                                         "<li><a onclick=\"PrintMenu();\" title='Print' href='#'>Print</a></li>" +
+                                "</ul>" +
+                            "</li>" +
+                        "</ul>";
+
+            // create tool bar in grid
+            $('#t_tblGrid').append(tool);
+
+            //frozen or lock the columns
+            $("#tblGrid").jqGrid('setColProp', 'Action', { frozen: true });
+            jQuery("#tblGrid").jqGrid('setFrozenColumns');
+
+            //bind customers list to search
+            var customer = '@Html.BindCustomers()';
+            $("#gs_customername").html('<option value="">All</option>' + customer);
+
+            //load complete event hanlder
+            LoadComplete('tblGrid');
+
+
+            //customer change event 
+            $("#gs_customername").bind('change', function () {
+                //selected customer id
+                $('#hdnSelectedCustomerId').val($("#gs_customername").val());
+            });
+
+            //jqGrid hide column dynamically
+            var CustomerId = $('#hdnCustomerId').val();
+            if (CustomerId != '1')
+                HideGridColumn('tblGrid', ['customername'])
+            //$("#tblGrid").jqGrid('hideCol', ["customername"]);
+
+            //hide and show column option - runtime
+            GridColumnChooser('tblGrid');
+
+            //refresh grid
+            ReloadGrid('tblGrid');
+
+        });
+
+        function buttonize(cellvalue, options, rowobject) {
+            return "<ul class='the-icons'>" +
+                        "<li title='Delete' onclick=\"DeleteMenu(" + cellvalue + ");\"><i class='icon-remove'></i></li>" +
+                        "<li title='Edit' onclick=\"EditMenu(" + cellvalue + ");\"><i class='icon-edit'></i></li>" +
+                    "</ul>"
+        }
+
+
+        function ExportMenu(exportType) {
+
+            GenerateExportParam('tblGrid');
+            exportGrid.ExportType = exportType;
+
+            var form = $('<form></form>');
+            $('body').append(form);
+            form.attr('action', '/Admin/Admin/ExportMenu' + '?model=' + JSON.stringify(exportGrid));
+            form.attr('method', 'POST');
+            form.submit();
+        }
+
+        function PrintMenu() {
+
+            //build the param 
+            GenerateExportParam('tblGrid')
+
+            $.post("PrintMenu",
+                                {
+                                    model: JSON.stringify(exportGrid)
+                                },
+                                function (data) {
+                                    try {
+                                        if (data == "") {
+                                            AlertError('Could not able to Print, please try again');
+                                            return;
+                                        }
+
+                                        var printWin = window.open('', '', 'left=0" ,top=0,width=1000,height=600,status=0');
+                                        printWin.document.write(data);
+
+                                        printWin.document.close();
+                                        printWin.focus();
+                                        printWin.print();
+                                        printWin.close();
+
+                                    }
+                                    catch (e) {
+                                        ScriptDialogError(e);
+                                    }
+
+                                }
+                            );
+
+        }
+
+        // Dialog Modal - Add New Entry
+        function AddMenu() {
+            try {
+                // clear edit and add view
+                ClearDialog();
+
+                // Dialogs window for add
+                $("#dialog-add").dialog({
+                    title: 'Add New',
+                    autoOpen: false,
+                    resizable: true,
+                    width: 600,
+                    height: 500,
+                    position: 'center',
+                    modal: true,
+                    draggable: true,
+                    open: function (event, ui) {
+                        //$('#dialog-add').html($.get('CreateMenu', {}, function (data) { }));
+                        $.post("CreateMenu",
+                            {},
+                            function (data) {
+                                try {
+                                    if (data == "") {
+                                        CloseDialog();
+                                        AlertError('Page could not load, please try again');
+                                        return;
+                                    }
+
+                                    $('#dialog-add').html(data.view);
+                                    var CustomerId = $('#hdnSelectedCustomerId').val();
+                                    $('#ddlCustomer').val(CustomerId).change();
+
+                                }
+                                catch (e) {
+                                    ScriptDialogError(e);
+                                }
+
+                            }
+                        );
+                    },
+                    close: function (event, ui) {
+                        CloseDialog();
+                    }
+                });
+
+                //open dialog
+                OpenDialog();
+                return false;
+            }
+            catch (e) {
+                ScriptError(e);
+            }
+        }
+
+        // Dialog - Edit Entry
+        function EditMenu(menuId) {
+            try {
+                // clear edit and add view
+                ClearDialog();
+
+                // dialgo window for edit
+                $("#dialog-add").dialog({
+                    title: 'Edit',
+                    autoOpen: false,
+                    resizable: true,
+                    width: 600,
+                    height: 500,
+                    position: 'center',
+                    modal: true,
+                    draggable: true,
+                    open: function (event, ui) {
+                        $.post("EditMenuId",
+                            {
+                                iMenuId: menuId
+                            },
+                            function (data) {
+
+                                try {
+                                    if (data == "") {
+                                        CloseDialog();
+                                        AlertError('Page could not load, please try again');
+                                        return;
+                                    }
+
+                                    $('#dialog-add').html(data.view);
+
+                                    //Do something with the data returned.
+                                    $('#hdnMenuId').val(data.model.MenuId);
+                                    $('#ddlCustomer').val(data.model.CustomerId).change();
+                                    $('#txtMenuTitle').val(data.model.MenuTitle);
+                                    $('#txtMenuDesc').val(data.model.Description);
+                                    if (data.model.Status == '1')
+                                        $('#rbStatusActive').attr('checked', 'checked');
+                                    else if (data.model.Status == '0')
+                                        $('#rbStatusInActive').attr('checked', 'checked');
+
+                                    $('#ddlOrderMenu').val(data.model.OrderMenu).change();
+
+                                }
+                                catch (e) {
+                                    ScriptDialogError(e);
+                                }
+
+                            }
+                        );
+                    },
+                    close: function (event, ui) {
+                        CloseDialog();
+                    }
+                });
+
+                //open dialog
+                OpenDialog();
+                return false;
+
+            }
+            catch (e) {
+                ScriptError(e);
+            }
+        }
+
+        // add and edit item
+        function CreateEditMenu(command) {
+
+            try {
+
+                menu.MenuId = $('#hdnMenuId').val();
+                menu.CustomerId = $('#ddlCustomer').val();
+                menu.MenuTitle = $('#txtMenuTitle').val();
+                menu.Description = $('#txtMenuDesc').val();
+                menu.Status = $('input[name=rbStatus]:checked').val();
+                menu.OrderMenu = $('#ddlOrderMenu').val();
+
+                menu.MenuUrl = '';
+                menu.IsDefault = 0;
+
+                //Pass it to a controller method
+                $.post("CreateEditMenu",
+                {
+                    viewModel: JSON.stringify(menu),
+                    sCommand: command
+                },
+                function (data) {
+
+                    if (data.result == "fail") {
+                        CloseDialog();
+                        AlertError(data.message);
+                        return;
+                    }
+
+                    //refress the grid again
+                    ReloadGrid('tblGrid');
+
+
+                    if (command == 'Add') {
+                        ClearMenuForm();
+                        AlertDialogSuccess(data.message);
+                    }
+                    else {
+                        CloseDialog();
+                        AlertMsg(data.message);
+                    }
+
+                });
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+        }
+
+        //clear the form fields
+        function ClearMenuForm() {
+
+            try {
+
+                //reset to - selected customer
+                $('#ddlCustomer').val($('#hdnSelectedCustomerId').val()).change();
+
+                //clear hidden ctrl = 0
+                $('#menuForm input[type=hidden]').each(function () {
+                    $(this).val('0');
+                });
+
+                //clear text ctrl = 0
+                $('#menuForm input[type=text]').each(function () {
+                    $(this).val('');
+                });
+
+                //drop down controls
+                $("#menuForm select[name != 'ddlCustomer']").each(function () {
+                    $(this)[0].selectedIndex = 0;
+                    $(this).change();
+                });
+
+                //reset to - selected customer
+                $('#ddlCustomer').val($('#hdnSelectedCustomerId').val()).change();
+
+                $('#rbStatusActive').attr('checked', 'checked');
+
+            }
+            catch (e) {
+                ScriptDialogError(e);
+            }
+        }
+
+        // Dialog - Delete Entry
+        function DeleteMenu(menuId) {
+            Confirmation('Are you sure to delete?', menuId);
+        }
+
+
+        //Delete selected item
+        function DeleteSelectedItem() {
+            //get selected rows
+            var selMulti = $.map($('#tblGrid').jqGrid('getGridParam', 'selarrrow'), function (el, i) {
+                return el;
+            });
+            if (selMulti.length > 0)
+                DeleteMenu(selMulti.toString());
+            else
+                AlertMsg('Please select the Item');
+        }
+        function CallbackConfirmation(status, item) {
+
+            if (status) // true - click yes, false - click no
+            {
+                $.post('DeleteMenu', { iMenuId: item }, function (data) {
+                    if (data.result == "fail") {
+                        AlertError(data.message);
+                        return;
+                    }
+
+                    //refress the grid again
+                    ReloadGrid('tblGrid');
+                    AlertMsg(data.message);
+                });
+            }
+        }
+        function ChangeCustomer() {
+
+            var customerid = ($('#ddlCustomer').val() == '') ? '0' : $('#ddlCustomer').val();
+
+            $('#ddlOrderMenu').html('');
+            //append the order
+            $.ajax({
+                type: 'POST',
+                url: '/Home/BindMenuOrder',
+                data: { iCustomerId: customerid },
+                async: false,
+                success: function (data) {
+                    try {
+                        $('#ddlOrderMenu').html(data).change();
+                    }
+                    catch (e) {
+                        ScriptDialogError(e);
+                    }
+                }
+            });
+        }
+
+    </script>
+}

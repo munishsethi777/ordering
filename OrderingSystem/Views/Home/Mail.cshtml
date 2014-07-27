@@ -1,0 +1,107 @@
+﻿@model MVCDataModel.tblMailSetting
+@{
+    ViewBag.Title = "Mail";
+    Layout = "~/Views/Shared/_BootstrapLayout.cshtml";
+}
+<form id="frmReportTank" class="form-horizontal">
+<div class="wellNew">
+    <legend>Mail Configuration</legend>
+    <div class="row-fluid">
+        <input type="hidden" id="hdId" name="hdId" value="@Model.id" />
+        <div class="control-group">
+            <label class="control-label" for="txtToAdd">
+                To Address :
+            </label>
+            <div class="controls">
+                <input type="text" id="txtToAdd" name="txtToAdd" value="@Model.ToAddress" class="input-block-level" />
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtCcAdd">
+                Cc Address :
+            </label>
+            <div class="controls">
+                <input type="text" id="txtCcAdd" name="txtCcAdd" value="@Model.CCAddress" class="input-block-level" />
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtBccAdd">
+                Bcc Address :
+            </label>
+            <div class="controls">
+                <input type="text" id="txtBccAdd" name="txtBccAdd" value="@Model.BccAddress" class="input-block-level" />
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtSub">
+                Subject :
+            </label>
+            <div class="controls">
+                <input type="text" id="txtSub" name="txtSub" value="@Model.Subject" style="width: 300px;" />
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="txtMsg">
+                Message :
+            </label>
+            <div class="controls">
+                <textarea id="txtMsg" name="txtMsg" rows="5" style="width: 300px;">@Model.MailMessage</textarea>
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button type="button" id="btnViewResults" class="btn btn-primary">
+                    <span class="ui-button-text">Update Settings</span></button>
+                @*<button type="button" id="btnClear" class="btn">
+                    <span class="ui-button-text">Clear</span></button>*@
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+@section scripts
+{
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            $('#btnViewResults').click(function () {
+
+
+                try {
+
+                    var item = @Html.Raw(Json.Encode(Model));
+                    item.id = $('#hdId').val();
+                    item.ToAddress = $('#txtToAdd').val();
+                    item.CCAddress = $('#txtCcAdd').val();
+                    item.BccAddress = $('#txtBccAdd').val();
+                    item.Subject = $('#txtSub').val();
+                    item.MailMessage = $('#txtMsg').val();
+
+
+                    //Pass it to a controller method
+                    $.post("SaveMailSettings",
+                    {
+                        viewModel: JSON.stringify(item)
+                    },
+                    function (data) {
+
+                        if (data.result == "fail") {
+                            AlertError(data.message);
+                            return;
+                        }
+
+                        CloseDialog();
+                        AlertMsg(data.message);
+
+                    });
+                }
+                catch (e) {
+                    ScriptDialogError(e);
+                }
+
+            });
+
+        });
+    </script>
+}

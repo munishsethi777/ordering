@@ -1,0 +1,166 @@
+﻿@{
+    ViewBag.Title = "Order Entry";
+    Layout = "~/Views/Shared/_BootstrapFullLayout.cshtml";
+}
+<style>
+    .handsontable .currentRow
+    {
+        background-color: #E7E8EF;
+    }
+    .handsontable .currentCol
+    {
+        background-color: #F9F9FB;
+    }
+</style>
+<form id="orderEntry" class="form-horizontal">
+<h4>
+    <span>Order Lists : </span><span id="lblCustomer">@Session["CustomerName"]</span>
+    @*<h5>
+        <span>Order Date : </span><span>
+            <input class="input-xlarge" id="disabledInput" type="text" placeholder="March 24, 2014"
+                disabled />
+        </span>
+    </h5>*@
+</h4>
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div style="height: 400px; overflow: scroll">
+            <div id="example">
+            </div>
+        </div>
+        <div style="padding-top: 10px; padding-bottom: 10px;">
+            <center>
+                <button title="Back to Dashboard" type="button" id="btnCancel" class="btn">
+                    <span class="ui-button-text">Back</span></button>
+            </center>
+        </div>
+    </div>
+</div>
+</form>
+@section scripts
+{
+    <script type="text/javascript" language="javascript">
+
+        $(document).ready(function () {
+
+            var saveOrdersList = [];
+            var dataOrderEntry = [];
+            //["2012", 2, 2422, 5399, 776, 4151]
+
+            var container = $("#example");
+
+            var colHeaderList = new Array();
+            colHeaderList.push("SL#");
+            colHeaderList.push("PRODUCTS");
+
+
+            var colSource = Array()
+            colSource.push({
+                "type": "text",
+                "readOnly": true
+            },
+            {
+                "type": "text",
+                "readOnly": true
+            }
+            );
+
+
+
+            $.ajax({
+                url: '/Home/BindStore',
+                data: {},
+                async: false,
+                success: function (response) {
+                    try {
+                        var array = $.map(eval("[" + response + "]")[0].Table, function (el) {
+
+                            colHeaderList.push(el.storecode);
+                            colSource.push({ type: 'numeric', readOnly: true });
+                            return [el.storecode];
+                        });
+                    }
+                    catch (ex) {
+                    }
+                }
+            });
+
+
+
+            // the load the order list
+            LoadOrderLists();
+
+
+            container.handsontable({
+                data: dataOrderEntry,
+                totalRows: 500,
+                //width : 1000,
+                //colWidths: [55, 47, 47, 47, 47, 47], //can also be a number or a function
+                rowHeaders: true,
+                //colHeaders: true,
+                colHeaders: colHeaderList,
+                //colHeaders: ["SL#", "PRODUCTS", "", "AMK2 QTY", "PP12-A QTY", "TEST QTY"],
+                maxCols: Infinity,
+                maxRows: 100,
+                columns: colSource,
+
+                //columns: function (row, col, prop) {},
+                minSpareRows: 1,
+                stretchH: 'all',
+                contextMenu: true,
+
+                fixedRowsTop: 0,
+                fixedColumnsLeft: 0,
+                nativeScrollbars: true,
+
+                currentRowClassName: 'currentRow',
+                currentColClassName: 'currentCol',
+
+                columnSorting: true,
+                manualColumnMove: true,
+                manualColumnResize: true
+            });
+
+            var handsontable = container.data('handsontable');
+
+
+            function LoadOrderLists() {
+
+                $.ajax({
+                    url: "/Home/LoadOrders",
+                    dataType: 'json',
+                    data: { "orderid": $('#hdnOrderId').val() },
+                    type: 'GET',
+                    async: false,
+                    success: function (res) {
+                        try {
+
+                            var data = eval("[" + res + "]")[0].Table;
+                            //handsontable.loadData(data);
+                            // dataOrderEntry
+                            $.each(data, function (index, item) {
+                                var array = new Array();
+                                $.each(item, function (i, d) {
+                                    array.push(d);
+                                });
+                                dataOrderEntry.push(array);
+                            });
+                            //alert('Data loaded');
+
+                        }
+                        catch (ex) {
+                            dataOrderEntry = [];
+                        }
+                    }
+                });
+
+            }
+
+            $("#btnCancel").bind("click", function (e) {
+                window.location.pathname = '/Home/Dashboard';
+            });
+
+        });
+        
+    </script>
+}
