@@ -20,10 +20,18 @@ namespace SatinLibs
 
         public static DataSet getStores(string customerId)
         {
-            MVCEFEntities objContext = new MVCEFEntities();
-            string sSql = string.Format(" select storecode, storename from tblstore where customerid = {0} and isactive='1' order by storeid ", customerId);
-            DataSet storesDataSet = objContext.ExecuteDataSet(sSql);
-            return storesDataSet;
+            DataSet storesDataSet = null;
+            try
+            {
+                MVCEFEntities objContext = new MVCEFEntities();
+                string sSql = string.Format(" select storecode, storename from tblstore where customerid = {0} and isactive='1' order by storeid ", customerId);
+                storesDataSet = objContext.ExecuteDataSet(sSql);
+                return storesDataSet;
+            }
+            catch (Exception e)
+            {
+                return storesDataSet;
+            }
 
         }
     }

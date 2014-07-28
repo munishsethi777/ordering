@@ -15,25 +15,91 @@ namespace SatinLibs
 {
     public class CustId751Parser : ParserI
     {
+        private int pageCount = 1;
+        private string customerId;
+        private static string firstLineText = "Cold Storage Supermarket";
 
-        public System.Data.DataSet getDataSet(string customerId, string fileLocation)
+        public DataSet getDataSet(string _customerId, string fileLocation)
         {
+            customerId = _customerId;
             string pdfText = getTextFromPDF(fileLocation);
+            string[] allLines = pdfText.Split(new string[] { "\r\n" }, StringSplitOptions.None);
+            DataSet dataSet = new DataSet();
+            if (pageCount == 1)
+            {
+                getPDFSheetToDataSet(allLines, dataSet);
+            }
+            else
+            {
+                int[] startingLinesIndexes = getStartingLinesIndexes(allLines,pageCount);
+                if(pageCount == startingLinesIndexes.Length){
+                    for (int i = 0; i < pageCount; i++)
+                    {
+                        int startIndex = startingLinesIndexes[i];
+                        int endIndex;
+                        if (i == pageCount - 1)
+                        {
+                            endIndex = allLines.Length;
+                        }
+                        else
+                        {
+                            endIndex = startingLinesIndexes[i + 1];
+                        }
+
+                        string[] lines = getSheetLines(startIndex, endIndex, allLines);
+                        getPDFSheetToDataSet(lines,dataSet);
+                    }
+                }
+            }
+            return dataSet;
+        }
+
+        private int[] getStartingLinesIndexes(string[] lines,int pageCount)
+        {
+            int[] startingLinesIndexes = new int[pageCount];
+            int arrayIndex = 0;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (lines[i].Equals(firstLineText))
+                {
+                    startingLinesIndexes[arrayIndex++] = i ;
+                }
+            }
+            return startingLinesIndexes;
+        }
+        private string[] getSheetLines(int start, int last, string[] allLines)
+        {
+            string[] lines = new string[last-start];
+            int index = 0;
+            for (int i = start; i < last; i++)
+            {
+                lines[index++] = allLines[i];
+            }
+            return lines;
+        }
+        private void getPDFSheetToDataSet(string[] lines,DataSet dataSet)
+        {
             DataSet storesDataSet = CustomerUtils.getStores(customerId);
-            string[] lines = pdfText.Split(new string[] { "\r\n" }, StringSplitOptions.None);
+            int storesCount = 0;
+            if (storesDataSet != null)
+            {
+                storesCount = storesDataSet.Tables[0].Rows.Count;
+            }
+            int totalProducts = productsCount(lines);
+            getOrderDetails(lines, totalProducts);
             string supplierId = lines[5].Replace("Supplier : ", "");
             string orderNo = lines[11].Replace(":", ""); ;
             string orderDate = lines[15];
             string deliveryDate = lines[34];
             string storeCode = lines[5].Replace("Supplier : ", "");
-            string orderAmount = lines[52].Trim();
-            int storesCount = storesDataSet.Tables[0].Rows.Count;
-
-            int totalProducts = int.Parse(lines[51]);
+            string orderAmount = lines[46+totalProducts].Trim();
+            
+            
             string[] productIdArray = new string[totalProducts];
             string[] priceArray = new string[totalProducts];
             string[] productNameArray = new string[totalProducts];
             string[] qtyArray = new string[totalProducts];
+            
             int proLineIndex = 35;
             for (int i = 0; i < totalProducts; i++)
             {
@@ -92,13 +158,9 @@ namespace SatinLibs
                 {
                     array = new object[1 + 4];
                 }
-
-
                 array[0] = itemNo;
                 array[1] = itemName;
                 array[2] = price;
-
-
                 int rowCounter = 3;
                 if (storesCount == 0)
                 {
@@ -112,23 +174,24 @@ namespace SatinLibs
                         array[rowCounter++] = "20";
                     }
                 }
-
-
                 string remarks = "";
                 array[rowCounter] = remarks;
                 dt.Rows.Add(array);
             }
-            ds.Tables.Add(dt);
-            return ds;
+            dataSet.Tables.Add(dt);
         }
-
+        
         public DataTable getCommonDataTable(int totalRowsCount, DataSet storesDataSet)
         {
             DataTable mytable = new DataTable();
             mytable.Columns.Add("Sl#");
             mytable.Columns.Add("Product");
             mytable.Columns.Add("Price");
-            int storesCount = storesDataSet.Tables[0].Rows.Count;
+            int storesCount = 0;
+            if (storesDataSet != null)
+            {
+                storesCount = storesDataSet.Tables[0].Rows.Count;
+            }
 
             if (storesCount > 0)
             {
@@ -144,12 +207,81 @@ namespace SatinLibs
             mytable.Columns.Add("Remarks");
             return mytable;
         }
+        
         private string getTextFromPDF(String fileLocation)
         {
             PDDocument doc = PDDocument.load(fileLocation);
+            pageCount = doc.getNumberOfPages();
             PDFTextStripper stripper = new PDFTextStripper();
             String txt = stripper.getText(doc);
             return txt;
+        }
+
+        private int productsCount(string[] lines)
+        {
+            string totalPurchaseLineText = "Total Purchase Order Amount (S$)";
+            int index = 0;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (lines[i] .Equals( totalPurchaseLineText))
+                {
+                    index = int.Parse(lines[i + 6]);
+                    continue;
+                }
+            }
+            return index; 
+        }
+
+        private string[] getItemRows(string[] lines,int prodCount)
+        {
+            string[] itemRows = new string[prodCount];
+
+            StringBuilder itemRow = new StringBuilder();
+            int startIndex = 35;
+            int lastindex = getProductsLastRowIndex(lines);
+            string[] allItemRows = getSheetLines(startIndex, lastindex, lines);
+            
+            return itemRows;
+        }
+        private int getProductsLastRowIndex(string[] lines)
+        {
+            int index = 35; //products area starts at 35
+            while (!lines[index].Equals("Total No. of Products Ordered"))
+            {
+                index++;
+            }
+            return index;
+        }
+        private void getOrderDetails(string[] lines, int productCount){
+            string[] itemRows = getItemRows(lines,productCount);
+            TempOrderDetails orderDetails = new TempOrderDetails();
+            int proLineIndex = 35;
+            
+            for (int i = 0; i < productCount; i++)
+            {
+                string itemRow = lines[proLineIndex++];
+                int skuStartIndex = itemRow.IndexOf(".") + 5;
+                int skuEndIndex = itemRow.IndexOf(" ", skuStartIndex);
+                string prodId = itemRow.Substring(skuStartIndex, skuEndIndex - skuStartIndex);
+
+                int productNameStartIndex = skuEndIndex + 1;
+                int productNameEndIndex = itemRow.IndexOf("   ");
+                string prodName = itemRow.Substring(productNameStartIndex, productNameEndIndex - productNameStartIndex);
+
+                int qtyStartIndex = productNameEndIndex + 3;
+                int qtyEndIndex = qtyStartIndex + 1;
+                string qty = itemRow.Substring(qtyStartIndex, qtyEndIndex - qtyStartIndex);
+
+                int priceStartIndex = itemRow.Substring(0, itemRow.LastIndexOf(" ")).LastIndexOf(" ") + 1;
+                int priceEndIndex = itemRow.Substring(priceStartIndex).IndexOf(" ") + priceStartIndex;
+                string price = itemRow.Substring(priceStartIndex, priceEndIndex - priceStartIndex);
+                
+                orderDetails.ProductId = prodId;
+                orderDetails.ProductName = prodName;
+                orderDetails.Quantity = decimal.Parse(qty);
+                orderDetails.Price = decimal.Parse(price);
+
+            }
         }
     }
 }
