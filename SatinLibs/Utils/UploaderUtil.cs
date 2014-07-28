@@ -10,14 +10,10 @@ namespace SatinLibs
 {
     public class UploaderUtil
     {
-        public string UploadFile(string customerId, HttpPostedFileBase file, string fileLocation)
+        public DataSet UploadFile(string customerId, HttpPostedFileBase file, string fileLocation)
         {
-         
-           
             ParserUtil parserUtil = new ParserUtil(customerId,file, fileLocation);
-            DataSet dataSet = parserUtil.getParsedDataSet();
-            return dataSet.Tables[0].ToJSONString();
+            return parserUtil.getParsedDataSet();           
         }
-
     }
 }

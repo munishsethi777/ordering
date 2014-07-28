@@ -17,8 +17,10 @@ namespace SatinLibs
     {
         private int pageCount = 1;
         private string customerId;
+        private int productCount = 0;
+        private int productRowsCount = 0;
         private static string firstLineText = "Cold Storage Supermarket";
-
+        private static string firstLineText1 = "Cold Storage Singapore (1983) Pte Ltd";
         public DataSet getDataSet(string _customerId, string fileLocation)
         {
             customerId = _customerId;
@@ -60,7 +62,7 @@ namespace SatinLibs
             int arrayIndex = 0;
             for (int i = 0; i < lines.Length; i++)
             {
-                if (lines[i].Equals(firstLineText))
+                if (lines[i].Equals(firstLineText) || lines[i].Equals(firstLineText1))
                 {
                     startingLinesIndexes[arrayIndex++] = i ;
                 }
@@ -77,6 +79,7 @@ namespace SatinLibs
             }
             return lines;
         }
+        
         private void getPDFSheetToDataSet(string[] lines,DataSet dataSet)
         {
             DataSet storesDataSet = CustomerUtils.getStores(customerId);
@@ -85,42 +88,15 @@ namespace SatinLibs
             {
                 storesCount = storesDataSet.Tables[0].Rows.Count;
             }
-            int totalProducts = productsCount(lines);
-            getOrderDetails(lines, totalProducts);
+            productCount = productsCount(lines);
+            string[] itemRows = getItemRows(lines, productCount);
             string supplierId = lines[5].Replace("Supplier : ", "");
             string orderNo = lines[11].Replace(":", ""); ;
             string orderDate = lines[15];
-            string deliveryDate = lines[34];
+            string deliveryDate = getDeliveryDate(lines);
             string storeCode = lines[5].Replace("Supplier : ", "");
-            string orderAmount = lines[46+totalProducts].Trim();
-            
-            
-            string[] productIdArray = new string[totalProducts];
-            string[] priceArray = new string[totalProducts];
-            string[] productNameArray = new string[totalProducts];
-            string[] qtyArray = new string[totalProducts];
-            
-            int proLineIndex = 35;
-            for (int i = 0; i < totalProducts; i++)
-            {
-                string itemRow = lines[proLineIndex++];
-                int skuStartIndex = itemRow.IndexOf(".") + 5;
-                int skuEndIndex = itemRow.IndexOf(" ", skuStartIndex);
-                productIdArray[i] = itemRow.Substring(skuStartIndex, skuEndIndex - skuStartIndex);
+            //string orderAmount = lines[46 + productCount].Trim();
 
-                int productNameStartIndex = skuEndIndex + 1;
-                int productNameEndIndex = itemRow.IndexOf("   ");
-                productNameArray[i] = itemRow.Substring(productNameStartIndex, productNameEndIndex - productNameStartIndex);
-
-                int qtyStartIndex = productNameEndIndex + 3;
-                int qtyEndIndex = qtyStartIndex + 1;
-                qtyArray[i] = itemRow.Substring(qtyStartIndex, qtyEndIndex - qtyStartIndex);
-
-                int priceStartIndex = itemRow.Substring(0, itemRow.LastIndexOf(" ")).LastIndexOf(" ") + 1;
-                int priceEndIndex = itemRow.Substring(priceStartIndex).IndexOf(" ") + priceStartIndex;
-                priceArray[i] = itemRow.Substring(priceStartIndex, priceEndIndex - priceStartIndex);
-
-            }
             TempOrder tempOrder = new TempOrder();
             tempOrder.Seq = 0;
             tempOrder.OrderId = orderNo;
@@ -128,26 +104,17 @@ namespace SatinLibs
             tempOrder.CreatedOn = new DateTime();
             tempOrder.CustomerId = supplierId;
             tempOrder.DeliveryDate = DateTime.Parse(deliveryDate);
-            tempOrder.Amount = decimal.Parse(orderAmount);
+            //tempOrder.Amount = decimal.Parse(orderAmount);
 
-            List<TempOrderDetails> orderDetailList = new List<TempOrderDetails>();
-            for (int i = 0; i < totalProducts; i++)
-            {
-                TempOrderDetails orderDetails = new TempOrderDetails();
-                string priceStr = priceArray[i];
-                orderDetails.Price = decimal.Parse(priceStr);
-                orderDetails.ProductId = productIdArray[i];
-                string qntyStr = priceArray[i];
-                orderDetails.Quantity = decimal.Parse(qntyStr);
-                orderDetails.ProductName = productNameArray[i];
-                orderDetailList.Add(orderDetails);
-            }
+            
+            List<TempOrderDetails> orderDetailList = getOrderDetailsList(itemRows);
+
             tempOrder.OrderDetails = orderDetailList;
             DataSetUtils utils = new DataSetUtils();
             DataSet mainDs = utils.ToDataSet(tempOrder);
-            DataTable dt = getCommonDataTable(totalProducts, storesDataSet);
+            DataTable dt = getCommonDataTable(productCount, storesDataSet);
             DataSet ds = new DataSet();
-            for (int i = 0; i < totalProducts; i++)
+            for (int i = 0; i < productCount; i++)
             {
                 DataRow row = mainDs.Tables[0].Rows[i];
                 string itemNo = row.ItemArray[3].ToString();
@@ -235,31 +202,21 @@ namespace SatinLibs
         private string[] getItemRows(string[] lines,int prodCount)
         {
             string[] itemRows = new string[prodCount];
-
-            StringBuilder itemRow = new StringBuilder();
-            int startIndex = 35;
-            int lastindex = getProductsLastRowIndex(lines);
-            string[] allItemRows = getSheetLines(startIndex, lastindex, lines);
+            int lastIndex = getProductsLastRowIndex(lines);
+            int startIndex = getProductsFirstRowIndex(lines, lastIndex);
             
-            return itemRows;
+            string[] allItemRows = getSheetLines(startIndex, lastIndex, lines);
+            productRowsCount = allItemRows.Length;
+            return reArrangeItemRows(allItemRows, prodCount);
         }
-        private int getProductsLastRowIndex(string[] lines)
-        {
-            int index = 35; //products area starts at 35
-            while (!lines[index].Equals("Total No. of Products Ordered"))
+       
+        
+        private List<TempOrderDetails> getOrderDetailsList(string[] lines){
+            List<TempOrderDetails> orderDetailsList = new List<TempOrderDetails>();
+            for (int i = 0; i < lines.Length; i++)
             {
-                index++;
-            }
-            return index;
-        }
-        private void getOrderDetails(string[] lines, int productCount){
-            string[] itemRows = getItemRows(lines,productCount);
-            TempOrderDetails orderDetails = new TempOrderDetails();
-            int proLineIndex = 35;
-            
-            for (int i = 0; i < productCount; i++)
-            {
-                string itemRow = lines[proLineIndex++];
+                TempOrderDetails orderDetails = new TempOrderDetails();
+                string itemRow = lines[i];
                 int skuStartIndex = itemRow.IndexOf(".") + 5;
                 int skuEndIndex = itemRow.IndexOf(" ", skuStartIndex);
                 string prodId = itemRow.Substring(skuStartIndex, skuEndIndex - skuStartIndex);
@@ -280,8 +237,63 @@ namespace SatinLibs
                 orderDetails.ProductName = prodName;
                 orderDetails.Quantity = decimal.Parse(qty);
                 orderDetails.Price = decimal.Parse(price);
-
+                orderDetailsList.Add(orderDetails);
             }
+            return orderDetailsList;
         }
+
+        private string[] reArrangeItemRows(string[] allLines, int prodCount){
+            if (allLines.Length == prodCount)
+            {
+                return allLines;
+            }
+            string[] lines = new string[prodCount];
+            int newIndex = 0;
+            string line = "";
+            for (int i = 0; i < allLines.Length; i++ )
+            {
+                line = allLines[i];
+                if(line.TrimStart().StartsWith((i+1).ToString())){
+                    lines[newIndex++] = line;
+                }
+                else
+                {
+                    string repeatedLine = lines[newIndex-1];
+                    repeatedLine += line;
+                    lines[newIndex-1] = repeatedLine;
+                }
+                
+            }
+            return lines;
+        }
+        private int getProductsLastRowIndex(string[] lines)
+        {
+            int index = 0; //products area starts at 35
+            while (!lines[index].Equals("Total No. of Products Ordered"))
+            {
+                index++;
+            }
+            return index;
+        }
+        private int getProductsFirstRowIndex(string[] lines,int productsLastRowIndex)
+        {
+            int index = productsLastRowIndex; //products area starts at 35
+            while (!lines[index].Equals("OP"))
+            {
+                index--;
+            }
+            return index+2;
+        }
+        private string getDeliveryDate(string[] lines)
+        {
+            for(int i = 0; i<lines.Length;i++){
+                if(lines[i].Equals("Total No. of Products Ordered")){
+                    return lines[i - productRowsCount - 1];
+                }
+            }
+
+            return null;
+        }
+        
     }
 }
