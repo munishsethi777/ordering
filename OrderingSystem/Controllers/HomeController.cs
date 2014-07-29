@@ -1342,7 +1342,8 @@ namespace MVCEF.Controllers
             }
             Request.Files["file"].SaveAs(fileLocation);
             UploaderUtil uploaderUtil = new UploaderUtil();
-            return uploaderUtil.UploadFile(customerId, file, fileLocation);
+            DataSet dataSet = uploaderUtil.UploadFile(customerId, file, fileLocation);
+            return dataSet;
         }
         #endregion
 
