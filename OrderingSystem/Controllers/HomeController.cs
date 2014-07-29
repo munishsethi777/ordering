@@ -1317,9 +1317,13 @@ namespace MVCEF.Controllers
         {
             try
             {
-                string dsResult = null;
-                dsResult = UploadFile();
-                JsonResult result = Json(dsResult, JsonRequestBehavior.AllowGet);
+                DataSet dataSet = UploadFile();
+                string[] stringArr = new string[dataSet.Tables.Count];
+                for(int i = 0; i<dataSet.Tables.Count;i++){
+                    string dsResult = dataSet.Tables[i].ToJSONString();
+                    stringArr[i] = dsResult;
+                }
+                JsonResult result = Json(stringArr, JsonRequestBehavior.AllowGet);
                 return result;
             }
             catch (Exception Ex)
@@ -1327,7 +1331,7 @@ namespace MVCEF.Controllers
             }
             return Json("", JsonRequestBehavior.AllowGet);
         }
-        private string UploadFile()
+        private DataSet UploadFile()
         {
             string customerId = Request.Params["customerDD"];
             HttpPostedFileBase file = Request.Files["file"];

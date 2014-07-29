@@ -50,16 +50,17 @@
         </div>
     </div>
     <div class="row-fluid">
-        <div style="height: 540px; overflow: scroll">
-            <div id="example">
-            </div>
-        </div>
+			<div id="example0"></div>
+    </div>
+	<div class="row-fluid gridsDiv">
+        
     </div>
 </div>
 </form>
 @section scripts
 {
     <script type="text/javascript" language="javascript">
+		var columnWidth = new Array();
         $('#uploadFile').on('click', function () {
             var formData = new FormData($('#ajaxform')[0]);
             var formURL = $(this).attr("action");
@@ -80,59 +81,78 @@
                 },
                 success: function (res) {
                     try {
-                        var dataOrderEntry = [];
-                        var columnArray = [];
-                        var data = eval("[" + res + "]")[0].Table1;
-                        $.each(data, function (index, item) {
-                            if (columnArray.length == 0) {
-                                $.each(item, function (key, value) {
-                                    columnArray.push(key);
-                                });
-                            }
-                            var array = new Array();
-                            $.each(item, function (i, d) {
-                                array.push(d);
-                            });
-                            dataOrderEntry.push(array);
-                        });
-                        loadGrid(columnArray,dataOrderEntry);
+                        var allOrders = eval("[" + res + "]");
+						loadGrids(allOrders);
                     }
                     catch (ex) {
                         dataOrderEntry = [];
                     }
-
                 },
                 error: function () { }
             }); //unbind. to stop multiple form submit.
         });
-
-        function loadGrid(columnHeaders,rowData) {
+		function loadGrids(allTablesArray){
+			$(".gridsDiv").html("");
+			$.each(allTablesArray, function (tableIndex, arr) {
+				var dataOrderEntry = [];
+				var columnArray = [];
+				var tableName = "Table"+(tableIndex+1);
+				var tableArray = eval("arr."+tableName);
+				$.each(tableArray, function (index, item) {
+					if (columnArray.length == 0) {
+						$.each(item, function (key, value) {
+							columnArray.push(key);
+						});
+					}
+					var array = new Array();
+					$.each(item, function (i, d) {
+						array.push(d);
+					});
+					dataOrderEntry.push(array);
+				});
+				loadGrid(columnArray,dataOrderEntry,tableIndex);
+			});
+			
+		}
+        function loadGrid(columnHeaders,rowData,divId) {
             var saveOrdersList = [];
-
-            var $container = $("#example");
+			var $container = $("#example0");
+			if(divId > 0){
+				$(".gridsDiv").append("<div id='example"+ divId +"'></div>");
+				$container = $("#example"+divId);
+			}
             $container.handsontable({
                 data: rowData,
+				colHeaders: columnHeaders,
+				colWidths: columnWidth, //can also be a number or a function
+                rowHeaders: true,
+                minSpareRows: 1,
+                maxCols: Infinity,
                 startRows: 5,
-                colHeaders: columnHeaders,
-                minSpareRows: 1
+				stretchH: 'all',
+                fixedRowsTop: 0,
+                fixedColumnsLeft: 0,
+                nativeScrollbars: true,
+                currentRowClassName: 'currentRow',
+                currentColClassName: 'currentCol',	
+                columnSorting: true,
+                manualColumnMove: true,
+                manualColumnResize: true
             });
         }
-
-        $(document).ready(function () {
+		$(document).ready(function () {
             //Handsontable.renderers.registerRenderer('negativeValueRenderer', negativeValueRenderer); //maps function to lookup string
             loadCustomersDD();
             var saveOrdersList = [];
             var dataOrderEntry = [];
             //["2012", 2, 2422, 5399, 776, 4151]
 
-            var container = $("#example");
+            var container = $("#example0");
 
             var colHeaderList = new Array();
             colHeaderList.push("SL#");
             colHeaderList.push("PRODUCTS");
             colHeaderList.push("Price");
-
-            var columnWidth = new Array();
             columnWidth.push(60);
             columnWidth.push(150);
 
@@ -288,9 +308,9 @@
                 colWidths: columnWidth, //can also be a number or a function
                 rowHeaders: true,
                 colHeaders: colHeaderList,
-                minSpareRows: 4,
+                minSpareRows: 1,
                 maxCols: Infinity,
-                minRows: 20,
+                minRows: 0,
                 maxRows: 1000,
                 //columns: colSource,
                 cells: function (row, col, prop) {
@@ -369,21 +389,6 @@
                 columnSorting: true,
                 manualColumnMove: true,
                 manualColumnResize: true
-
-                //                cells: function (row, col, prop) {
-                //                    var cellProperties = {};
-                //                    if (row === 0 || container.handsontable('getData')[row][col] === 'readOnly') {
-                //                        cellProperties.readOnly = true; //make cell read-only if it is first row or the text reads 'readOnly'
-                //                    }
-                //                    if (row === 0) {
-                //                        cellProperties.renderer = firstRowRenderer; //uses function directly
-                //                    }
-                //                    else {
-                //                        cellProperties.renderer = "negativeValueRenderer"; //uses lookup map
-                //                    }
-                //                    return cellProperties;
-                //                }
-
             });
 
             var handsontable = container.data('handsontable');
@@ -416,10 +421,11 @@
                 var phone = $('#txtPhone').val(); // handsontable.getCell(cnt - 2, 1).innerText;
                 var remarks = $('#txtRemarks').val(); // handsontable.getCell(cnt - 1, 1).innerText;
                 var customerId = $("#customerDD").val();
-
+				var saveData = { "total": total, "orderby": orderby, "phone": phone, "remarks": remarks, "customerId": customerId, "data": JSON.stringify(handsontable.getData()), "header": JSON.stringify(handsontable.getColHeader()), };
+				
                 $.ajax({
                     url: "/Home/SaveUploadedOrder",
-                    data: { "total": total, "orderby": orderby, "phone": phone, "remarks": remarks, "data": JSON.stringify(handsontable.getData()), "header": JSON.stringify(handsontable.getColHeader()), "customerId": customerId }, //returns all cells' data
+                    data: saveData, //returns all cells' data
                     dataType: 'json',
                     type: 'POST',
                     success: function (res) {
