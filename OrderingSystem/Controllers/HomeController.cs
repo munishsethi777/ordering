@@ -1300,6 +1300,21 @@ namespace MVCEF.Controllers
         #endregion
 
         #region SatinPh1
+        public ActionResult GridAllDataOrderDashboard(GridSettings objGrdSettings)
+        {
+            try
+            {
+                SatInHomeRepository satinHomeRepository = new SatInHomeRepository();
+                object objJsonResult = satinHomeRepository.GridDataOrderDashboard(objGrdSettings);
+
+                JsonResult result = Json(objJsonResult, JsonRequestBehavior.AllowGet);
+                return result;
+            }
+            catch (Exception Ex)
+            {
+            }
+            return null;
+        }
         public string LoadCustomersList()
         {
             CustomerUtils customerUtils = new CustomerUtils();

@@ -20,7 +20,7 @@
     .AddColumn(new Column("createddate").SetLabel("Created Date").SetSearchType(Searchtype.Datepicker).SetSearchDateFormat("mm/dd/yy"))
     .AddColumn(new Column("lastchangeddate").SetLabel("Last Changed Date").SetSearchType(Searchtype.Datepicker).SetSearchDateFormat("mm/dd/yy"))
     .AddColumn(new Column("lastchangeduser").SetLabel("Last Changed User"))
-    .SetUrl(Url.Action("GridDataOrderDashboard", "Home"))
+    .SetUrl(Url.Action("GridAllDataOrderDashboard", "Home"))
     .SetAutoWidth(true)
     .SetRowNum(10)
     .SetRowList(new[] { 10, 15, 20, 50 })
@@ -51,7 +51,6 @@
 
                 var tool = "<ul class='nav nav-pills'>" +
                                 "<li><a onclick=\"AddItem();\" title='Create New Order' href='#'>Create New Order</a></li>" +
-								"<li><a onclick=\"UploadItem();\" title='Create New Order' href='#'>Upload New Order</a></li>" +
                 //                                "<li class='dropdown'><a title='Export' class='dropdown-toggle' data-toggle='dropdown' href='#'>Export <b class='caret'></b></a>" +
                 //                                    "<ul class='dropdown-menu'>" +
                 //                                        "<li><a onclick=\"ExportItem('PDF');\" title='PDF' href='#'>PDF</a></li>" +

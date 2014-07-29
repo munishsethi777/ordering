@@ -34,5 +34,22 @@ namespace SatinLibs
             }
 
         }
+
+        public static String getCustomerCode(int customerId)
+        {
+            string code = null;
+            try
+            {
+                MVCEFEntities objContext = new MVCEFEntities();
+                string sSql = string.Format(" select customerNo from tblCustomer where customerid = {0}", customerId);
+                code = (string)objContext.ExecuteObject(sSql);
+                return code;
+            }
+            catch (Exception e)
+            {
+                return code;
+            }
+
+        }
     }
 }
