@@ -9,6 +9,7 @@ namespace SatinLibs
     {
         public int Seq { get; set; }
         public int OrderSeq { get; set; }
+        public string OrderNumber { get; set; }
         public int StoreId { get; set; }
         public string ProductId { get; set; }
         public string ProductName { get; set; }
