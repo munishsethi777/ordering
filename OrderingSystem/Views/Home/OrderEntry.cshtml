@@ -50,7 +50,7 @@
         </div>
     </div>
     <div class="row-fluid">
-			<div id="example0"></div>
+			<div id="example"></div>
     </div>
 	<div class="row-fluid gridsDiv">
         
@@ -92,7 +92,8 @@
                 error: function () { }
             }); //unbind. to stop multiple form submit.
         });
-		function loadGrids(allTablesArray){
+        function loadGrids(allTablesArray) {
+            $("#example").html("");
 			$(".gridsDiv").html("");
 			$.each(allTablesArray, function (tableIndex, arr) {
 				var dataOrderEntry = [];
@@ -118,11 +119,11 @@
 		}
         function loadGrid(columnHeaders,rowData,divId) {
             var saveOrdersList = [];
-			var $container = $("#example0");
-			if(divId > 0){
+			//var $container = $("#example");
+			//if(divId > 0){
 				$(".gridsDiv").append("<div id='example"+ divId +"'></div>");
 				$container = $("#example"+divId);
-			}
+			//}
             $container.handsontable({
                 data: rowData,
 				colHeaders: columnHeaders,
@@ -149,7 +150,7 @@
             var dataOrderEntry = [];
             //["2012", 2, 2422, 5399, 776, 4151]
 
-            var container = $("#example0");
+            var container = $("#example");
 
             var colHeaderList = new Array();
             colHeaderList.push("SL#");
@@ -310,11 +311,11 @@
                 colWidths: columnWidth, //can also be a number or a function
                 rowHeaders: true,
                 colHeaders: colHeaderList,
-                minSpareRows: 1,
+                minSpareRows: 20,
                 maxCols: Infinity,
                 minRows: 0,
                 maxRows: 1000,
-                //columns: colSource,
+               columns: colSource,
                 cells: function (row, col, prop) {
                     var cellProperties = {};
                     //                    if (row === container.handsontable('getInstance').countRows() - 4
@@ -425,7 +426,7 @@
                 var remarks = $('#txtRemarks').val(); // handsontable.getCell(cnt - 1, 1).innerText;
                 var customerId = $("#customerDD").val();
 				
-					for( i = 0; i<uploadedFileSheetsCount-1 ; i++){
+					for( i = 0; i<uploadedFileSheetsCount ; i++){
 						var gridDiv = $("#example"+i);
 						var handsontable = gridDiv.data('handsontable');
 						
