@@ -69,26 +69,24 @@ namespace SatinLibs
                Dictionary<String, ProductCustomer> map = getCustomerProductMap(customerCode);
                sSql = string.Format("exec spSaveOrders @customerid = {0}, @userid = {1}", customerId, userId);
                orderId = Convert.ToInt16(objContext.ExecuteObject(sSql));
-               //orderId = session.OrderId;
                foreach (DataRow row in sXMLOrders.Rows)
                {
                    if (row[0] != null && row[0].ToString() != "0" && !string.IsNullOrEmpty(row[0].ToString()))
                    {
-                       for (int i = 3; i < sXMLOrders.Columns.Count - 1; i++)
-                       {
-                           String ext_ItemId = row[0].ToString();
-                           if (map.Keys.Contains(ext_ItemId))
-                           {
-                               ProductCustomer productCust = map[ext_ItemId];
-                               int qnty = int.Parse(row[i].ToString());
-                               qnty = productCust.UOMultipler * qnty;
-                               String skuId = productCust.ItemId;
-                               sSql = string.Format(@"insert into tblorderdetail(orderid, storeid, productid, price, quantity, amount, remarks, remarks2)
+                      
+                    String ext_ItemId = row[1].ToString();
+                    if (map.Keys.Contains(ext_ItemId))
+                    {
+                        ProductCustomer productCust = map[ext_ItemId];
+                        int qnty = int.Parse(row[4].ToString());
+                        qnty = productCust.UOMultipler * qnty;
+                        String skuId = productCust.ItemId;
+                        sSql = string.Format(@"insert into tblorderdetail(orderid, storeid, productid, price, quantity, amount, remarks, remarks2)
                             select {0}, storeid, productid,{1}, {2} , {3}, '{4}', '{5}' from tblproduct p, tblstore s where skuid='{6}' and storecode='{7}' ",
-                                           orderId, row[2], qnty, 0, row[sXMLOrders.Columns.Count - 1], "", skuId, sXMLOrders.Columns[i].ColumnName);
-                               dsResult = objContext.ExecuteQuery(sSql);
-                           }
-                       }
+                                    orderId, row[3], qnty, 0, row[sXMLOrders.Columns.Count - 1], "", skuId, sXMLOrders.Columns[4].ColumnName);
+                        dsResult = objContext.ExecuteQuery(sSql);
+                    }
+
                    }
                }
 

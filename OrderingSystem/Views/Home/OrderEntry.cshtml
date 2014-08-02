@@ -22,6 +22,7 @@
 
 <form id="orderEntry" class="form-horizontal">
 <div class="container-fluid">
+    <div id="errorDiv"></div>
     <div class="row-fluid">
         <h4>
             <span style="">Order Lists</span><span> : </span><span id="lblCustomer">@Session["CustomerName"]</span>
@@ -62,7 +63,8 @@
     <script type="text/javascript" language="javascript">
 		var columnWidth = new Array();
 		var uploadedFileSheetsCount = 0;
-        $('#uploadFile').on('click', function () {
+		$('#uploadFile').on('click', function () {
+		    $("#errorDiv").html("");
             var formData = new FormData($('#ajaxform')[0]);
             var formURL = $(this).attr("action");
             $.ajax({
@@ -82,14 +84,30 @@
                 },
                 success: function (res) {
                     try {
-                        var allOrders = eval("[" + res + "]");
-						loadGrids(allOrders);
+                        if (res[0] == "Failed") {
+                            var str = "";
+                            $.each(res, function (index, err) {
+                                if (index > 0) {
+                                    str += "<label style='color:red'>"
+                                    str += index + ". " + err;
+                                    str += "</label>"
+                                }
+                                   
+                            })
+                            $("#errorDiv").html(str);
+                        } else {
+                            var allOrders = eval("[" + res + "]");
+                            loadGrids(allOrders);
+                        }
+                       
                     }
                     catch (ex) {
                         dataOrderEntry = [];
                     }
                 },
-                error: function () { }
+                error: function (exp) {
+                    alert(exp)
+                }
             }); //unbind. to stop multiple form submit.
         });
         function loadGrids(allTablesArray) {
@@ -437,7 +455,7 @@
 							dataType: 'json',
 							type: 'POST',
 							success: function (res) {
-								if (res === '1') {
+								if (res) {
 									alert('Data Saved');
 								}
 								else {
@@ -586,7 +604,7 @@
         });
         function createCustomersDD(res) {
             var dropdown = "<select id='customerDD' name='customerDD'>"
-            dropdown += "<option>Select Customer</option>";
+            dropdown += "<option value='0'>Select Customer</option>";
             var data = res.Table;
             //handsontable.loadData(data);
             // dataOrderEntry

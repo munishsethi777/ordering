@@ -1330,26 +1330,38 @@ namespace MVCEF.Controllers
         [HttpPost]
         public object UploadOrder(HttpPostedFileBase files)
         {
+            JsonResult result = Json("", JsonRequestBehavior.AllowGet);
             try
             {
-                DataSet dataSet = UploadFile();
-                string[] stringArr = new string[dataSet.Tables.Count];
-                for(int i = 0; i<dataSet.Tables.Count;i++){
-                    string dsResult = dataSet.Tables[i].ToJSONString();
-                    stringArr[i] = dsResult;
+                HttpPostedFileBase file = Request.Files["file"];
+                string customerId = Request.Params["customerDD"];
+                string[] validateArr = ValidatorUtil.validateUploadedFile(file, customerId);
+                if (validateArr[0].Equals("Failed"))
+                {
+                    result = Json(validateArr, JsonRequestBehavior.AllowGet);
+                }else
+                {
+                    DataSet dataSet = UploadFile(file, customerId);
+                    string[] stringArr = new string[dataSet.Tables.Count];
+                    for (int i = 0; i < dataSet.Tables.Count; i++)
+                    {
+                        string dsResult = dataSet.Tables[i].ToJSONString();
+                        stringArr[i] = dsResult;
+                    }
+                    result = Json(stringArr, JsonRequestBehavior.AllowGet);
                 }
-                JsonResult result = Json(stringArr, JsonRequestBehavior.AllowGet);
-                return result;
             }
             catch (Exception Ex)
             {
+                string[] errorMesssage = new string[2];
+                errorMesssage[0] = "Failed";
+                errorMesssage[1] = Ex.StackTrace;
+                result = Json(errorMesssage, JsonRequestBehavior.AllowGet);
             }
-            return Json("", JsonRequestBehavior.AllowGet);
+            return result;
         }
-        private DataSet UploadFile()
+        private DataSet UploadFile(HttpPostedFileBase file,string customerId)
         {
-            string customerId = Request.Params["customerDD"];
-            HttpPostedFileBase file = Request.Files["file"];
             string fileLocation = Server.MapPath("~/Content/") + file.FileName;
             if (System.IO.File.Exists(fileLocation))
             {
