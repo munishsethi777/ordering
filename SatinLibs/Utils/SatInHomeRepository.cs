@@ -16,7 +16,7 @@ namespace SatinLibs
     {
 
        private MVCEFEntities objContext = new MVCEFEntities();
-       public Boolean SaveUploadedOrders(string total, string orderby, string phone, string remarks, string data, string header, string customerId)
+       public Dictionary<string, string> SaveUploadedOrders(string total, string orderby, string phone, string remarks, string data, string header, string customerId)
         {
 
             try
@@ -47,17 +47,20 @@ namespace SatinLibs
               }
             catch (Exception Ex)
             {
+
             }
-            return false;
+            return null; 
         }
-       public Boolean SaveOrders(string total, string orderby, string phone, string remarks, DataTable sXMLOrders, string customerIdStr)
+       public Dictionary<string, string> SaveOrders(string total, string orderby, string phone, string remarks, DataTable sXMLOrders, string customerIdStr)
        {
+           Dictionary<string, string> errorMap = new Dictionary<string, string>();
            try
            {
-               SiteSession session = (SiteSession)HttpContext.Current.Session["SiteSession"];
+               SiteSession session = (SiteSession)HttpContext.Current.Session["SiteSession"];              
                int userId = session.UserId;
                int customerId = int.Parse(customerIdStr);
                object dsResult = null;
+               String customerCode = CustomerUtils.getCustomerCode(customerId);
                string sSql = "";
                int orderId =0;
                if (!string.IsNullOrEmpty(total))
@@ -65,40 +68,42 @@ namespace SatinLibs
                    total = total.Replace("$", "").Trim();
                }
                //set cuttoff time also on the order
-               String customerCode = CustomerUtils.getCustomerCode(customerId);
-               Dictionary<String, ProductCustomer> map = getCustomerProductMap(customerCode);
-               sSql = string.Format("exec spSaveOrders @customerid = {0}, @userid = {1}", customerId, userId);
-               orderId = Convert.ToInt16(objContext.ExecuteObject(sSql));
-               foreach (DataRow row in sXMLOrders.Rows)
+               errorMap = ValidatorUtil.validateSaveOrders(sXMLOrders, customerCode);
+               if (errorMap.Keys.Count == 0)
                {
-                   if (row[0] != null && row[0].ToString() != "0" && !string.IsNullOrEmpty(row[0].ToString()))
+                   Dictionary<String, ProductCustomer> map = getCustomerProductMap(customerCode);
+                   sSql = string.Format("exec spSaveOrders @customerid = {0}, @userid = {1}", customerId, userId);
+                   orderId = Convert.ToInt16(objContext.ExecuteObject(sSql));
+                   foreach (DataRow row in sXMLOrders.Rows)
                    {
-                      
-                    String ext_ItemId = row[1].ToString();
-                    if (map.Keys.Contains(ext_ItemId))
-                    {
-                        ProductCustomer productCust = map[ext_ItemId];
-                        int qnty = int.Parse(row[4].ToString());
-                        qnty = productCust.UOMultipler * qnty;
-                        String skuId = productCust.ItemId;
-                        sSql = string.Format(@"insert into tblorderdetail(orderid, storeid, productid, price, quantity, amount, remarks, remarks2)
-                            select {0}, storeid, productid,{1}, {2} , {3}, '{4}', '{5}' from tblproduct p, tblstore s where skuid='{6}' and storecode='{7}' ",
-                                    orderId, row[3], qnty, 0, row[sXMLOrders.Columns.Count - 1], "", skuId, sXMLOrders.Columns[4].ColumnName);
-                        dsResult = objContext.ExecuteQuery(sSql);
-                    }
+                       if (row[0] != null && row[0].ToString() != "0" && !string.IsNullOrEmpty(row[0].ToString()))
+                       {
 
+                           String ext_ItemId = row[1].ToString();
+                           if (map.Keys.Contains(ext_ItemId))
+                           {
+                               ProductCustomer productCust = map[ext_ItemId];
+                               int qnty = int.Parse(row[4].ToString());
+                               qnty = productCust.UOMultipler * qnty;
+                               String skuId = productCust.ItemId;
+                               sSql = string.Format(@"insert into tblorderdetail(orderid, storeid, productid, price, quantity, amount, remarks, remarks2)
+                            select {0}, storeid, productid,{1}, {2} , {3}, '{4}', '{5}' from tblproduct p, tblstore s where skuid='{6}' and storecode='{7}' ",
+                                           orderId, row[3], qnty, 0, row[sXMLOrders.Columns.Count - 1], "", skuId, sXMLOrders.Columns[4].ColumnName);
+                               dsResult = objContext.ExecuteQuery(sSql);
+                           }
+
+                       }
                    }
                }
-
-               return true;
            }
            catch (Exception Ex)
            {
-               return false;
+               errorMap.Add("Exception",Ex.StackTrace);               
            }
+           return errorMap;
        }
 
-       private Dictionary<String,ProductCustomer> getCustomerProductMap(string customerNo)
+       public Dictionary<String,ProductCustomer> getCustomerProductMap(string customerNo)
        {
             string sSql = string.Format("select * from  tblProductCustomerMap where customerid = '{0}'", customerNo);
             DataSet customerDataSet = objContext.ExecuteDataSet(sSql);

@@ -416,6 +416,7 @@
 
 
             $('#btnSave').click(function () {
+                $("#errorDiv").html("");
 				var container = $("#example0");
 				var handsontable = container.data('handsontable');
                 var saveOrders = [];
@@ -443,7 +444,7 @@
                 var phone = $('#txtPhone').val(); // handsontable.getCell(cnt - 2, 1).innerText;
                 var remarks = $('#txtRemarks').val(); // handsontable.getCell(cnt - 1, 1).innerText;
                 var customerId = $("#customerDD").val();
-				
+                var str = "";
 					for( i = 0; i<uploadedFileSheetsCount ; i++){
 						var gridDiv = $("#example"+i);
 						var handsontable = gridDiv.data('handsontable');
@@ -454,13 +455,13 @@
 							data: saveData, //returns all cells' data
 							dataType: 'json',
 							type: 'POST',
-							success: function (res) {
-								if (res) {
-									alert('Data Saved');
-								}
-								else {
-									alert('Error - Not Saved');
-								}
+							success: function (res) {							   
+							    $.each(res, function (index, err) {
+							            str += "<label style='color:red'>"
+							            str += index + ". " + err;
+							            str += "</label>"
+                                })
+							    $("#errorDiv").html(str);
 							},
 							error: function () {
 								alert('Error - Not Saved');

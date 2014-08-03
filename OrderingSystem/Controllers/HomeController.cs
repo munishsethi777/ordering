@@ -1336,7 +1336,7 @@ namespace MVCEF.Controllers
                 HttpPostedFileBase file = Request.Files["file"];
                 string customerId = Request.Params["customerDD"];
                 string[] validateArr = ValidatorUtil.validateUploadedFile(file, customerId);
-                if (validateArr[0].Equals("Failed"))
+                if (validateArr[0].Equals(IConstants.FAILED))
                 {
                     result = Json(validateArr, JsonRequestBehavior.AllowGet);
                 }else
@@ -1354,7 +1354,7 @@ namespace MVCEF.Controllers
             catch (Exception Ex)
             {
                 string[] errorMesssage = new string[2];
-                errorMesssage[0] = "Failed";
+                errorMesssage[0] = IConstants.FAILED;
                 errorMesssage[1] = Ex.StackTrace;
                 result = Json(errorMesssage, JsonRequestBehavior.AllowGet);
             }
@@ -1379,8 +1379,8 @@ namespace MVCEF.Controllers
             SatInHomeRepository satinHomeRepository = new SatInHomeRepository();
             string customerId = Request.Params["customerId"];
 
-            Boolean isSuccess = satinHomeRepository.SaveUploadedOrders(total, orderby, phone, remarks, data, header, customerId);
-            return Json(isSuccess, JsonRequestBehavior.AllowGet);
+            Dictionary<string, string> map = satinHomeRepository.SaveUploadedOrders(total, orderby, phone, remarks, data, header, customerId);
+            return Json(map, JsonRequestBehavior.AllowGet);
 
         }
 
