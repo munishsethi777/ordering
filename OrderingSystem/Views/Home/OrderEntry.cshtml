@@ -457,9 +457,16 @@
 							type: 'POST',
 							success: function (res) {							   
 							    $.each(res, function (index, err) {
+							        if (index == "UPDATED") {
+							            str += "<label style='color:green'>"
+							            str += err;
+							            str += "</label>";
+							        } else {
 							            str += "<label style='color:red'>"
-							            str += index + ". " + err;
-							            str += "</label>"
+							            str += index + ".  " + err;
+							            str += "</label>";
+							        }
+							           
                                 })
 							    $("#errorDiv").html(str);
 							},

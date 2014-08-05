@@ -63,6 +63,8 @@ namespace SatinLibs
                String customerCode = CustomerUtils.getCustomerCode(customerId);
                string sSql = "";
                int orderId =0;
+               DataRow firstRow = sXMLOrders.Rows[0];
+               String orderNo = firstRow[0].ToString();
                if (!string.IsNullOrEmpty(total))
                {
                    total = total.Replace("$", "").Trim();
@@ -71,9 +73,18 @@ namespace SatinLibs
                errorMap = ValidatorUtil.validateSaveOrders(sXMLOrders, customerCode);
                if (errorMap.Keys.Count == 0)
                {
+                   orderId = getOrderSeqByInvoiceOrderNo(orderNo);
+                   Boolean  isDeleted = DeleteOrderDetailByOrder(orderId);
+                   if (isDeleted)
+                   {
+                       errorMap.Add("UPDATED", "Order Detail is updated successfully for orderNo :- " + orderNo);
+                   }
                    Dictionary<String, ProductCustomer> map = getCustomerProductMap(customerCode);
-                   sSql = string.Format("exec spSaveOrders @customerid = {0}, @userid = {1}", customerId, userId);
-                   orderId = Convert.ToInt16(objContext.ExecuteObject(sSql));
+                   if (orderId ==0) {
+                       sSql = string.Format("exec satIn_spSaveOrders @invoiceorderno = '{0}' , @customerid = {1}, @userid = {2}", orderNo, customerId, userId);
+                       orderId = Convert.ToInt16(objContext.ExecuteObject(sSql));
+                   }
+                   
                    foreach (DataRow row in sXMLOrders.Rows)
                    {
                        if (row[0] != null && row[0].ToString() != "0" && !string.IsNullOrEmpty(row[0].ToString()))
@@ -100,7 +111,27 @@ namespace SatinLibs
            {
                errorMap.Add("Exception",Ex.StackTrace);               
            }
+           errorMap.OrderBy(key => key.Value);
            return errorMap;
+       }
+
+       private Boolean DeleteOrderDetailByOrder(int orderSeq)
+       {
+           string sSql = string.Format("delete from tblorderdetail where orderid = '{0}'", orderSeq);
+           int result = objContext.ExecuteQuery(sSql);
+           return result > 0; ;
+       }
+
+       private int getOrderSeqByInvoiceOrderNo(string orderNumber)
+       {
+           int orderSeq = 0;
+           string sSql = string.Format("select orderid from  tblOrder where invoiceorderno = '{0}'", orderNumber);
+           object obj = objContext.ExecuteObject(sSql);
+           if (obj != null)
+           {
+               orderSeq = (int)obj;
+           }
+           return orderSeq; 
        }
 
        public Dictionary<String,ProductCustomer> getCustomerProductMap(string customerNo)
