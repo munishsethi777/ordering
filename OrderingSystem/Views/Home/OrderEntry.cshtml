@@ -407,11 +407,16 @@
                 var remarks = $('#txtRemarks').val(); // handsontable.getCell(cnt - 1, 1).innerText;
                 var customerId = $("#customerDD").val();
                 var str = "";
-					for( i = 0; i<uploadedFileSheetsCount ; i++){
-						var gridDiv = $("#example"+i);
-						var handsontable = gridDiv.data('handsontable');
-						
-						var saveData = { "total": total, "orderby": orderby, "phone": phone, "remarks": remarks, "customerId": customerId, "data": JSON.stringify(handsontable.getData()), "header": JSON.stringify(handsontable.getColHeader()) };
+                var dataArray = new Array();
+                var headersArray = new Array();
+                for (i = 0; i < uploadedFileSheetsCount ; i++) {
+                    var gridDiv = $("#example"+i);
+                    var handsontable = gridDiv.data('handsontable');
+                    dataArray.push(JSON.stringify(handsontable.getData()));
+                    headersArray.push(JSON.stringify(handsontable.getColHeader()));
+                }
+               
+                var saveData = { "total": total, "orderby": orderby, "phone": phone, "remarks": remarks, "customerId": customerId, "data": JSON.stringify(dataArray), "header": JSON.stringify(headersArray) };
 						$.ajax({
 							url: "/Home/SaveUploadedOrder",
 							data: saveData, //returns all cells' data
@@ -436,7 +441,7 @@
 								alert('Error - Not Saved');
 							}
 						});
-					}
+					//}
 				
             });
 

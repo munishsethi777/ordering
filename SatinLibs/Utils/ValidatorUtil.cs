@@ -10,7 +10,7 @@ namespace SatinLibs
     {
         public static string[] validateUploadedFile(HttpPostedFileBase file, string customerId)
         {
-            string[] errorMessage = new string[2] ;
+            string[] errorMessage = new string[2];
             string status = IConstants.FAILED;
             string msg = IConstants.BLANK;
             if (customerId.Equals(IConstants.BLANK) || customerId.Equals("0"))
@@ -37,26 +37,29 @@ namespace SatinLibs
 
         private static bool IsFileTypeValid(HttpPostedFileBase file)
         {
-                bool isValid = false;
-                string ext = System.IO.Path.GetExtension(file.FileName);
+            bool isValid = false;
+            string ext = System.IO.Path.GetExtension(file.FileName);
             try
             {
-                if(ext.ToLower().Equals(".pdf"))
+                if (ext.ToLower().Equals(".pdf"))
                 {
-                     isValid = true;
+                    isValid = true;
+                }
+                else if (ext.ToLower().Equals(".csv"))
+                {
+                    isValid = true;
                 }
 
                 return isValid;
             }
-           
-            catch 
+
+            catch
             {
                 return isValid;
             }
-       }
+        }
 
         public static bool isStoreAvaiable(string customerIdStr)
-
         {
 
             int customerId = int.Parse(customerIdStr);
@@ -64,14 +67,15 @@ namespace SatinLibs
             return dataSet.Tables[0].Rows.Count > 0;
         }
 
-        private static bool isStoreAvaiable(int customerId,string storeName)
+        private static bool isStoreAvaiable(int customerId, string storeName)
         {
             DataSet dataSet = CustomerUtils.getStores(customerId);
             if (dataSet == null)
             {
                 return false;
             }
-            foreach (DataRow row in dataSet.Tables[0].Rows){
+            foreach (DataRow row in dataSet.Tables[0].Rows)
+            {
                 if (storeName.Equals(row[0].ToString()))
                 {
                     return true;
@@ -83,18 +87,20 @@ namespace SatinLibs
         {
             Dictionary<string, string> errorMap = new Dictionary<string, string>();
             SatInHomeRepository objectRepository = new SatInHomeRepository();
-          
+
             string storeCode = sXMLOrders.Columns[4].ToString();
+            storeCode = storeCode.Trim();
             if (!isStoreAvaiable(customerId, storeCode))
             {
                 errorMap.Add(storeCode, "This store does not belong to the selected customer.");
                 return errorMap;
             }
-           
+
             /*
              * ---------Update Case----------- 
             Validation if order is not pending.*/
-            if (Order.Rows.Count > 0) { 
+            if (Order.Rows.Count > 0)
+            {
                 string orderStatus = Order.Rows[0].ItemArray[1].ToString();
                 string orderNo = Order.Rows[0].ItemArray[2].ToString();
                 if (!orderStatus.Equals("1"))
@@ -114,29 +120,35 @@ namespace SatinLibs
             /*---------*/
 
             //Validation if customerCode is not exist in ProductCustomerMap Table.
-           
+
             if (customerProductMap.Keys.Count == 0)
             {
                 errorMap.Add("main_Error", "ProductCustomer Mapping does not exist for selected Customer");
             }
+            return errorMap;
+        }
+
+        public static Dictionary<string, string> validateCustomerMap(DataTable Order, DataTable sXMLOrders, Dictionary<string, ProductCustomer> customerProductMap, int customerId)
+        {
+            Dictionary<string, string> errorMap = new Dictionary<string, string>();
+
+            string storeCode = sXMLOrders.Columns[4].ToString();
+            storeCode = storeCode.Trim();
             //Validation if external ItemId is not exist in ProductCustomerMap Table.
-            else{
-                int count = 1;
-                foreach (DataRow row in sXMLOrders.Rows)
+            int count = 1;
+            foreach (DataRow row in sXMLOrders.Rows)
+            {
+                if (row[0] != null && row[0].ToString() != "0" && !string.IsNullOrEmpty(row[0].ToString()))
                 {
-                    if (row[0] != null && row[0].ToString() != "0" && !string.IsNullOrEmpty(row[0].ToString()))
+                    string ext_ItemId = row[1].ToString();
+                    if (!customerProductMap.Keys.Contains(ext_ItemId) &&
+                        !errorMap.ContainsKey(ext_ItemId))
                     {
-                        string ext_ItemId = row[1].ToString();
-                        string orderNumber = row[0].ToString();
-                        if (!customerProductMap.Keys.Contains(ext_ItemId))
-                        {
-                            errorMap.Add(count + "." + "OrderNo." + orderNumber, "Error is SKU ID - " + ext_ItemId + " does not exist in ProductCustomer mapping");
-                            count++;
-                        }
+                        errorMap.Add(ext_ItemId, storeCode);
+                        count++;
                     }
                 }
             }
-            
             return errorMap;
         }
     }
