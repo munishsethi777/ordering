@@ -22,13 +22,14 @@ namespace SatinLibs
         public string InsertOrder()
         {
             {
+                MailerUtil mailerUtil = MailerUtil.getInstance();
                 try
                 {
                     OrderingSystem.ServiceReference1.ServiceSoapClient objService = new OrderingSystem.ServiceReference1.ServiceSoapClient("ServiceSoap1");
                     OrderingSystem.ServiceReference1.InsertOrderRequest list = new OrderingSystem.ServiceReference1.InsertOrderRequest();
                     string sOrderNumbers = "";
                     MVCEFEntities objContext = new MVCEFEntities();
-                    DataSet dsOrder = objContext.ExecuteDataSet("select * from tblorder where orderstatusid='1' and cast(cutofftime as time) < cast(getdate() as time)");
+                    DataSet dsOrder = objContext.ExecuteDataSet("select * from tblorder where orderstatusid='1'");
                     OrderingSystem.ServiceReference1.InsertOrderResponse resp = null;
 
 
@@ -132,8 +133,8 @@ namespace SatinLibs
                                 resp = objService.InsertOrder(list);
                             }
 
-
                             sOrderNumbers = sOrderNumbers + resp.InsertOrderResult + ",";
+                            mailerUtil.OrderUploadedSuccessNotification(CustomerId,sOrderNumber, sOrderNumbers + resp.InsertOrderResult);
                             objContext.ExecuteQuery(string.Format(" update tblorder set orderstatusid = 2 where orderid= {0}  ", sOrderId));
                             log.Info("Order uploaded with orderId :" + sOrderNumbers);
 
@@ -147,6 +148,7 @@ namespace SatinLibs
                 }
                 catch (Exception Ex)
                 {
+                    //mailerUtil.OrderUploadedFailedNotification(Ex.StackTrace);
                     log.Error("Error Occured while order submission", Ex);
                     return Ex.Message;
                 }
@@ -229,6 +231,7 @@ namespace SatinLibs
                 Dictionary<string, string> basicValidatorResponse = null;
                 Dictionary<string, string> noSKUMappedValidationsMap = new Dictionary<string, string>();
                 Dictionary<string, string> finalValidatorResponse = new Dictionary<string, string>();
+                int pendingOrders = jDataMain.Count;
                 for (int i = 0; i < jDataMain.Count; i++)
                 {
                     DataTable orderDT = getOrderDTFromStrings(jDataMain[i].ToString(), jHeaderMain[i].ToString());
@@ -242,6 +245,10 @@ namespace SatinLibs
                             Dictionary<string, string> saveOrderResponse = SaveOrders(total, orderby, phone, remarks, orderDT, customerId);
                             foreach (KeyValuePair<string, string> item in saveOrderResponse)
                             {
+                                if (item.Key == "SAVED")
+                                {
+                                    pendingOrders--;
+                                }
                                 if (finalValidatorResponse.ContainsKey(item.Key))
                                 {
                                     finalValidatorResponse[item.Key] = finalValidatorResponse[item.Key] + "<br>" + item.Value;
@@ -278,9 +285,6 @@ namespace SatinLibs
                         finalValidatorResponse.Add(keyValuePair.Key, keyValuePair.Value);
 
                     }
-
-                   
-
                 }
                 if (noSKUMappedValidationsMap.Keys.Count > 0)
                 {
@@ -289,6 +293,8 @@ namespace SatinLibs
                         finalValidatorResponse.Add("ID " + item.Key + " is not mapped for", item.Value);
                     }
                 }
+
+                finalValidatorResponse.Add("pendingOrders",pendingOrders.ToString());
                 return finalValidatorResponse;
             }
             catch (Exception Ex)
@@ -383,7 +389,7 @@ namespace SatinLibs
                     Boolean isDeleted = DeleteOrderDetailByOrder(orderId);
                     if (isDeleted)
                     {
-                        errorMap.Add("UPDATED", "Order Detail is updated successfully for orderNo :- " + orderNo);
+                        errorMap.Add("SAVED", "Order Detail is updated successfully for orderNo :- " + orderNo);
                     }
                     else
                     {

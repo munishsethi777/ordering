@@ -70,5 +70,21 @@ namespace SatinLibs
             }
 
         }
+        public static DataSet getCustomer(int customerId)
+        {
+            DataSet dsResult = null;
+            try
+            {
+                MVCEFEntities objContext = getObjectContext();
+                string sSql = string.Format(" select * from tblCustomer where customerid = {0}", customerId);
+                dsResult = objContext.ExecuteDataSet(sSql);
+                return dsResult;
+            }
+            catch (Exception e)
+            {
+                return dsResult;
+            }
+
+        }
     }
 }

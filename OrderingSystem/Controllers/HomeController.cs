@@ -1363,6 +1363,7 @@ namespace MVCEF.Controllers
             }
             return result;
         }
+
         private DataSet UploadFile(HttpPostedFileBase file,string customerId)
         {
             string fileLocation = Server.MapPath("~/Content/") + file.FileName;
@@ -1383,6 +1384,8 @@ namespace MVCEF.Controllers
             string customerId = Request.Params["customerId"];
 
             Dictionary<string, string> map = satinHomeRepository.SaveUploadedOrders(total, orderby, phone, remarks, data, header, customerId);
+            if(map.ContainsKey("pendingOrders"))
+                map.Remove("pendingOrders");
             return Json(map, JsonRequestBehavior.AllowGet);
 
         }

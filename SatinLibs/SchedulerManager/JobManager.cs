@@ -50,7 +50,7 @@ namespace SatinLibs
 
                 // Tell quartz to schedule the job using our trigger
                 scheduler.ScheduleJob(job, trigger);
-                scheduler.ScheduleJob(saveJob, saveTrigger);
+                //scheduler.ScheduleJob(saveJob, saveTrigger);
 
                 // some sleep to show what's happening
                 //Thread.Sleep(TimeSpan.FromSeconds(5));
