@@ -10,12 +10,172 @@ using MVCEF.Infrastructure;
 using MVCDataModel;
 using System.Web;
 using MvcJqGrid;
+using OrderingSystem;
+using System.Net;
+using System.IO;
 namespace SatinLibs
 {
    public class SatInHomeRepository
     {
 
        private MVCEFEntities objContext = new MVCEFEntities();
+       public string InsertOrder()
+       {
+           {
+               try
+               {
+                   OrderingSystem.ServiceReference1.ServiceSoapClient objService = new OrderingSystem.ServiceReference1.ServiceSoapClient("ServiceSoap1");
+                   OrderingSystem.ServiceReference1.InsertOrderRequest list = new OrderingSystem.ServiceReference1.InsertOrderRequest();
+                   string sOrderNumbers = "";
+                   MVCEFEntities objContext = new MVCEFEntities();
+                   DataSet dsOrder = objContext.ExecuteDataSet("select * from tblorder where orderstatusid='1' ");
+                   OrderingSystem.ServiceReference1.InsertOrderResponse resp = null;
+
+                   
+                   if (dsOrder != null && dsOrder.Tables.Count > 0 && dsOrder.Tables[0].Rows.Count > 0)
+                   {
+                       foreach (DataRow row in dsOrder.Tables[0].Rows)
+                       {
+
+                           string sOrderId = row["OrderId"].ToString();
+                           string sOrderNumber = row["OrderNumber"].ToString();
+                           string invoiceOrderNumber = row["InvoiceOrderNo"].ToString();
+                           string sOrderAmt = row["TotalAmount"].ToString();
+                           int CustomerId = (int)row["CustomerId"];
+                           string remarks = row["Remarks"].ToString();
+                           DataSet dsOrderDetail = objContext.ExecuteDataSet(
+                                string.Format("select tblOrderDetail.*, tblStore.*, tblProduct.productName,tblProduct.skuid"
+                                    + " from tblOrderDetail, tblStore, tblProduct" 
+                                    + " where tblOrderDetail.orderId = "+ sOrderId
+                                    + " and tblOrderDetail.storeId = tblStore.storeId"
+                                    + " and tblOrderDetail.productid = tblProduct.productid"));
+                            if (dsOrderDetail != null && dsOrderDetail.Tables.Count > 0)
+                            {
+                                list = new OrderingSystem.ServiceReference1.InsertOrderRequest();
+                                list.dDiscount = 0;
+                                list.dDiscountPer = 0;
+                                list.sAgentId = "111";
+                                list.dtVoidDate = DateTime.Now;
+                                list.bVoid = 0;
+                                list.sMDTNo = "MQ";
+                                list.sConditionMaster = "";
+                                list.sConditionType = "";
+                                list.sConditionValue = "";
+                                list.arrayPromoID = "[0,0]";
+                                list.arrayPromoOffer = "[0,0]";
+                                list.arrayDisPer = "[0,0]";
+                                list.arrayDisPr = "[0,0]";
+                                string sStoreCode = dsOrderDetail.Tables[0].Rows[0]["InternalStoreCode"].ToString();
+                                list.sOrdNo = sOrderNumber;
+                                list.dtOrdDate = DateTime.Now;
+                                list.dtDeliDate = DateTime.Now;
+                                list.sCustNo = sStoreCode;
+                                list.sPoNo = invoiceOrderNumber;
+                                list.sRemarks = remarks;
+
+                                string itemNos="";
+                                string uoms = "";
+                                string qtys = "";
+                                string prices = "";
+                                string itemNames = "";
+                                string subAmounts = "";
+                                string lineNos = "";
+                                int lineNo = 0;
+                                foreach (DataRow rowOrder in dsOrderDetail.Tables[0].Rows)
+                                {
+                                    lineNo++;
+                                    double price = double.Parse(rowOrder["Price"].ToString());
+                                    double qty = double.Parse(rowOrder["Quantity"].ToString()); ;
+                                    if (itemNos != "")
+                                    {
+                                        itemNos += ","+rowOrder["skuid"].ToString();
+                                        uoms += "," + rowOrder["uom"].ToString();
+                                        qtys += "," + qty.ToString();
+                                        prices += "," + price.ToString();
+                                        itemNames += "," + rowOrder["productName"].ToString();
+                                        subAmounts += "," + price * qty;
+                                        lineNos += "," + lineNo;
+                                    }
+                                    else
+                                    {
+                                        itemNos += rowOrder["skuid"].ToString();
+                                        uoms += rowOrder["uom"].ToString();
+                                        qtys += qty.ToString();
+                                        prices += price.ToString();
+                                        itemNames += rowOrder["productName"].ToString();
+                                        subAmounts += price * qty;
+                                        lineNos += lineNo;
+                                    }
+                                }
+                                list.arrayItemNo = "[" + itemNos + "]";
+                                list.arrayUOM = "[" + uoms + "]";
+                                list.arrayQty = "[" + qtys + "]";
+                                list.arrayPrice = "[" + prices + "]";
+                                list.arrayItemName = "[" + itemNames + "]";
+                                list.arraySubAmt = "[" + subAmounts + "]";
+                                list.arrLineNo = "[" + lineNos + "]"; ;
+                                resp = objService.InsertOrder(list);
+                            }
+                          
+
+                           sOrderNumbers = sOrderNumbers + resp.InsertOrderResult + ",";
+                           objContext.ExecuteQuery(string.Format(" update tblorder set orderstatusid = 2 where orderid= {0}  ", sOrderId));
+
+                       }
+
+
+                   }
+                   else
+                   {
+                       return "Order not Pending";
+                   }
+                   sOrderNumbers = sOrderNumbers.Substring(0, sOrderNumbers.Length - 1);
+                   return "Order Submitted - " + sOrderNumbers;
+               }
+               catch (Exception Ex)
+               {
+                   return Ex.Message;
+               }
+           }
+       }
+
+       private string InsertCallPost()
+       {
+           string postData = getPostURL();
+           //HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://54.251.247.189/standardwebservice/service.asmx/InsertOrder");
+           string getUrl = "http://54.251.247.189/standardwebservice/service.asmx/InsertOrder";
+           //string postData = String.Format("email={0}&pass={1}", "value1", "value2");
+           HttpWebRequest getRequest = (HttpWebRequest)WebRequest.Create(getUrl);
+           //getRequest.CookieContainer = new CookieContainer();
+           ///getRequest.CookieContainer.Add(cookies); //recover cookies First request
+           getRequest.Method = WebRequestMethods.Http.Post;
+           getRequest.UserAgent = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2";
+           getRequest.AllowWriteStreamBuffering = true;
+           getRequest.ProtocolVersion = HttpVersion.Version11;
+           getRequest.AllowAutoRedirect = true;
+           getRequest.ContentType = "application/x-www-form-urlencoded";
+
+           byte[] byteArray = Encoding.ASCII.GetBytes(postData);
+           getRequest.ContentLength = byteArray.Length;
+           Stream newStream = getRequest.GetRequestStream(); //open connection
+           newStream.Write(byteArray, 0, byteArray.Length); // Send the data.
+           newStream.Close();
+
+           HttpWebResponse getResponse = (HttpWebResponse)getRequest.GetResponse();
+           string sourceCode;
+           using (StreamReader sr = new StreamReader(getResponse.GetResponseStream()))
+           {
+               sourceCode = sr.ReadToEnd();
+           }
+           return sourceCode;
+       }
+       private string getPostURL()
+       {
+           string str = "sOrdNo=OP-20140805-230393&dtOrdDate=2014-08-06 12:54:33&dtDeliDate=2014-08-06 12:54:33&sCustNo=230393&sPoNo=B052426&dDiscount=0&dDiscountPer=0&sAgentId=111&dtVoidDate=2014-08-08 15:08:49&bVoid=0&sRemarks=test&arrayItemNo={'082I93B20012P02001'}&arrayUOM={1}&arrayQty={4}&arrayPrice={3.59}&sMDTNo=MQ&arrayItemName={'CP SHRIMP WONTON SESAME 204GM'}&arrayPromoID={'0'}&arrayPromoOffer={'0'}&arrayDisPer={'0'}&arrayDisPr={'0'}&arraySubAmt={7}&arrLineNo={1}&sConditionMaster=&sConditionType=&sConditionValue=";
+
+           return str;
+       }
+
        public Dictionary<string, string> SaveUploadedOrders(string total, string orderby, string phone, string remarks, string data, string header, string customerId)
         {
 
@@ -94,12 +254,13 @@ namespace SatinLibs
                            if (map.Keys.Contains(ext_ItemId))
                            {
                                ProductCustomer productCust = map[ext_ItemId];
+                               
                                int qnty = int.Parse(row[4].ToString());
                                qnty = productCust.UOMultipler * qnty;
                                String skuId = productCust.ItemId;
-                               sSql = string.Format(@"insert into tblorderdetail(orderid, storeid, productid, price, quantity, amount, remarks, remarks2)
-                            select {0}, storeid, productid,{1}, {2} , {3}, '{4}', '{5}' from tblproduct p, tblstore s where skuid='{6}' and storecode='{7}' ",
-                                           orderId, row[3], qnty, 0, row[sXMLOrders.Columns.Count - 1], "", skuId, sXMLOrders.Columns[4].ColumnName);
+                               sSql = string.Format(@"insert into tblorderdetail(orderid, storeid, productid, price, quantity, amount, remarks, remarks2, uom)
+                            select {0}, storeid, productid,{1}, {2} , {3}, '{4}', '{5}', {6} from tblproduct p, tblstore s where skuid='{7}' and storecode='{8}' ",
+                                           orderId, row[3], qnty, 0, row[sXMLOrders.Columns.Count - 1], "",productCust.UOMultipler, skuId, sXMLOrders.Columns[4].ColumnName);
                                dsResult = objContext.ExecuteQuery(sSql);
                            }
 
