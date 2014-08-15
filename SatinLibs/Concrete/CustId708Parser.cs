@@ -10,7 +10,7 @@ using System.Data.OleDb;
 using org.apache;
 using org.apache.pdfbox.pdmodel;
 using org.apache.pdfbox.util;
-
+using System.Globalization;
 namespace SatinLibs
 {
     public class CustId708Parser : ParserI
@@ -99,15 +99,16 @@ namespace SatinLibs
             string deliveryDate = lines[10];
             string storeCode = lines[5].Replace("Supplier : ", "");
             Decimal orderAmount = getTotalAmount(lines);
+            string format = "dd/MM/yyyy";
 
             tempOrder = new TempOrder();
             tempOrder.Seq = 0;
             tempOrder.OrderId = orderNo;
-            //tempOrder.OrderDate = DateTime.Parse(orderDate);
+            tempOrder.OrderDate = DateTime.ParseExact(orderDate, format, CultureInfo.InvariantCulture);
             tempOrder.CreatedOn = new DateTime();
             tempOrder.CustomerId = supplierId;
             tempOrder.Remarks = getAddress(lines);
-            //tempOrder.DeliveryDate = DateTime.Parse(deliveryDate);
+            tempOrder.DeliveryDate = DateTime.ParseExact(deliveryDate, format, CultureInfo.InvariantCulture);
             tempOrder.Amount = orderAmount;
 
 
