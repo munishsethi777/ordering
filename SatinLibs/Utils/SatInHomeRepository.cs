@@ -10,7 +10,6 @@ using MVCEF.Infrastructure;
 using MVCDataModel;
 using System.Web;
 using MvcJqGrid;
-using OrderingSystem;
 using System.Net;
 using System.IO;
 namespace SatinLibs
@@ -136,25 +135,22 @@ namespace SatinLibs
 
                            sOrderNumbers = sOrderNumbers + resp.InsertOrderResult + ",";
                            objContext.ExecuteQuery(string.Format(" update tblorder set orderstatusid = 2 where orderid= {0}  ", sOrderId));
+                           log.Info("Order uploaded with orderId :" + sOrderNumbers);
 
                        }
-
-
                    }
                    else
                    {
-                       return "Order not Pending";
+                       log.Info("No Pending orders to upload");
                    }
-                   sOrderNumbers = sOrderNumbers.Substring(0, sOrderNumbers.Length - 1);
-                   return "Order Submitted - " + sOrderNumbers;
-                   log.Info("Order Submitted -" + sOrderNumbers);
+                   return "";
                }
                catch (Exception Ex)
                {
                    log.Error("Error Occured while order submission",Ex);
                    return Ex.Message;
                }
-           }
+           
        }
 
        private string InsertCallPost()
@@ -307,7 +303,7 @@ namespace SatinLibs
            }
            catch (Exception Ex)
            {
-               errorMap.Add("Exception",Ex.StackTrace);               
+               errorMap.Add("Exception","Message: " + Ex.Message + "</br>InnerException: " + Ex.InnerException  + "</br>StackTrace: " + Ex.StackTrace);               
            }
            errorMap.OrderBy(key => key.Value);
            return errorMap;

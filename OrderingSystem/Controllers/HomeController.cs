@@ -30,6 +30,8 @@ namespace MVCEF.Controllers
     public class HomeController : MyBaseController
     {
         private IHomeRepository objHomeRep = null;
+        static log4net.ILog log = log4net.LogManager.GetLogger("HomeController");
+        
         public HomeController(IHomeRepository objHomeRepository)
         {
             objHomeRep = objHomeRepository;
@@ -1330,6 +1332,7 @@ namespace MVCEF.Controllers
         [HttpPost]
         public object UploadOrder(HttpPostedFileBase files)
         {
+            log.Info("Uploading new order");
             JsonResult result = Json("", JsonRequestBehavior.AllowGet);
             try
             {
@@ -1355,7 +1358,7 @@ namespace MVCEF.Controllers
             {
                 string[] errorMesssage = new string[2];
                 errorMesssage[0] = IConstants.FAILED;
-                errorMesssage[1] = Ex.StackTrace;
+                errorMesssage[1] = "Message: " + Ex.Message + "</br>InnerException: " + Ex.InnerException  + "</br>StackTrace: " + Ex.StackTrace;
                 result = Json(errorMesssage, JsonRequestBehavior.AllowGet);
             }
             return result;

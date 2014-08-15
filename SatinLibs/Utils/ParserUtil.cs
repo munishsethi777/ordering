@@ -14,9 +14,10 @@ namespace SatinLibs
         private HttpPostedFileBase file;
         private string fileLocation;
         private ParserI parser = null;
-
+        static log4net.ILog log = log4net.LogManager.GetLogger("ParserUtil");
         public ParserUtil(string customerId, HttpPostedFileBase file, string fileLocation)
         {
+            log.Info("Parsing pdf for customer " + customerId);
             this.customerId = customerId;
             this.file = file;
             this.fileLocation = fileLocation;

@@ -21,7 +21,7 @@ namespace SatinLibs
         private int productCount = 0;
         private int productRowsCount = 0;
         private static string firstLineText = "Purchase Order No.";
-
+        private static string pageFooterText = "The goods are purchased in accordance with the specification on this purchase order and the terms and";
         public DataSet getDataSet(string _customerId, string fileLocation)
         {
             customerId = _customerId;
@@ -93,22 +93,22 @@ namespace SatinLibs
                 storesCount = storesDataSet.Tables[0].Rows.Count;
             }
             productCount = productsCount(lines);
-            string supplierId = lines[5].Replace("Supplier : ", "");
-            string orderNo = lines[11].Replace(":", ""); ;
-            string orderDate = lines[15];
-            string deliveryDate = getDeliveryDate(lines);
+            string supplierId = lines[14];
+            string orderNo = lines[8] ;
+            string orderDate = lines[9];
+            string deliveryDate = lines[10];
             string storeCode = lines[5].Replace("Supplier : ", "");
-            //string orderAmount = lines[46 + productCount].Trim();
+            Decimal orderAmount = getTotalAmount(lines);
 
             tempOrder = new TempOrder();
             tempOrder.Seq = 0;
             tempOrder.OrderId = orderNo;
-            tempOrder.OrderDate = DateTime.Parse(orderDate);
+            //tempOrder.OrderDate = DateTime.Parse(orderDate);
             tempOrder.CreatedOn = new DateTime();
             tempOrder.CustomerId = supplierId;
             tempOrder.Remarks = getAddress(lines);
-            tempOrder.DeliveryDate = DateTime.Parse(deliveryDate);
-            //tempOrder.Amount = decimal.Parse(orderAmount);
+            //tempOrder.DeliveryDate = DateTime.Parse(deliveryDate);
+            tempOrder.Amount = orderAmount;
 
 
             List<TempOrderDetails> orderDetailList = getDetailsList(lines, productCount);
@@ -207,12 +207,27 @@ namespace SatinLibs
             }
             return int.Parse(countText);
         }
-
+        private decimal getTotalAmount(string[] lines)
+        {
+            string totalAmountText = "Total Net Amount ";
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (lines[i].Contains(totalAmountText))
+                {
+                    
+                    string lineText = lines[i];
+                    String amtText = lineText.Substring(lineText.IndexOf(totalAmountText)).Substring(totalAmountText.Length);
+                    return Decimal.Parse(amtText);
+                }
+            }
+            return 0;
+        }
         private List<TempOrderDetails> getDetailsList(string[] lines, int prodCount)
         {
             List<TempOrderDetails> orderDetailsList = new List<TempOrderDetails>();
             int productStartsRow = getProductsFirstRowIndex(lines);
-            for (int i = 1; i <= productCount; i++)
+            int productsParsed = 0;
+            while (productsParsed <productCount)
             {
                 string orderNumber;
                 string sku;
@@ -220,10 +235,16 @@ namespace SatinLibs
                 string qty;
                 string price;
                 string remarks;
-                
+                string amount;
+
                 string prodFirstRow = lines[productStartsRow];
+                if (prodFirstRow.Equals(pageFooterText))
+                {
+                    productStartsRow += 5;
+                    continue;
+                }
                 string[] prodFirstRowArray = prodFirstRow.Split(' ');
-                qty = prodFirstRowArray[2];
+                //qty = prodFirstRowArray[2];
                 price = prodFirstRowArray[5];
                 
                 string prodSecondRow = lines[productStartsRow+1];
@@ -233,8 +254,12 @@ namespace SatinLibs
                 prodName = prodSecondRow.Substring(0,prodNameEndIndex);
                 remarks = lines[productStartsRow + 3] + " " + lines[productStartsRow + 4];
 
+                string prodSixthRow = lines[productStartsRow + 5];
+                qty = prodSixthRow.Split(' ')[0];
+                amount = prodSixthRow.Split(' ')[1];
                 orderNumber = lines[1].Substring(16);
                 productStartsRow = productStartsRow + 6;
+
                 TempOrderDetails orderDetails = new TempOrderDetails();
                 orderDetails.Quantity = Decimal.Parse(qty);
                 orderDetails.Price = Decimal.Parse(price);
@@ -242,7 +267,9 @@ namespace SatinLibs
                 orderDetails.ProductName = prodName;
                 orderDetails.Remarks = remarks;
                 orderDetails.OrderNumber = orderNumber;
+                orderDetails.Amount = Decimal.Parse(amount);
                 orderDetailsList.Add(orderDetails);
+                productsParsed++;
             }
 
             return orderDetailsList;
