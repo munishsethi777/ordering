@@ -207,10 +207,10 @@ namespace SatinLibs
                 int productNameEndIndex = itemRow.IndexOf("   ");
                 string prodName = itemRow.Substring(productNameStartIndex, productNameEndIndex - productNameStartIndex);
 
-                
-                int qtyEndIndex = itemRow.Length;
-                int qtyStartIndex = itemRow.LastIndexOf(" ") + 1;
-                string qty = itemRow.Substring(qtyStartIndex, qtyEndIndex - qtyStartIndex);
+
+                int qtyStartIndex = productNameEndIndex + 3;
+              //  int qtyEndIndex = qtyStartIndex + 1;               
+                string qty = getQuantity(itemRow,qtyStartIndex);//itemRow.Substring(qtyStartIndex, qtyEndIndex - qtyStartIndex);
 
                 int priceStartIndex = itemRow.Substring(0, itemRow.LastIndexOf(" ")).LastIndexOf(" ") + 1;
                 int priceEndIndex = itemRow.Substring(priceStartIndex).IndexOf(" ") + priceStartIndex;
@@ -228,7 +228,12 @@ namespace SatinLibs
             }
             return orderDetailsList;
         }
-
+        private string getQuantity(string itemRow,int qtyStartIndex){
+            string str = itemRow.Substring(qtyStartIndex);
+            int qtyEndIndex = str.IndexOf(" ") - 4;
+            string qty = str.Substring(0, qtyEndIndex);
+            return qty;
+        }
         private string[] reArrangeItemRows(string[] allLines, int prodCount){
             if (allLines.Length == prodCount)
             {
