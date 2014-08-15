@@ -22,7 +22,12 @@ namespace SatinLibs
             this.fileLocation = fileLocation;
             Type parserType = Type.GetType("CustId"+customerId+"Parser");
             //Activator.CreateInstance(parserType);
-            parser = new CustId751Parser();
+            if (customerId =="751"){
+                parser = new CustId751Parser();
+            }else if (customerId == "708"){
+                parser = new CustId708Parser();
+            }
+           
         }
 
         public DataSet getParsedDataSet()
