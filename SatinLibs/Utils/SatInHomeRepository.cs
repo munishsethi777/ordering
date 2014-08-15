@@ -28,7 +28,7 @@ namespace SatinLibs
                    OrderingSystem.ServiceReference1.InsertOrderRequest list = new OrderingSystem.ServiceReference1.InsertOrderRequest();
                    string sOrderNumbers = "";
                    MVCEFEntities objContext = new MVCEFEntities();
-                   DataSet dsOrder = objContext.ExecuteDataSet("select * from tblorder where orderstatusid='1' ");
+                   DataSet dsOrder = objContext.ExecuteDataSet("select * from tblorder where orderstatusid='1' and cutofftime < getdate()");
                    OrderingSystem.ServiceReference1.InsertOrderResponse resp = null;
 
                    
