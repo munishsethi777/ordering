@@ -9,7 +9,7 @@ using System.Web.Routing;
 using MVCEF.Infrastructure;
 using MVCDataModel;
 using MVCEF.Controllers;
-
+using SatinLibs;
 namespace MVCEF
 {
     // Note: For instructions on enabling IIS6 or IIS7 classic mode, 
@@ -34,7 +34,7 @@ namespace MVCEF
             //for defaultcontrol factory
             ControllerBuilder.Current.SetControllerFactory(new NinjectControllerFactory());
 
-            
+            JobManager.Runscheduler();
 
         }
         protected void Session_Start()
