@@ -31,7 +31,7 @@ namespace SatinLibs
                    DataSet dsOrder = objContext.ExecuteDataSet("select * from tblorder where orderstatusid='1' and cast(cutofftime as time) < cast(getdate() as time)");
                    OrderingSystem.ServiceReference1.InsertOrderResponse resp = null;
 
-                   
+
                    if (dsOrder != null && dsOrder.Tables.Count > 0 && dsOrder.Tables[0].Rows.Count > 0)
                    {
                        foreach (DataRow row in dsOrder.Tables[0].Rows)
@@ -45,93 +45,93 @@ namespace SatinLibs
                            string remarks = row["Remarks"].ToString();
                            DataSet dsOrderDetail = objContext.ExecuteDataSet(
                                 string.Format("select tblOrderDetail.*, tblStore.*, tblProduct.productName,tblProduct.skuid"
-                                    + " from tblOrderDetail, tblStore, tblProduct" 
-                                    + " where tblOrderDetail.orderId = "+ sOrderId
+                                    + " from tblOrderDetail, tblStore, tblProduct"
+                                    + " where tblOrderDetail.orderId = " + sOrderId
                                     + " and tblOrderDetail.storeId = tblStore.storeId"
                                     + " and tblOrderDetail.productid = tblProduct.productid"));
-                            if (dsOrderDetail != null && dsOrderDetail.Tables.Count > 0)
-                            {
-                                list = new OrderingSystem.ServiceReference1.InsertOrderRequest();
-                                list.dDiscount = 0;
-                                list.dDiscountPer = 0;
-                                list.sAgentId = "111";
-                                list.dtVoidDate = DateTime.Now;
-                                list.bVoid = 0;
-                                list.sMDTNo = "MQ";
-                                list.sConditionMaster = "";
-                                list.sConditionType = "";
-                                list.sConditionValue = "";
-                                
-                                string sStoreCode = dsOrderDetail.Tables[0].Rows[0]["InternalStoreCode"].ToString();
-                                list.sOrdNo = sOrderNumber;
-                                list.dtOrdDate = DateTime.Now;
-                                list.dtDeliDate = DateTime.Now;
-                                list.sCustNo = sStoreCode;
-                                list.sPoNo = invoiceOrderNumber;
-                                list.sRemarks = remarks;
+                           if (dsOrderDetail != null && dsOrderDetail.Tables.Count > 0)
+                           {
+                               list = new OrderingSystem.ServiceReference1.InsertOrderRequest();
+                               list.dDiscount = 0;
+                               list.dDiscountPer = 0;
+                               list.sAgentId = "111";
+                               list.dtVoidDate = DateTime.Now;
+                               list.bVoid = 0;
+                               list.sMDTNo = "MQ";
+                               list.sConditionMaster = "";
+                               list.sConditionType = "";
+                               list.sConditionValue = "";
 
-                                string arrayPromoID = "";
-                                string arrayPromoOffer = "";
-                                string arrayDisPer = "";
-                                string arrayDisPr = "";
-                                string itemNos="";
-                                string uoms = "";
-                                string qtys = "";
-                                string prices = "";
-                                string itemNames = "";
-                                string subAmounts = "";
-                                string lineNos = "";
-                                int lineNo = 0;
-                                foreach (DataRow rowOrder in dsOrderDetail.Tables[0].Rows)
-                                {
-                                    lineNo++;
-                                    double price = double.Parse(rowOrder["Price"].ToString());
-                                    double qty = double.Parse(rowOrder["Quantity"].ToString()); ;
-                                    if (itemNos != "")
-                                    {
-                                        itemNos += ","+rowOrder["skuid"].ToString();
-                                        uoms += "," + rowOrder["uom"].ToString();
-                                        qtys += "," + qty.ToString();
-                                        prices += "," + price.ToString();
-                                        itemNames += "," + rowOrder["productName"].ToString();
-                                        subAmounts += "," + rowOrder["amount"].ToString();
-                                        lineNos += "," + lineNo;
-                                        arrayPromoID += "," + 0;
-                                        arrayPromoOffer += "," + 0;
-                                        arrayDisPer += "," + 0;
-                                        arrayDisPr += "," + 0;
-                                    }
-                                    else
-                                    {
-                                        itemNos += rowOrder["skuid"].ToString();
-                                        uoms += rowOrder["uom"].ToString();
-                                        qtys += qty.ToString();
-                                        prices += price.ToString();
-                                        itemNames += rowOrder["productName"].ToString();
-                                        subAmounts += rowOrder["amount"].ToString(); ;
-                                        lineNos += lineNo;
-                                        arrayPromoID +=  0;
-                                        arrayPromoOffer +=  0;
-                                        arrayDisPer +=  0;
-                                        arrayDisPr +=  0;
-                                    }
-                                }
+                               string sStoreCode = dsOrderDetail.Tables[0].Rows[0]["InternalStoreCode"].ToString();
+                               list.sOrdNo = sOrderNumber;
+                               list.dtOrdDate = DateTime.Now;
+                               list.dtDeliDate = DateTime.Now;
+                               list.sCustNo = sStoreCode;
+                               list.sPoNo = invoiceOrderNumber;
+                               list.sRemarks = remarks;
 
-                                list.arrayPromoID = "[" + arrayPromoID + "]";
-                                list.arrayPromoOffer = "[" + arrayPromoOffer + "]";
-                                list.arrayDisPer = "[" + arrayDisPer + "]";
-                                list.arrayDisPr = "[" + arrayDisPr + "]";
+                               string arrayPromoID = "";
+                               string arrayPromoOffer = "";
+                               string arrayDisPer = "";
+                               string arrayDisPr = "";
+                               string itemNos = "";
+                               string uoms = "";
+                               string qtys = "";
+                               string prices = "";
+                               string itemNames = "";
+                               string subAmounts = "";
+                               string lineNos = "";
+                               int lineNo = 0;
+                               foreach (DataRow rowOrder in dsOrderDetail.Tables[0].Rows)
+                               {
+                                   lineNo++;
+                                   double price = double.Parse(rowOrder["Price"].ToString());
+                                   double qty = double.Parse(rowOrder["Quantity"].ToString()); ;
+                                   if (itemNos != "")
+                                   {
+                                       itemNos += "," + rowOrder["skuid"].ToString();
+                                       uoms += "," + rowOrder["uom"].ToString();
+                                       qtys += "," + qty.ToString();
+                                       prices += "," + price.ToString();
+                                       itemNames += "," + rowOrder["productName"].ToString();
+                                       subAmounts += "," + rowOrder["amount"].ToString();
+                                       lineNos += "," + lineNo;
+                                       arrayPromoID += "," + 0;
+                                       arrayPromoOffer += "," + 0;
+                                       arrayDisPer += "," + 0;
+                                       arrayDisPr += "," + 0;
+                                   }
+                                   else
+                                   {
+                                       itemNos += rowOrder["skuid"].ToString();
+                                       uoms += rowOrder["uom"].ToString();
+                                       qtys += qty.ToString();
+                                       prices += price.ToString();
+                                       itemNames += rowOrder["productName"].ToString();
+                                       subAmounts += rowOrder["amount"].ToString(); ;
+                                       lineNos += lineNo;
+                                       arrayPromoID += 0;
+                                       arrayPromoOffer += 0;
+                                       arrayDisPer += 0;
+                                       arrayDisPr += 0;
+                                   }
+                               }
 
-                                list.arrayItemNo = "[" + itemNos + "]";
-                                list.arrayUOM = "[" + uoms + "]";
-                                list.arrayQty = "[" + qtys + "]";
-                                list.arrayPrice = "[" + prices + "]";
-                                list.arrayItemName = "[" + itemNames + "]";
-                                list.arraySubAmt = "[" + subAmounts + "]";
-                                list.arrLineNo = "[" + lineNos + "]"; ;
-                                resp = objService.InsertOrder(list);
-                            }
-                          
+                               list.arrayPromoID = "[" + arrayPromoID + "]";
+                               list.arrayPromoOffer = "[" + arrayPromoOffer + "]";
+                               list.arrayDisPer = "[" + arrayDisPer + "]";
+                               list.arrayDisPr = "[" + arrayDisPr + "]";
+
+                               list.arrayItemNo = "[" + itemNos + "]";
+                               list.arrayUOM = "[" + uoms + "]";
+                               list.arrayQty = "[" + qtys + "]";
+                               list.arrayPrice = "[" + prices + "]";
+                               list.arrayItemName = "[" + itemNames + "]";
+                               list.arraySubAmt = "[" + subAmounts + "]";
+                               list.arrLineNo = "[" + lineNos + "]"; ;
+                               resp = objService.InsertOrder(list);
+                           }
+
 
                            sOrderNumbers = sOrderNumbers + resp.InsertOrderResult + ",";
                            objContext.ExecuteQuery(string.Format(" update tblorder set orderstatusid = 2 where orderid= {0}  ", sOrderId));
@@ -147,10 +147,11 @@ namespace SatinLibs
                }
                catch (Exception Ex)
                {
-                   log.Error("Error Occured while order submission",Ex);
+                   log.Error("Error Occured while order submission", Ex);
                    return Ex.Message;
                }
-           
+
+           }
        }
 
        private string InsertCallPost()
