@@ -419,7 +419,7 @@
 							type: 'POST',
 							success: function (res) {							   
 							    $.each(res, function (index, err) {
-							        if (index == "UPDATED") {
+							        if (index == "UPDATED" || index == "SAVED") {
 							            str += "<label style='color:green'>"
 							            str += err;
 							            str += "</label>";

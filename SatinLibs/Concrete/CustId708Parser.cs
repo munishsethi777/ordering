@@ -214,9 +214,9 @@ namespace SatinLibs
                 string[] prodFirstRowArray = prodFirstRow.Split(' ');
                 //qty = prodFirstRowArray[2];
                 price = prodFirstRowArray[5];
-                
+                sku = prodFirstRowArray[1];
                 string prodSecondRow = lines[productStartsRow+1];
-                sku = prodSecondRow.Substring(prodSecondRow.IndexOf("NTUC Stock Code :")+17);
+                //sku = prodSecondRow.Substring(prodSecondRow.IndexOf("NTUC Stock Code :")+17);
                 int prodNameEndIndex = prodSecondRow.Substring(0, prodSecondRow.IndexOf("NTUC Stock Code")).LastIndexOf(" ");
 
                 string prodThirdRow = lines[productStartsRow + 3];

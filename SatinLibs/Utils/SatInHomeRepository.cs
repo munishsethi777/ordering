@@ -265,6 +265,10 @@ namespace SatinLibs
                    {
                        errorMap.Add("UPDATED", "Order Detail is updated successfully for orderNo :- " + orderNo);
                    }
+                   else
+                   {
+                       errorMap.Add("SAVED", "Order Saved successfully with orderNo : - " + orderNo);
+                   }
                    Dictionary<String, ProductCustomer> map = getCustomerProductMap(customerCode);
                    if (orderId ==0) {
                        sSql = string.Format("exec satIn_spSaveOrders @invoiceorderno = '{0}' , @customerid = {1}, @userid = {2}", orderNo, customerId, userId);
@@ -281,7 +285,7 @@ namespace SatinLibs
                            {
                                ProductCustomer productCust = map[ext_ItemId];
                                decimal price = decimal.Parse(row[3].ToString());
-                               int qnty = int.Parse(row[4].ToString());
+                               decimal qnty  = decimal.Parse(row[4].ToString());
                                decimal amount = price * qnty;
                                qnty = productCust.UOMultipler * qnty;
                                String skuId = productCust.ItemId;
@@ -304,6 +308,7 @@ namespace SatinLibs
            }
            catch (Exception Ex)
            {
+               errorMap = new Dictionary<string,string>();
                errorMap.Add("Exception","Message: " + Ex.Message + "</br>InnerException: " + Ex.InnerException  + "</br>StackTrace: " + Ex.StackTrace);               
            }
            errorMap.OrderBy(key => key.Value);
@@ -340,7 +345,7 @@ namespace SatinLibs
                 productCustomer.UOMultipler = int.Parse(row.ItemArray[3].ToString());
                 productCustomer.Ext_ItemId = row.ItemArray[4].ToString();
                 productCustomer.orderCuttOff = int.Parse(row.ItemArray[5].ToString());
-                
+                if (!map.ContainsKey(productCustomer.Ext_ItemId))
                 map.Add(productCustomer.Ext_ItemId, productCustomer);
             }
             return map;

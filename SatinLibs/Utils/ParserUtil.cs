@@ -25,7 +25,7 @@ namespace SatinLibs
             //Activator.CreateInstance(parserType);
             if (customerId =="751"){
                 parser = new CustId751Parser();
-            }else if (customerId == "708"){
+            }else if (customerId == "710"){
                 parser = new CustId708Parser();
             }
            
