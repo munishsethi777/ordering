@@ -16,9 +16,7 @@
 <div class="container-fluid">
     <div class="row-fluid">
         <div class="span5">
-            <h4>
-                <span style="">Order Lists</span><span> : </span><span id="lblCustomer">@Session["CustomerName"]</span>
-            </h4>
+            
         </div>
         <div class="span4">
             @*<div style="margin-left: 0px;" class="span10">
@@ -186,42 +184,7 @@
             columnWidth.push(25);
 
 
-            $.ajax({
-                url: '/Home/BindStore',
-                data: {},
-                async: false,
-                success: function (response) {
-                    try {
-                        var array = $.map(eval("[" + response + "]")[0].Table, function (el) {
-
-                            columnWidth.push(25);
-                            colHeaderList.push(el.storecode);
-                            colSource.push(
-                                {
-                                    //"data": el.storecode,
-                                    type: 'numeric',
-                                    allowInvalid: false,
-                                    format: '0,0',
-                                    renderer: function (instance, td, row, col, prop, value) {
-                                        if (row == instance.countRows() - 2) {
-                                            td.style.fontWeight = 'bold';
-                                            td.style.textAlign = 'right';
-                                            td.style.background = '#EEE';
-                                            td.innerText = '$ ' + getTotal(row, col).toFixed(2);
-                                            value = td.innerText;
-                                        }
-
-
-                                        Handsontable.NumericRenderer.apply(this, arguments);
-                                    }
-                                });
-                            return [el.storecode];
-                        });
-                    }
-                    catch (ex) {
-                    }
-                }
-            });
+          
 
 
             colHeaderList.push("Remarks");
