@@ -211,7 +211,7 @@ namespace SatinLibs
             }
             return null; 
         }
-       public Dictionary<string, string> SaveOrders(string total, string orderby, string phone, string remarks, DataTable sXMLOrders, string customerIdStr)
+       public Dictionary<string, string> SaveOrders(string total, string orderby, string phone, string remarks, DataTable orderDetail, string customerIdStr)
        {
            Dictionary<string, string> errorMap = new Dictionary<string, string>();
            try
@@ -223,17 +223,28 @@ namespace SatinLibs
                String customerCode = CustomerUtils.getCustomerCode(customerId);
                string sSql = "";
                int orderId =0;
-               DataRow firstRow = sXMLOrders.Rows[0];
+               DataRow firstRow = orderDetail.Rows[0];
                String orderNo = firstRow[0].ToString();
                if (!string.IsNullOrEmpty(total))
                {
                    total = total.Replace("$", "").Trim();
                }
-               //set cuttoff time also on the order
-               errorMap = ValidatorUtil.validateSaveOrders(sXMLOrders, customerCode);
+               //getting order DataSet if already exist
+               DataTable order = getOrderSeqByInvoiceOrderNo(orderNo);
+               if (order.Rows.Count > 0)
+               {
+                   DataRow orderRow = order.Rows[0];
+                   string orderIdStr = orderRow.ItemArray[0].ToString();
+                   if (orderRow.ItemArray[0].ToString() != null) ;
+                   {
+                       orderId = int.Parse(orderIdStr);
+                   }
+               }
+               
+               errorMap = ValidatorUtil.validateSaveOrders(order,orderDetail, customerCode);
                if (errorMap.Keys.Count == 0)
                {
-                   orderId = getOrderSeqByInvoiceOrderNo(orderNo);
+                  //Deleting orderDetail if already exist with orderId.
                    Boolean  isDeleted = DeleteOrderDetailByOrder(orderId);
                    if (isDeleted)
                    {
@@ -291,16 +302,12 @@ namespace SatinLibs
            return result > 0; ;
        }
 
-       private int getOrderSeqByInvoiceOrderNo(string orderNumber)
+       private DataTable getOrderSeqByInvoiceOrderNo(string orderNumber)
        {
-           int orderSeq = 0;
-           string sSql = string.Format("select orderid from  tblOrder where invoiceorderno = '{0}'", orderNumber);
-           object obj = objContext.ExecuteObject(sSql);
-           if (obj != null)
-           {
-               orderSeq = (int)obj;
-           }
-           return orderSeq; 
+           string sSql = string.Format("select orderid,OrderStatusId from  tblOrder where invoiceorderno = '{0}'", orderNumber);
+           DataSet orderDataSet = objContext.ExecuteDataSet(sSql);
+           DataTable orderDataTable = orderDataSet.Tables[0];
+           return orderDataTable; 
        }
 
        public Dictionary<String,ProductCustomer> getCustomerProductMap(string customerNo)

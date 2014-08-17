@@ -61,15 +61,36 @@ namespace SatinLibs
             return dataSet.Tables[0].Rows.Count > 0;
         }
 
-        public static Dictionary<string, string> validateSaveOrders(DataTable sXMLOrders, string customerCode)
+        public static Dictionary<string, string> validateSaveOrders(DataTable Order,DataTable sXMLOrders, string customerCode)
         {
             Dictionary<string, string> errorMap = new Dictionary<string, string>();
             SatInHomeRepository objectRepository = new SatInHomeRepository();
-            Dictionary<String, ProductCustomer> map = objectRepository.getCustomerProductMap(customerCode);
-            if (map.Keys.Count == 0)
+            DateTime cuttOffTime = CustomerUtils.getCuttOffTime(customerCode);
+            //Validation if order is not pending
+            if (Order.Rows.Count > 0) { 
+                string orderStatus = Order.Rows[0].ItemArray[1].ToString();
+                string orderNo = Order.Rows[0].ItemArray[0].ToString();
+                if (!orderStatus.Equals("1"))
+                {
+                    errorMap.Add("main_Error", "CuttOffTime is over.You can't upload order now.");
+                    return errorMap;
+                }
+            }
+            //Validation if customer cuttoffTime is over then no need to check other validation.
+            if (cuttOffTime > DateTime.Now)
+            {
+                errorMap.Add("main_Error", "CuttOffTime is over.You can't upload order now.");
+                return errorMap;
+            }
+
+            //Validation if customerCode is not exist in ProductCustomerMap Table.
+            Dictionary<String, ProductCustomer> customerProductMap = objectRepository.getCustomerProductMap(customerCode);
+            if (customerProductMap.Keys.Count == 0)
             {
                 errorMap.Add("main_Error", "ProductCustomer Mapping does not exist for selected Customer");
-            }else{
+            }
+            //Validation if external ItemId is not exist in ProductCustomerMap Table.
+            else{
                 int count = 1;
                 foreach (DataRow row in sXMLOrders.Rows)
                 {
@@ -77,7 +98,7 @@ namespace SatinLibs
                     {
                         string ext_ItemId = row[1].ToString();
                         string orderNumber = row[0].ToString();
-                        if (!map.Keys.Contains(ext_ItemId))
+                        if (!customerProductMap.Keys.Contains(ext_ItemId))
                         {
                             errorMap.Add(count + "." + "OrderNo." + orderNumber, "Error is SKU ID - " + ext_ItemId + " does not exist in ProductCustomer mapping");
                             count++;
