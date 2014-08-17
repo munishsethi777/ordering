@@ -55,18 +55,45 @@ namespace SatinLibs
             }
        }
 
-        public static bool isStoreAvaiable(string customerid)
+        public static bool isStoreAvaiable(string customerIdStr)
+
         {
-            DataSet dataSet = CustomerUtils.getStores(customerid);
+
+            int customerId = int.Parse(customerIdStr);
+            DataSet dataSet = CustomerUtils.getStores(customerId);
             return dataSet.Tables[0].Rows.Count > 0;
         }
 
-        public static Dictionary<string, string> validateSaveOrders(DataTable Order,DataTable sXMLOrders, string customerCode)
+        private static bool isStoreAvaiable(int customerId,string storeName)
+        {
+            DataSet dataSet = CustomerUtils.getStores(customerId);
+            if (dataSet == null)
+            {
+                return false;
+            }
+            foreach (DataRow row in dataSet.Tables[0].Rows){
+                if (storeName.Equals(row[0].ToString()))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public static Dictionary<string, string> validateSaveOrders(DataTable Order, DataTable sXMLOrders, Dictionary<string, ProductCustomer> customerProductMap, int customerId)
         {
             Dictionary<string, string> errorMap = new Dictionary<string, string>();
             SatInHomeRepository objectRepository = new SatInHomeRepository();
-            DateTime cuttOffTime = CustomerUtils.getCuttOffTime(customerCode);
-            //Validation if order is not pending
+          
+            string storeCode = sXMLOrders.Columns[4].ToString();
+            if (!isStoreAvaiable(customerId, storeCode))
+            {
+                errorMap.Add(storeCode, "This store does not belong to the selected customer.");
+                return errorMap;
+            }
+           
+            /*
+             * ---------Update Case----------- 
+            Validation if order is not pending.*/
             if (Order.Rows.Count > 0) { 
                 string orderStatus = Order.Rows[0].ItemArray[1].ToString();
                 string orderNo = Order.Rows[0].ItemArray[2].ToString();
@@ -76,6 +103,7 @@ namespace SatinLibs
                     return errorMap;
                 }
                 //Validation if customer cuttoffTime is over then no need to check other validation.
+                DateTime cuttOffTime = CustomerUtils.getCuttOffTime(customerId);
                 if (cuttOffTime.TimeOfDay < DateTime.Now.TimeOfDay)
                 {
                     errorMap.Add(orderNo, "CuttOffTime is over.You can't upload order now.");
@@ -83,10 +111,10 @@ namespace SatinLibs
                 }
 
             }
-           
+            /*---------*/
 
             //Validation if customerCode is not exist in ProductCustomerMap Table.
-            Dictionary<String, ProductCustomer> customerProductMap = objectRepository.getCustomerProductMap(customerCode);
+           
             if (customerProductMap.Keys.Count == 0)
             {
                 errorMap.Add("main_Error", "ProductCustomer Mapping does not exist for selected Customer");

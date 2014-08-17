@@ -255,8 +255,8 @@ namespace SatinLibs
                        orderId = int.Parse(orderIdStr);
                    }
                }
-               
-               errorMap = ValidatorUtil.validateSaveOrders(order,orderDetail, customerCode);
+               Dictionary<String, ProductCustomer> map = getCustomerProductMap(customerCode);
+               errorMap = ValidatorUtil.validateSaveOrders(order, orderDetail, map, customerId);   
                if (errorMap.Keys.Count == 0)
                {
                   //Deleting orderDetail if already exist with orderId.
@@ -269,7 +269,7 @@ namespace SatinLibs
                    {
                        errorMap.Add("SAVED", "Order Saved successfully with orderNo : - " + orderNo);
                    }
-                   Dictionary<String, ProductCustomer> map = getCustomerProductMap(customerCode);
+                  
                    if (orderId ==0) {
                        sSql = string.Format("exec satIn_spSaveOrders @invoiceorderno = '{0}' , @customerid = {1}, @userid = {2}", orderNo, customerId, userId);
                        orderId = Convert.ToInt16(objContext.ExecuteObject(sSql));
