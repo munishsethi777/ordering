@@ -69,19 +69,21 @@ namespace SatinLibs
             //Validation if order is not pending
             if (Order.Rows.Count > 0) { 
                 string orderStatus = Order.Rows[0].ItemArray[1].ToString();
-                string orderNo = Order.Rows[0].ItemArray[0].ToString();
+                string orderNo = Order.Rows[0].ItemArray[2].ToString();
                 if (!orderStatus.Equals("1"))
                 {
-                    errorMap.Add("main_Error", "CuttOffTime is over.You can't upload order now.");
+                    errorMap.Add(orderNo, "This order is already processed.Only Pending orders can be updated.");
                     return errorMap;
                 }
+                //Validation if customer cuttoffTime is over then no need to check other validation.
+                if (cuttOffTime.TimeOfDay < DateTime.Now.TimeOfDay)
+                {
+                    errorMap.Add(orderNo, "CuttOffTime is over.You can't upload order now.");
+                    return errorMap;
+                }
+
             }
-            //Validation if customer cuttoffTime is over then no need to check other validation.
-            if (cuttOffTime > DateTime.Now)
-            {
-                errorMap.Add("main_Error", "CuttOffTime is over.You can't upload order now.");
-                return errorMap;
-            }
+           
 
             //Validation if customerCode is not exist in ProductCustomerMap Table.
             Dictionary<String, ProductCustomer> customerProductMap = objectRepository.getCustomerProductMap(customerCode);

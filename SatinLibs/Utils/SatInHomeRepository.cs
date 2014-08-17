@@ -28,7 +28,7 @@ namespace SatinLibs
                    OrderingSystem.ServiceReference1.InsertOrderRequest list = new OrderingSystem.ServiceReference1.InsertOrderRequest();
                    string sOrderNumbers = "";
                    MVCEFEntities objContext = new MVCEFEntities();
-                   DataSet dsOrder = objContext.ExecuteDataSet("select * from tblorder where orderstatusid='1' and cutofftime < getdate()");
+                   DataSet dsOrder = objContext.ExecuteDataSet("select * from tblorder where orderstatusid='1' and cast(cutofftime as time) < cast(getdate() as time)");
                    OrderingSystem.ServiceReference1.InsertOrderResponse resp = null;
 
                    
@@ -61,10 +61,7 @@ namespace SatinLibs
                                 list.sConditionMaster = "";
                                 list.sConditionType = "";
                                 list.sConditionValue = "";
-                                list.arrayPromoID = "[0,0]";
-                                list.arrayPromoOffer = "[0,0]";
-                                list.arrayDisPer = "[0,0]";
-                                list.arrayDisPr = "[0,0]";
+                                
                                 string sStoreCode = dsOrderDetail.Tables[0].Rows[0]["InternalStoreCode"].ToString();
                                 list.sOrdNo = sOrderNumber;
                                 list.dtOrdDate = DateTime.Now;
@@ -73,6 +70,10 @@ namespace SatinLibs
                                 list.sPoNo = invoiceOrderNumber;
                                 list.sRemarks = remarks;
 
+                                string arrayPromoID = "";
+                                string arrayPromoOffer = "";
+                                string arrayDisPer = "";
+                                string arrayDisPr = "";
                                 string itemNos="";
                                 string uoms = "";
                                 string qtys = "";
@@ -93,8 +94,12 @@ namespace SatinLibs
                                         qtys += "," + qty.ToString();
                                         prices += "," + price.ToString();
                                         itemNames += "," + rowOrder["productName"].ToString();
-                                        subAmounts += "," + price * qty;
+                                        subAmounts += "," + rowOrder["amount"].ToString();
                                         lineNos += "," + lineNo;
+                                        arrayPromoID += "," + 0;
+                                        arrayPromoOffer += "," + 0;
+                                        arrayDisPer += "," + 0;
+                                        arrayDisPr += "," + 0;
                                     }
                                     else
                                     {
@@ -103,10 +108,20 @@ namespace SatinLibs
                                         qtys += qty.ToString();
                                         prices += price.ToString();
                                         itemNames += rowOrder["productName"].ToString();
-                                        subAmounts += price * qty;
+                                        subAmounts += rowOrder["amount"].ToString(); ;
                                         lineNos += lineNo;
+                                        arrayPromoID +=  0;
+                                        arrayPromoOffer +=  0;
+                                        arrayDisPer +=  0;
+                                        arrayDisPr +=  0;
                                     }
                                 }
+
+                                list.arrayPromoID = "[" + arrayPromoID + "]";
+                                list.arrayPromoOffer = "[" + arrayPromoOffer + "]";
+                                list.arrayDisPer = "[" + arrayDisPer + "]";
+                                list.arrayDisPr = "[" + arrayDisPr + "]";
+
                                 list.arrayItemNo = "[" + itemNos + "]";
                                 list.arrayUOM = "[" + uoms + "]";
                                 list.arrayQty = "[" + qtys + "]";
@@ -256,7 +271,7 @@ namespace SatinLibs
                        orderId = Convert.ToInt16(objContext.ExecuteObject(sSql));
                    }
                    decimal orderTotalAmount = 0;
-                   foreach (DataRow row in sXMLOrders.Rows)
+                   foreach (DataRow row in orderDetail.Rows)
                    {
                        if (row[0] != null && row[0].ToString() != "0" && !string.IsNullOrEmpty(row[0].ToString()))
                        {
@@ -272,7 +287,7 @@ namespace SatinLibs
                                String skuId = productCust.ItemId;
                                sSql = string.Format(@"insert into tblorderdetail(orderid, storeid, productid, price, quantity, amount, remarks, remarks2, uom)
                             select {0}, storeid, productid,{1}, {2} , {3}, '{4}', '{5}', {6} from tblproduct p, tblstore s where skuid='{7}' and storecode='{8}' ",
-                                           orderId, row[3], qnty, amount, row[sXMLOrders.Columns.Count - 1], "", productCust.UOMultipler, skuId, sXMLOrders.Columns[4].ColumnName);
+                                           orderId, row[3], qnty, amount, row[orderDetail.Columns.Count - 1], "", productCust.UOMultipler, skuId, orderDetail.Columns[4].ColumnName);
                                dsResult = objContext.ExecuteQuery(sSql);
                                orderTotalAmount += amount;
                            }
@@ -304,7 +319,7 @@ namespace SatinLibs
 
        private DataTable getOrderSeqByInvoiceOrderNo(string orderNumber)
        {
-           string sSql = string.Format("select orderid,OrderStatusId from  tblOrder where invoiceorderno = '{0}'", orderNumber);
+           string sSql = string.Format("select orderid,OrderStatusId,invoiceorderno from  tblOrder where invoiceorderno = '{0}'", orderNumber);
            DataSet orderDataSet = objContext.ExecuteDataSet(sSql);
            DataTable orderDataTable = orderDataSet.Tables[0];
            return orderDataTable; 
