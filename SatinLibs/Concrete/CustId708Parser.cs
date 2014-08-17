@@ -17,14 +17,15 @@ namespace SatinLibs
     {
         TempOrder tempOrder = null;
         private int pageCount = 1;
-        private string customerId;
+        private int customerId;
         private int productCount = 0;
         private int productRowsCount = 0;
         private static string firstLineText = "Purchase Order No.";
         private static string pageFooterText = "The goods are purchased in accordance with the specification on this purchase order and the terms and";
         public DataSet getDataSet(string _customerId, string fileLocation)
         {
-            customerId = _customerId;
+            
+            customerId = int.Parse(_customerId);
             string pdfText = getTextFromPDF(fileLocation);
             string[] allLines = pdfText.Split(new string[] { "\r\n" }, StringSplitOptions.None);
             DataSet dataSet = new DataSet();

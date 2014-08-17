@@ -17,7 +17,7 @@ namespace SatinLibs
     {
         TempOrder tempOrder = null;
         private int pageCount = 1;
-        private string customerId;
+        private int customerId;
         private int productCount = 0;
         private int productRowsCount = 0;
         private static string firstLineText = "Cold Storage Supermarket";
@@ -25,17 +25,22 @@ namespace SatinLibs
         
         public DataSet getDataSet(string _customerId, string fileLocation)
         {
-            customerId = _customerId;
+            customerId = int.Parse(_customerId);
             string pdfText = getTextFromPDF(fileLocation);
             string[] allLines = pdfText.Split(new string[] { "\r\n" }, StringSplitOptions.None);
             DataSet dataSet = new DataSet();
+            int[] startingLinesIndexes = getStartingLinesIndexes(allLines);
+            if (startingLinesIndexes.Count() == 0)
+            {
+                throw new Exception("Invalid File without any orders for the selected customer");
+            }
             if (pageCount == 1)
             {
                 getPDFSheetToDataSet(allLines, dataSet);
             }
             else
             {
-                int[] startingLinesIndexes = getStartingLinesIndexes(allLines);
+               
                 if(pageCount == startingLinesIndexes.Length){
                     for (int i = 0; i < pageCount; i++)
                     {

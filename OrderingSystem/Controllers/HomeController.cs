@@ -1358,7 +1358,7 @@ namespace MVCEF.Controllers
             {
                 string[] errorMesssage = new string[2];
                 errorMesssage[0] = IConstants.FAILED;
-                errorMesssage[1] = "Message: " + Ex.Message + "</br>InnerException: " + Ex.InnerException  + "</br>StackTrace: " + Ex.StackTrace;
+                errorMesssage[1] = "Message: " + Ex.Message;
                 result = Json(errorMesssage, JsonRequestBehavior.AllowGet);
             }
             return result;

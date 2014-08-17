@@ -28,13 +28,13 @@ namespace SatinLibs
             return dsResult;
         }
 
-        public static DataSet getStores(string customerId)
+        public static DataSet getStores(int customerId)
         {
             DataSet storesDataSet = null;
             try
             {
                 MVCEFEntities objContext = getObjectContext();
-                string sSql = string.Format(" select storecode, storename from tblstore where customerid = {0} and isactive='1' order by storeid ", customerId);
+                string sSql = string.Format("select storecode, storename from tblstore where customerid = {0} and isactive='1' order by storeid ", customerId);
                 storesDataSet = objContext.ExecuteDataSet(sSql);
                 return storesDataSet;
             }
@@ -45,11 +45,11 @@ namespace SatinLibs
 
         }
 
-        public static DateTime getCuttOffTime(String customerNo)
+        public static DateTime getCuttOffTime(int customerId)
         {
             DateTime cuttOffTime = new DateTime();
             MVCEFEntities objContext = getObjectContext();
-            string sSql = string.Format("select cutofftime from tblCustomer where customerNo = '{0}'", customerNo);
+            string sSql = string.Format("select cutofftime from tblCustomer where customerid = {0}", customerId);
             cuttOffTime = (DateTime)objContext.ExecuteObject(sSql);
             return cuttOffTime;
         }
