@@ -13,7 +13,7 @@ using org.apache.pdfbox.util;
 
 namespace SatinLibs
 {
-    class CustId708Parser : ParserI
+    public class CustId708Parser : ParserI
     {
         TempOrder tempOrder = null;
         private int pageCount = 1;
@@ -93,7 +93,6 @@ namespace SatinLibs
                 storesCount = storesDataSet.Tables[0].Rows.Count;
             }
             productCount = productsCount(lines);
-            string[] itemRows = getItemRows(lines, productCount);
             string supplierId = lines[5].Replace("Supplier : ", "");
             string orderNo = lines[11].Replace(":", ""); ;
             string orderDate = lines[15];
@@ -112,7 +111,7 @@ namespace SatinLibs
             //tempOrder.Amount = decimal.Parse(orderAmount);
 
 
-            List<TempOrderDetails> orderDetailList = getOrderDetailsList(itemRows, lines);
+            List<TempOrderDetails> orderDetailList = getDetailsList(lines, productCount);
 
             tempOrder.OrderDetails = orderDetailList;
             DataSetUtils utils = new DataSetUtils();
@@ -209,26 +208,44 @@ namespace SatinLibs
             return int.Parse(countText);
         }
 
-        private string[] getItemRows(string[] lines, int prodCount)
+        private List<TempOrderDetails> getDetailsList(string[] lines, int prodCount)
         {
-            //string[] itemRows = new string[prodCount];
-            //int lastIndex = getProductsLastRowIndex(lines);
-            //int startIndex = getProductsFirstRowIndex(lines, lastIndex);
-
-            //string[] allItemRows = getSheetLines(startIndex, lastIndex, lines);
-            //productRowsCount = allItemRows.Length;
-            //return reArrangeItemRows(allItemRows, prodCount);
+            List<TempOrderDetails> orderDetailsList = new List<TempOrderDetails>();
             int productStartsRow = getProductsFirstRowIndex(lines);
             for (int i = 1; i <= productCount; i++)
             {
-                string prodRow = lines[productStartsRow];
-                if (prodRow.StartsWith(i.ToString()))
-                {
+                string orderNumber;
+                string sku;
+                string prodName;
+                string qty;
+                string price;
+                string remarks;
+                
+                string prodFirstRow = lines[productStartsRow];
+                string[] prodFirstRowArray = prodFirstRow.Split(' ');
+                qty = prodFirstRowArray[2];
+                price = prodFirstRowArray[5];
+                
+                string prodSecondRow = lines[productStartsRow+1];
+                sku = prodSecondRow.Substring(prodSecondRow.IndexOf("NTUC Stock Code :")+17);
+                int prodNameEndIndex = prodSecondRow.Substring(0, prodSecondRow.IndexOf("NTUC Stock Code")).LastIndexOf(" ");
+                
+                prodName = prodSecondRow.Substring(0,prodNameEndIndex);
+                remarks = lines[productStartsRow + 3] + " " + lines[productStartsRow + 4];
 
-                }
+                orderNumber = lines[1].Substring(16);
+                productStartsRow = productStartsRow + 6;
+                TempOrderDetails orderDetails = new TempOrderDetails();
+                orderDetails.Quantity = Decimal.Parse(qty);
+                orderDetails.Price = Decimal.Parse(price);
+                orderDetails.ProductId = sku;
+                orderDetails.ProductName = prodName;
+                orderDetails.Remarks = remarks;
+                orderDetails.OrderNumber = orderNumber;
+                orderDetailsList.Add(orderDetails);
             }
 
-                return null;
+            return orderDetailsList;
         }
 
 
