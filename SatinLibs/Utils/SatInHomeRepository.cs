@@ -244,7 +244,7 @@ namespace SatinLibs
                        sSql = string.Format("exec satIn_spSaveOrders @invoiceorderno = '{0}' , @customerid = {1}, @userid = {2}", orderNo, customerId, userId);
                        orderId = Convert.ToInt16(objContext.ExecuteObject(sSql));
                    }
-                   
+                   decimal orderTotalAmount = 0;
                    foreach (DataRow row in sXMLOrders.Rows)
                    {
                        if (row[0] != null && row[0].ToString() != "0" && !string.IsNullOrEmpty(row[0].ToString()))
@@ -254,18 +254,26 @@ namespace SatinLibs
                            if (map.Keys.Contains(ext_ItemId))
                            {
                                ProductCustomer productCust = map[ext_ItemId];
-                               
+                               decimal price = decimal.Parse(row[3].ToString());
                                int qnty = int.Parse(row[4].ToString());
+                               decimal amount = price * qnty;
                                qnty = productCust.UOMultipler * qnty;
                                String skuId = productCust.ItemId;
                                sSql = string.Format(@"insert into tblorderdetail(orderid, storeid, productid, price, quantity, amount, remarks, remarks2, uom)
                             select {0}, storeid, productid,{1}, {2} , {3}, '{4}', '{5}', {6} from tblproduct p, tblstore s where skuid='{7}' and storecode='{8}' ",
-                                           orderId, row[3], qnty, 0, row[sXMLOrders.Columns.Count - 1], "",productCust.UOMultipler, skuId, sXMLOrders.Columns[4].ColumnName);
+                                           orderId, row[3], qnty, amount, row[sXMLOrders.Columns.Count - 1], "", productCust.UOMultipler, skuId, sXMLOrders.Columns[4].ColumnName);
                                dsResult = objContext.ExecuteQuery(sSql);
+                               orderTotalAmount += amount;
                            }
 
                        }
                    }
+                   //update order details
+                   sSql = string.Format(@"update tblorder set totalamount = {0}, orderedby = '{1}', contactno = '{2}', 
+                                    lastchangeduser = {3}, lastchangeddate = getdate() where orderid = {4} ",
+                                       orderTotalAmount, orderby, phone, session.UserId, orderId);
+                   dsResult = objContext.ExecuteQuery(sSql);
+
                }
            }
            catch (Exception Ex)

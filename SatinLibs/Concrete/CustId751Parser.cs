@@ -109,7 +109,7 @@ namespace SatinLibs
             tempOrder.CustomerId = supplierId;
             tempOrder.Remarks = getAddress(lines);
             tempOrder.DeliveryDate = DateTime.Parse(deliveryDate);
-            //tempOrder.Amount = decimal.Parse(orderAmount);
+            tempOrder.Amount = getTotalAmount(lines);
 
 
             List<TempOrderDetails> orderDetailList = getOrderDetailsList(itemRows, lines);
@@ -285,6 +285,19 @@ namespace SatinLibs
             str.Append(", " + lines[26]);
             
             return str.ToString();
+        }
+
+        private decimal getTotalAmount(string[] lines)
+        {
+            decimal amount = 0;
+            for(int i = 0; i<lines.Length;i++){
+                if (lines[i].Equals("PS : 'Y' denotes 'Special Offer'"))
+                {
+                    amount = decimal.Parse(lines[i - 1]);
+                }
+            }
+            
+            return amount;
         }
         
     }
