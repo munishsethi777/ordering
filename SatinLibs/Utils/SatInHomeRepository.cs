@@ -17,7 +17,8 @@ namespace SatinLibs
 {
    public class SatInHomeRepository
     {
-
+       static log4net.ILog log = log4net.LogManager.GetLogger("SatInHomeRepository");
+        
        private MVCEFEntities objContext = new MVCEFEntities();
        public string InsertOrder()
        {
@@ -146,9 +147,11 @@ namespace SatinLibs
                    }
                    sOrderNumbers = sOrderNumbers.Substring(0, sOrderNumbers.Length - 1);
                    return "Order Submitted - " + sOrderNumbers;
+                   log.Info("Order Submitted -" + sOrderNumbers);
                }
                catch (Exception Ex)
                {
+                   log.Error("Error Occured while order submission",Ex);
                    return Ex.Message;
                }
            }

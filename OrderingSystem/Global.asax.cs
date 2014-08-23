@@ -33,7 +33,7 @@ namespace MVCEF
 
             //for defaultcontrol factory
             ControllerBuilder.Current.SetControllerFactory(new NinjectControllerFactory());
-
+            log4net.Config.XmlConfigurator.Configure();
             JobManager.Runscheduler();
 
         }
