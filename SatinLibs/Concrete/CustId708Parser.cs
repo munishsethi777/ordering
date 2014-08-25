@@ -97,7 +97,6 @@ namespace SatinLibs
             string orderNo = lines[8] ;
             string orderDate = lines[9];
             string deliveryDate = lines[10];
-            string storeCode = lines[5].Replace("Supplier : ", "");
             Decimal orderAmount = getTotalAmount(lines);
             string format = "dd/MM/yyyy";
 
@@ -113,11 +112,11 @@ namespace SatinLibs
 
 
             List<TempOrderDetails> orderDetailList = getDetailsList(lines, productCount);
-
+            String storeCode = orderDetailList[0].StoreId;
             tempOrder.OrderDetails = orderDetailList;
             DataSetUtils utils = new DataSetUtils();
             DataSet mainDs = utils.ToDataSet(tempOrder);
-            DataTable dt = getCommonDataTable(productCount, storesDataSet);
+            DataTable dt = getCommonDataTable(productCount, storeCode);
             DataSet ds = new DataSet();
             for (int i = 0; i < productCount; i++)
             {
@@ -126,59 +125,27 @@ namespace SatinLibs
                 string itemNo = row.ItemArray[4].ToString();
                 string itemName = row.ItemArray[5].ToString();
                 string price = row.ItemArray[6].ToString();
-                object[] array = new object[storesCount + 5];
-                if (storesCount == 0)
-                {
-                    array = new object[1 + 4];
-                }
+                object[] array = new object[6];
                 array[0] = orderNumber;
                 array[1] = itemNo;
                 array[2] = itemName;
                 array[3] = price;
-                int rowCounter = 4;
-                if (storesCount == 0)
-                {
-                    //store value will be come from pdf file.By the time given static value for testing.
-                    array[rowCounter++] = "20";
-                }
-                else
-                {
-                    for (int j = 0; j < storesCount; j++)
-                    {
-                        array[rowCounter++] = "20";
-                    }
-                }
+                array[4] = row.ItemArray[7].ToString();
                 string remarks = row.ItemArray[9].ToString();
-                array[rowCounter] = remarks;
+                array[5] = remarks;
                 dt.Rows.Add(array);
             }
             dataSet.Tables.Add(dt);
         }
-
-        public DataTable getCommonDataTable(int totalRowsCount, DataSet storesDataSet)
+        
+        public DataTable getCommonDataTable(int totalRowsCount, String storeCode)
         {
             DataTable mytable = new DataTable();
             mytable.Columns.Add("Order#");
             mytable.Columns.Add("Sl#");
             mytable.Columns.Add("Product");
             mytable.Columns.Add("Price");
-            int storesCount = 0;
-            if (storesDataSet != null)
-            {
-                storesCount = storesDataSet.Tables[0].Rows.Count;
-            }
-
-            if (storesCount > 0)
-            {
-                for (int i = 0; i < storesCount; i++)
-                {
-                    mytable.Columns.Add(storesDataSet.Tables[0].Rows[i].ItemArray[0].ToString());
-                }
-            }
-            else
-            {
-                mytable.Columns.Add("Delivery");
-            }
+            mytable.Columns.Add(storeCode);
             mytable.Columns.Add("Remarks");
             return mytable;
         }
@@ -237,7 +204,7 @@ namespace SatinLibs
                 string price;
                 string remarks;
                 string amount;
-
+                string storeCode;
                 string prodFirstRow = lines[productStartsRow];
                 if (prodFirstRow.Equals(pageFooterText))
                 {
@@ -251,7 +218,9 @@ namespace SatinLibs
                 string prodSecondRow = lines[productStartsRow+1];
                 sku = prodSecondRow.Substring(prodSecondRow.IndexOf("NTUC Stock Code :")+17);
                 int prodNameEndIndex = prodSecondRow.Substring(0, prodSecondRow.IndexOf("NTUC Stock Code")).LastIndexOf(" ");
-                
+
+                string prodThirdRow = lines[productStartsRow + 3];
+                storeCode = prodThirdRow.Split(' ')[0];
                 prodName = prodSecondRow.Substring(0,prodNameEndIndex);
                 remarks = lines[productStartsRow + 3] + " " + lines[productStartsRow + 4];
 
@@ -260,6 +229,7 @@ namespace SatinLibs
                 amount = prodSixthRow.Split(' ')[1];
                 orderNumber = lines[1].Substring(16);
                 productStartsRow = productStartsRow + 6;
+                
 
                 TempOrderDetails orderDetails = new TempOrderDetails();
                 orderDetails.Quantity = Decimal.Parse(qty);
@@ -269,6 +239,7 @@ namespace SatinLibs
                 orderDetails.Remarks = remarks;
                 orderDetails.OrderNumber = orderNumber;
                 orderDetails.Amount = Decimal.Parse(amount);
+                orderDetails.StoreId = storeCode;
                 orderDetailsList.Add(orderDetails);
                 productsParsed++;
             }
