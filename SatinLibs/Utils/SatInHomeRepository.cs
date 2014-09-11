@@ -191,7 +191,32 @@ namespace SatinLibs
             return str;
         }
 
+        private DataTable getOrderDTFromStrings(String jDataStr, String jHeaderStr)
+        {
+            DataTable dtResult = new DataTable("Order");
+            Newtonsoft.Json.Linq.JArray jData = JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JArray>(jDataStr);
+            Newtonsoft.Json.Linq.JArray jHeader = JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JArray>(jHeaderStr);
+            foreach (var item in jHeader)
+            {
+                dtResult.Columns.Add(item.ToString());
+            }
+            string name = "";
+            foreach (var row in jData)
+            {
+                DataRow dr = dtResult.NewRow();
+                for (int j = 0; j < dtResult.Columns.Count; j++)
+                {
+                    if (row[j].ToString() == "")
+                        dr[j] = "0";
+                    else
+                        dr[j] = row[j].ToString();
 
+                    name = jHeader[j].ToString();
+                }
+                dtResult.Rows.Add(dr);
+            }
+            return dtResult;
+        }
 
 
         public Dictionary<string, string> SaveUploadedOrders(string total, string orderby, string phone, string remarks, string data, string header, string customerId)
@@ -201,54 +226,45 @@ namespace SatinLibs
             {
                 Newtonsoft.Json.Linq.JArray jDataMain = JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JArray>(data);
                 Newtonsoft.Json.Linq.JArray jHeaderMain = JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JArray>(header);
-                Dictionary<string, string> customerMapErrorsMap = new Dictionary<string, string>();
-                Dictionary<string, string> firstValidatorResponse = null;
+                Dictionary<string, string> basicValidatorResponse = null;
+                Dictionary<string, string> noSKUMappedValidationsMap = new Dictionary<string, string>();
                 Dictionary<string, string> finalValidatorResponse = new Dictionary<string, string>();
                 for (int i = 0; i < jDataMain.Count; i++)
                 {
-                    DataTable dtResult = new DataTable("Order");
-                    Newtonsoft.Json.Linq.JArray jData = JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JArray>(jDataMain[i].ToString());
-                    Newtonsoft.Json.Linq.JArray jHeader = JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JArray>(jHeaderMain[i].ToString());
-                    foreach (var item in jHeader)
-                    {
-                        dtResult.Columns.Add(item.ToString());
-                    }
-                    string name = "";
-                    foreach (var row in jData)
-                    {
-                        DataRow dr = dtResult.NewRow();
-                        for (int j = 0; j < dtResult.Columns.Count; j++)
-                        {
-                            if (row[j].ToString() == "")
-                                dr[j] = "0";
-                            else
-                                dr[j] = row[j].ToString();
+                    DataTable orderDT = getOrderDTFromStrings(jDataMain[i].ToString(), jHeaderMain[i].ToString());
+                    basicValidatorResponse = ValidateSavingOrders(false, total, orderby, phone, remarks, orderDT, customerId);
 
-                            name = jHeader[j].ToString();
-                        }
-                        dtResult.Rows.Add(dr);
-                    }
-
-                    firstValidatorResponse = ValidateSavingOrders(false, total, orderby, phone, remarks, dtResult, customerId);
-                    if (firstValidatorResponse.Keys.Count == 0)
+                    if (basicValidatorResponse.Keys.Count == 0)
                     {
-                        Dictionary<string, string> customerMapResponse = ValidateSavingOrders(true, total, orderby, phone, remarks, dtResult, customerId);
-                        if (customerMapResponse.Keys.Count == 0)
+                        Dictionary<string, string> customerMapValidatorResponse = ValidateSavingOrders(true, total, orderby, phone, remarks, orderDT, customerId);
+                        if (customerMapValidatorResponse.Keys.Count == 0)
                         {
-                            finalValidatorResponse = SaveOrders(total, orderby, phone, remarks, dtResult, customerId);
-                        }
-                        else
-                        {
-                            foreach (KeyValuePair<string, string> item in customerMapResponse)
+                            Dictionary<string, string> saveOrderResponse = SaveOrders(total, orderby, phone, remarks, orderDT, customerId);
+                            foreach (KeyValuePair<string, string> item in saveOrderResponse)
                             {
-                                if (customerMapErrorsMap.ContainsKey(item.Key))
+                                if (finalValidatorResponse.ContainsKey(item.Key))
                                 {
-                                    string store = customerMapErrorsMap[item.Key];
-                                    customerMapErrorsMap[item.Key] = store + ", " + item.Value;
+                                    finalValidatorResponse[item.Key] = finalValidatorResponse[item.Key] + "<br>" + item.Value;
                                 }
                                 else
                                 {
-                                    customerMapErrorsMap.Add(item.Key, item.Value);
+                                    finalValidatorResponse.Add(item.Key, item.Value);
+                                }
+                                
+                            }
+                        }
+                        else
+                        {
+                            foreach (KeyValuePair<string, string> item in customerMapValidatorResponse)
+                            {
+                                if (noSKUMappedValidationsMap.ContainsKey(item.Key))
+                                {
+                                    string store = noSKUMappedValidationsMap[item.Key];
+                                    noSKUMappedValidationsMap[item.Key] = store + ", " + item.Value;
+                                }
+                                else
+                                {
+                                    noSKUMappedValidationsMap.Add(item.Key, item.Value);
                                 }
 
                             }
@@ -258,7 +274,7 @@ namespace SatinLibs
                     }
                     else
                     {
-                        KeyValuePair<string, string> keyValuePair = firstValidatorResponse.First();
+                        KeyValuePair<string, string> keyValuePair = basicValidatorResponse.First();
                         finalValidatorResponse.Add(keyValuePair.Key, keyValuePair.Value);
 
                     }
@@ -266,22 +282,20 @@ namespace SatinLibs
                    
 
                 }
-                if (customerMapErrorsMap.Keys.Count > 0)
+                if (noSKUMappedValidationsMap.Keys.Count > 0)
                 {
-
-                    foreach (KeyValuePair<string, string> item in customerMapErrorsMap)
+                    foreach (KeyValuePair<string, string> item in noSKUMappedValidationsMap)
                     {
-                        finalValidatorResponse.Add("ID" + item.Key + " is not mapped for", item.Value);
+                        finalValidatorResponse.Add("ID " + item.Key + " is not mapped for", item.Value);
                     }
-                    return finalValidatorResponse;
                 }
-
-
-                // 
+                return finalValidatorResponse;
             }
             catch (Exception Ex)
             {
-
+                Dictionary<string, string> exceptionMap = new Dictionary<string, string>();
+                exceptionMap.Add("Exception Occured", Ex.Message);
+                return exceptionMap;
             }
             return null;
         }
@@ -289,15 +303,13 @@ namespace SatinLibs
 
         public Dictionary<string, string> ValidateSavingOrders(Boolean isValidateProdMap, string total, string orderby, string phone, string remarks, DataTable orderDetail, string customerIdStr)
         {
-            Dictionary<string, string> errorMap = new Dictionary<string, string>();
+            Dictionary<string, string> responseMap = new Dictionary<string, string>();
             try
             {
                 SiteSession session = (SiteSession)HttpContext.Current.Session["SiteSession"];
                 int userId = session.UserId;
                 int customerId = int.Parse(customerIdStr);
-                object dsResult = null;
                 String customerCode = CustomerUtils.getCustomerCode(customerId);
-                string sSql = "";
                 int orderId = 0;
                 DataRow firstRow = orderDetail.Rows[0];
                 String orderNo = firstRow[0].ToString();
@@ -319,20 +331,20 @@ namespace SatinLibs
                 Dictionary<String, ProductCustomer> map = getCustomerProductMap(customerCode);
                 if (isValidateProdMap)
                 {
-                    errorMap = ValidatorUtil.validateCustomerMap(order, orderDetail, map, customerId);
+                    responseMap = ValidatorUtil.validateCustomerMap(order, orderDetail, map, customerId);
                 }
                 else
                 {
-                    errorMap = ValidatorUtil.validateSaveOrders(order, orderDetail, map, customerId);
+                    responseMap = ValidatorUtil.validateSaveOrders(order, orderDetail, map, customerId);
                 }
             }
             catch (Exception Ex)
             {
-                errorMap = new Dictionary<string, string>();
-                errorMap.Add("Exception", "Message: " + Ex.Message + "</br>InnerException: " + Ex.InnerException + "</br>StackTrace: " + Ex.StackTrace);
+                responseMap = new Dictionary<string, string>();
+                responseMap.Add("Exception", "Message: " + Ex.Message + "</br>InnerException: " + Ex.InnerException + "</br>StackTrace: " + Ex.StackTrace);
             }
-            errorMap.OrderBy(key => key.Value);
-            return errorMap;
+            responseMap.OrderBy(key => key.Value);
+            return responseMap;
         }
         public Dictionary<string, string> SaveOrders(string total, string orderby, string phone, string remarks, DataTable orderDetail, string customerIdStr)
         {
