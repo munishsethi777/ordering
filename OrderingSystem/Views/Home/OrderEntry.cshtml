@@ -61,6 +61,7 @@
 		var columnWidth = new Array();
 		var uploadedFileSheetsCount = 0;
 		$('#uploadFile').on('click', function () {
+		    uploadedFileSheetsCount = 0;
 		    $("#errorDiv").html("");
             var formData = new FormData($('#ajaxform')[0]);
             var formURL = $(this).attr("action");
@@ -379,29 +380,30 @@
 
             $('#btnSave').click(function () {
                 $("#errorDiv").html("");
-				var container = $("#example0");
-				var handsontable = container.data('handsontable');
-                var saveOrders = [];
+				//var container = $("#example0");
+				//var handsontable = container.data('handsontable');
+                //var saveOrders = [];
 
-                var orders = [];
-                $.each(handsontable.getColHeader(), function (i, d) {
-                    saveOrders.push(d);
-                });
+                //var orders = [];
+                //$.each(handsontable.getColHeader(), function (i, d) {
+                //    saveOrders.push(d);
+                //});
 
-                $.each(handsontable.getData(), function (index, dataRow) {
-                    orders = [];
-                    $.each(dataRow, function (i, d) {
-                        //saveOrdersList[index][saveOrders[i]] = d;
-                        //saveOrdersList.push({ saveOrders[i] : d });
-                        orders["[" + saveOrders[i] + "]"] = d;
-                    });
+                //$.each(handsontable.getData(), function (index, dataRow) {
+                //    orders = [];
+                //    $.each(dataRow, function (i, d) {
+                //        //saveOrdersList[index][saveOrders[i]] = d;
+                //        //saveOrdersList.push({ saveOrders[i] : d });
+                //        orders["[" + saveOrders[i] + "]"] = d;
+                //    });
 
-                    saveOrdersList.push(orders);
+                //    saveOrdersList.push(orders);
 
-                });
+                //});
 
-                var cnt = handsontable.countRows();
-                var total = handsontable.getCell(cnt - 1, 1).innerText;
+                //var cnt = handsontable.countRows();
+                //var total = handsontable.getCell(cnt - 1, 1).innerText;
+                var total = 1;
                 var orderby = $('#txtOrderBy').val(); // handsontable.getCell(cnt - 3, 1).innerText;
                 var phone = $('#txtPhone').val(); // handsontable.getCell(cnt - 2, 1).innerText;
                 var remarks = $('#txtRemarks').val(); // handsontable.getCell(cnt - 1, 1).innerText;
