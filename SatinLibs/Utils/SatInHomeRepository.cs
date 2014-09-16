@@ -306,8 +306,8 @@ namespace SatinLibs
             Dictionary<string, string> responseMap = new Dictionary<string, string>();
             try
             {
-                SiteSession session = (SiteSession)HttpContext.Current.Session["SiteSession"];
-                int userId = session.UserId;
+                //SiteSession session = (SiteSession)HttpContext.Current.Session["SiteSession"];
+               // int userId = session.UserId;
                 int customerId = int.Parse(customerIdStr);
                 String customerCode = CustomerUtils.getCustomerCode(customerId);
                 int orderId = 0;
