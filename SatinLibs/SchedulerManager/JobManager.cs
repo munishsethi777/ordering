@@ -35,8 +35,22 @@ namespace SatinLibs
                         .RepeatForever())
                     .Build();
 
+                IJobDetail saveJob = JobBuilder.Create<SaveOrders>()
+                  .WithIdentity(InsertOrder.GetName(), "group2")
+                  .Build();
+                //TimeSpan intervalTime = new TimeSpan(19,0,0);
+                // Trigger the job to run now, and then repeat every 10 seconds
+                ITrigger saveTrigger = TriggerBuilder.Create()
+                    .WithIdentity("saveTrigger", "group2")
+                    .StartNow()
+                    .WithSimpleSchedule(x => x
+                        .WithIntervalInMinutes(360)
+                        .RepeatForever())
+                    .Build();
+
                 // Tell quartz to schedule the job using our trigger
                 scheduler.ScheduleJob(job, trigger);
+                scheduler.ScheduleJob(saveJob, saveTrigger);
 
                 // some sleep to show what's happening
                 //Thread.Sleep(TimeSpan.FromSeconds(5));
